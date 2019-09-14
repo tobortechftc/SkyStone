@@ -1,0 +1,47 @@
+{
+  "servoBackLeft": {
+    "center": 0.497,
+    "left": 0.187,
+    "right": 0.813
+  },
+  "servoFrontLeft": {
+    "center": 0.478,
+    "left": 0.160,
+    "right": 0.791
+  },
+  "servoBackRight": {
+    "center": 0.489,
+    "left": 0.175,
+    "right": 0.807
+  },
+  "servoFrontRight": {
+    "center": 0.488,
+    "left": 0.177,
+    "right": 0.800
+  },
+  "chassis": {
+    "track": 13.75,
+    "wheelBase": 11.25,
+    "wheelRadius": 2.0,
+    "maxPower": 0.99,
+    "minPower": 0.15
+  },
+  "sv_sw_box": {
+    "center": 0.11,
+    "left": 0.000,
+    "right": 0.45
+  },
+  "sv_box_lift": {
+    "center": 0.6, //0.6
+    "left": 0.01, // 0.06
+    "right": 0.94
+  },
+  "intake": {
+    "sweeperInPower": 1.0,
+    "sweeperOutPower": 0.7,
+    "sweeperHalfRotation": 180.0,
+    "sliderDump": 50.0,
+    "sliderExtended": 2250.0,
+    "sliderPower": 0.7
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "servoBackLeft": {
+    "center": 0.511,
+    "left": 0.192,
+    "right": 0.797
+  },
+  "servoFrontLeft": {
+    "center": 0.493,
+    "left": 0.178,
+    "right": 0.782
+  },
+  "servoBackRight": {
+    "center": 0.537,
+    "left": 0.226,
+    "right": 0.829
+  },
+  "servoFrontRight": {
+    "center": 0.491,
+    "left": 0.177,
+    "right": 0.780
+  },
+  "chassis": {
+    "track": 14.0,
+    "wheelBase": 12.0,
+    "wheelRadius": 2.0,
+    "maxPower": 0.99,
+    "minPower": 0.15
+  }
+}
