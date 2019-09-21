@@ -43,7 +43,11 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot {
     private Telemetry telemetry;
     public SwerveChassis chassis;
     public CameraMineralDetector cameraMineralDetector;
+    public CameraStoneDetector cameraStoneDetector;
 
+    public enum SkystoneLocation {
+        LEFT, CENTER, RIGHT, UNKNOWN
+    }
 
     public CoreSystem core;
     public ElapsedTime runtime = new ElapsedTime();
@@ -324,6 +328,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot {
 //            }
             return rgba;
         }
+
 
         public enum SampleLocation {
             LEFT, CENTER, RIGHT, UNKNOWN
