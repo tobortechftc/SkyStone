@@ -53,6 +53,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot {
     public ElapsedTime runtime = new ElapsedTime();
     public double rotateRatio = 0.7; // slow down ratio for rotation
     public double motor_count = 0;
+    public double auto_chassis_power = .6;
 
     @Override
     public String getName() {
@@ -199,6 +200,42 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot {
                 }
             }
         }, Button.A);
+
+    }
+
+    @MenuEntry(label = "Auto Straight", group = "Test Chassis")
+    public void testStraightSkyStone(EventManager em) {
+
+        telemetry.addLine().addData(" < (LS) >", "Power").setRetained(true);
+        chassis.setupTelemetry(telemetry);
+        em.updateTelemetry(telemetry, 100);
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.BACK)) {
+                    auto_chassis_power += 0.1;
+                 if (auto_chassis_power>1) auto_chassis_power=1;
+                } else {
+                    chassis.driveStraightAuto(auto_chassis_power, 65, 0, 10000);
+                    chassis.driveStraightAuto(auto_chassis_power, -7, 0, 10000);
+                    chassis.driveStraightAuto(auto_chassis_power, 220, -90, 15000);
+                    chassis.driveStraightAuto(auto_chassis_power, 260, 90, 15000);
+                    chassis.driveStraightAuto(auto_chassis_power, 20, 0, 10000);
+                    chassis.driveStraightAuto(auto_chassis_power, -5, 0, 10000);
+                    chassis.driveStraightAuto(auto_chassis_power, 243, -90, 15000);//245?
+                }
+            }
+        }, new Button[]{Button.Y});
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.BACK)) {
+                    auto_chassis_power -= 0.1;
+                    if (auto_chassis_power < 0.1) auto_chassis_power = 0.1;
+                }
+            }
+        }, new Button[]{Button.A});
+
 
     }
 
