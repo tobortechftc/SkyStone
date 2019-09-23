@@ -50,7 +50,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     }
 
     public void configure(Configuration configuration, boolean auto) {
-        arm = new AdjustableServo(ARM_DOWN, ARM_UP).configureLogging(
+        arm = new AdjustableServo(0,1).configureLogging(
                 logTag + ":arm", logLevel
         );
         arm.configure(configuration.getHardwareMap(), "arm");

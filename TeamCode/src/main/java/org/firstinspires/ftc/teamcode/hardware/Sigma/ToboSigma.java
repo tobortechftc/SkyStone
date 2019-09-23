@@ -123,7 +123,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot {
                                    float currentY, float changeY) throws InterruptedException {
                 if (Math.abs(source.getStick(Events.Side.LEFT, Events.Axis.BOTH)) < 0.1) {
                     // right stick with idle left stick operates robot in "crab" mode
-                    double power = Math.abs(source.getStick(Events.Side.RIGHT, Events.Axis.X_ONLY));
+                    double power = Math.abs(source.getStick(Events.Side.RIGHT, Events.Axis.BOTH));
                     power *= power; // square power to stick
                     double heading = toDegrees(currentX, currentY);
                     double cur_heading = chassis.getCurHeading();

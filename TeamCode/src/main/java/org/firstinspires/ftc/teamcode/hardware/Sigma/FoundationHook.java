@@ -27,8 +27,8 @@ public class FoundationHook extends Logger<FoundationHook> implements Configurab
 
     private AdjustableServo hook;
 
-    private final double HOOK_UP = 0.9;
-    private final double HOOK_DOWN = 0.185;
+    private final double HOOK_UP = 0.14;
+    private final double HOOK_DOWN = 0.9;
 
     private boolean hookIsDown = false;
     private ElapsedTime runtime = new ElapsedTime();
@@ -57,7 +57,7 @@ public class FoundationHook extends Logger<FoundationHook> implements Configurab
     }
 
     public void configure(Configuration configuration, boolean auto) {
-        hook = new AdjustableServo(HOOK_DOWN, HOOK_UP).configureLogging(
+        hook = new AdjustableServo(0,1).configureLogging(
                 logTag + ":foundationHook", logLevel
         );
         hook.configure(configuration.getHardwareMap(), "foundationHook");
