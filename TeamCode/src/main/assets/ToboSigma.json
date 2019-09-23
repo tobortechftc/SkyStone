@@ -19,6 +19,16 @@
     "left": 0.177,
     "right": 0.780
   },
+  "arm": {
+    "center": 0.01,
+    "left": 0.5,
+    "right": 0.99
+  },
+  "foundationHook": {
+    "center": 0.01,
+    "left": 0.5,
+    "right": 0.99
+  },
   "chassis": {
     "track": 14.0,
     "wheelBase": 12.0,

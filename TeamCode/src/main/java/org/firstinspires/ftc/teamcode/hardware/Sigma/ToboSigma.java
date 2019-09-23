@@ -44,6 +44,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot {
     public SwerveChassis chassis;
     public CameraMineralDetector cameraMineralDetector;
     public CameraStoneDetector cameraStoneDetector;
+    public FoundationHook foundationHook;
+    public StoneGrabber stoneGrabber;
 
     public enum SkystoneLocation {
         LEFT, CENTER, RIGHT, UNKNOWN
@@ -79,6 +81,13 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot {
             cameraMineralDetector.configure(configuration, true);
         }
         info("RoboSigma configure() after init cameraMineralDetector (run time = %.2f sec)", (runtime.seconds() - ini_time));
+
+        foundationHook = new FoundationHook(this.core).configureLogging("FoundationHook", logLevel);
+        foundationHook.configure(configuration, false);
+
+        stoneGrabber = new StoneGrabber(this.core).configureLogging("StoneGrabber", logLevel);
+        stoneGrabber.configure(configuration, false);
+
     }
 
     @Override
@@ -189,8 +198,16 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot {
                     chassis.setDefaultScale(1.0);
                     return;
                 }
+
             }
         }, Button.Y);
+
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                foundationHook.hookAuto();
+            }
+        }, Button.LEFT_BUMPER);
 
         em.onButtonDown(new Events.Listener() {
             @Override
