@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.opmodes.sigmaBot;
 
 import android.util.Log;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -14,55 +16,45 @@ import org.firstinspires.ftc.teamcode.support.tasks.TaskManager;
 /**
  * Created by 28761 on 6/29/2019.
  */
-@TeleOp(name="Sigma-TeleOp", group="Sigma")
+@Disabled
+@Autonomous(name="Sigma-Auto", group="Sigma")
 public class SigmaTeleOp extends LinearOpMode {
     protected static int LOG_LEVEL = Log.INFO;
 
     private Configuration configuration;
     private Logger<Logger> log = new Logger<Logger>().configureLogging(getClass().getSimpleName(), LOG_LEVEL);
 
-    private EventManager eventManager1;
-    private EventManager eventManager2;
-
     @Override
     public void runOpMode() throws InterruptedException {
-        log.info("RoboSigma TeleOp runOpMode() starts (CPU_time = %.2f sec)", getRuntime());
+        log.info("RoboSigma Autonomous runOpMode() starts (CPU_time = %.2f sec)", getRuntime());
         telemetry.addData("Initializing Robot", "Please Wait ...");
         telemetry.update();
 
         ToboSigma robot = new ToboSigma();
         robot.configureLogging("ToboSigma",LOG_LEVEL);
         configuration = new Configuration(hardwareMap, robot.getName()).configureLogging("Config", LOG_LEVEL);
-        log.info("RoboSigma TeleOp finished configuration (CPU_time = %.2f sec)", getRuntime());
+        log.info("RoboSigma Autonomous finished log configuration (CPU_time = %.2f sec)", getRuntime());
 
         try {
             // configure robot and reset all hardware
-            robot.configure(configuration, telemetry, false);
+            robot.configure(configuration, telemetry, true);
             configuration.apply();
-            robot.reset(false);
-
-            eventManager1 = new EventManager(gamepad1, true);
-            eventManager2 = new EventManager(gamepad2, true);
-
-            robot.mainTeleOp(eventManager1, eventManager2); // define events for the chassis drive
-
+            robot.reset(true);
             telemetry.addData("Robot is ready", "Press Play");
             telemetry.update();
         } catch (Exception E) {
             telemetry.addData("Init Failed", E.getMessage());
             handleException(E);
         }
-        log.info("RoboSigma TeleOp finished initialization (CPU_time = %.2f sec)", getRuntime());
+        log.info("RoboSigma Autonomous finished initialization (CPU_time = %.2f sec)", getRuntime());
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
-
-        // run until the end of the match (driver presses STOP)
+        // run until the end of the match (driver presses STOP or timeout)
         while (opModeIsActive()) {
             try {
-                eventManager1.processEvents();
-                eventManager2.processEvents();
-                TaskManager.processTasks();
+                // put autonomous steps here
+
             } catch (Exception E) {
                 telemetry.addData("Error in event handler", E.getMessage());
                 handleException(E);
