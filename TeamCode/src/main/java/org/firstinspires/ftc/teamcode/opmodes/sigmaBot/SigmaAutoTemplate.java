@@ -61,6 +61,8 @@ public class SigmaAutoTemplate extends LinearOpMode {
         if (robot.cameraStoneDetector.getTfod()!=null) {
             updatedRecognitions = robot.cameraStoneDetector.getTfod().getUpdatedRecognitions();
         }
+        int robot_pos = 2;
+
         waitForStart();
         robot.runtime.reset();
         // run until the end of the match (driver presses STOP or timeout)
@@ -68,7 +70,7 @@ public class SigmaAutoTemplate extends LinearOpMode {
             try {
                 // put autonomous steps here
                 // step-1: detect skystone location\
-                StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF();
+                StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF(robot_pos);
                 telemetry.addLine(StoneLoc.toString());
                 telemetry.update();
                 sleep(10000); // 10 sec

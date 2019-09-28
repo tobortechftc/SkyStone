@@ -82,24 +82,32 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
 
         tfodParameters.minimumConfidence = 0.6;
 
-        com.vuforia.CameraDevice.getInstance().setFlashTorchMode(true);
+        if (!useExtCam)
+            com.vuforia.CameraDevice.getInstance().setFlashTorchMode(true);
 //        com.vuforia.CameraDevice.getInstance().setField("iso", "800");
 
-        // register CameraStoneDetector as a configurable component
-        configuration.register(this);
-    }
-
-    public ToboSigma.SkystoneLocation getSkystonePositionTF() {
-        // The TFObjectDetector uses the camera frames from the VuforiaLocalizer, so we create that
-        // first.
-
-        logger.verbose("Start getGoldPositionTF()");
         /** Activate Tensor Flow Object Detection. */
         if (tfod != null) {
             logger.verbose("Start tfod Activation");
             tfod.activate();
             logger.verbose("tfod activate: ", tfod);
         }
+
+        // register CameraStoneDetector as a configurable component
+        configuration.register(this);
+    }
+
+    public ToboSigma.SkystoneLocation getSkystonePositionTF(int robot_pos) {
+        // The TFObjectDetector uses the camera frames from the VuforiaLocalizer, so we create that
+        // first.
+
+        int left_center_border_x = (robot_pos==1?200:320);
+        int center_right_border_x = (robot_pos==1?400:520);
+
+        int min_stone_width = (robot_pos==1?150:100);
+        int max_stone_width = (robot_pos==1?250:200);
+
+        logger.verbose("Start getGoldPositionTF()");
 
         ElapsedTime elapsedTime = new ElapsedTime();
         elapsedTime.startTime();
@@ -120,7 +128,7 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
                         for (Recognition recognition :
                                 updatedRecognitions) {
                             double width = recognition.getRight()-recognition.getLeft();
-                            if ( width < 250 && width > 150) {
+                            if ( width < max_stone_width && width > min_stone_width) {
                                 validRecognitions++;
                             }
                         }
@@ -130,12 +138,17 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
                                     updatedRecognitions) {
                                 if (recognition.getLabel()=="Skystone"){
                                     double pos = (recognition.getRight()+recognition.getLeft())/2;
-                                    if ( pos < 200) {
-                                        skystoneLocation = ToboSigma.SkystoneLocation.LEFT;
-                                    } else if (pos > 400) {
-                                        skystoneLocation = ToboSigma.SkystoneLocation.RIGHT;
+                                    double skystone_width = recognition.getRight()-recognition.getLeft();
+                                    if (skystone_width>250) {
+                                        // ??? how to deal with this case
                                     } else {
-                                        skystoneLocation = ToboSigma.SkystoneLocation.CENTER;
+                                        if (pos < left_center_border_x) {
+                                            skystoneLocation = ToboSigma.SkystoneLocation.LEFT;
+                                        } else if (pos > center_right_border_x) {
+                                            skystoneLocation = ToboSigma.SkystoneLocation.RIGHT;
+                                        } else {
+                                            skystoneLocation = ToboSigma.SkystoneLocation.CENTER;
+                                        }
                                     }
                                 }
                             }
