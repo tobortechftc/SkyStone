@@ -72,8 +72,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot {
 
         this.core = new CoreSystem();
         info("RoboSigma configure() after new CoreSystem()(run time = %.2f sec)", (runtime.seconds() - ini_time));
-        chassis = new SwerveChassis(this.core).configureLogging("Swerve", logLevel); // Log.DEBUG
-        chassis.configure(configuration, auto, false);
+        // chassis = new SwerveChassis(this.core).configureLogging("Swerve", logLevel); // Log.DEBUG
+        // chassis.configure(configuration, auto, false);
         info("RoboSigma configure() after init Chassis (run time = %.2f sec)", (runtime.seconds() - ini_time));
         if (auto) {
             cameraStoneDetector = new CameraStoneDetector().configureLogging("CameraStoneDetector", logLevel);
@@ -81,19 +81,21 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot {
         }
         info("RoboSigma configure() after init cameraStoneDetector (run time = %.2f sec)", (runtime.seconds() - ini_time));
 
-        foundationHook = new FoundationHook(this.core).configureLogging("FoundationHook", logLevel);
-        foundationHook.configure(configuration, false);
+        // foundationHook = new FoundationHook(this.core).configureLogging("FoundationHook", logLevel);
+        // foundationHook.configure(configuration, false);
 
-        stoneGrabber = new StoneGrabber(this.core).configureLogging("StoneGrabber", logLevel);
-        stoneGrabber.configure(configuration, false);
+        // stoneGrabber = new StoneGrabber(this.core).configureLogging("StoneGrabber", logLevel);
+        // stoneGrabber.configure(configuration, false);
 
     }
 
     @Override
     public void reset(boolean auto) {
-        chassis.reset();
-        if (auto) {
-            chassis.setupTelemetry(telemetry);
+        if (chassis!=null) {
+            chassis.reset();
+            if (auto) {
+                chassis.setupTelemetry(telemetry);
+            }
         }
     }
 

@@ -51,6 +51,7 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
     public String getUniqueName() {
         return "CameraStoneDetector";
     }
+    public TFObjectDetector getTfod() { return tfod; }
 
     public void configure(Configuration configuration, boolean useExtCam) {
         logger.verbose("Start Configuration");
@@ -73,7 +74,7 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
         int tfodMonitorViewId = configuration.getHardwareMap().appContext.getResources().getIdentifier(
                 "tfodMonitorViewId", "id", configuration.getHardwareMap().appContext.getPackageName());
         TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
-        tfodParameters.minimumConfidence = 0.8;
+        tfodParameters.minimumConfidence = 0.6;
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
         tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT);
 
@@ -88,7 +89,7 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
         configuration.register(this);
     }
 
-    public ToboSigma.SkystoneLocation getSkystonePositionTF(boolean isHanging) {
+    public ToboSigma.SkystoneLocation getSkystonePositionTF() {
         // The TFObjectDetector uses the camera frames from the VuforiaLocalizer, so we create that
         // first.
 

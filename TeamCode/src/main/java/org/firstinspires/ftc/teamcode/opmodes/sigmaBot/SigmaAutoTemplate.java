@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.components.SwerveChassis;
 import org.firstinspires.ftc.teamcode.hardware.Sigma.ToboSigma;
 import org.firstinspires.ftc.teamcode.support.Logger;
@@ -14,19 +15,23 @@ import org.firstinspires.ftc.teamcode.support.events.EventManager;
 import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
 import org.firstinspires.ftc.teamcode.support.tasks.TaskManager;
 
+import java.util.List;
+
 /**
  * Created by 28761 on 6/29/2019.
  */
-@Disabled
+
 @Autonomous(name="Sigma-Auto", group="Sigma")
 public class SigmaAutoTemplate extends LinearOpMode {
+    private ToboSigma.SkystoneLocation StoneLoc;
+
     protected static int LOG_LEVEL = Log.INFO;
 
     private Configuration configuration;
     private Logger<Logger> log = new Logger<Logger>().configureLogging(getClass().getSimpleName(), LOG_LEVEL);
 
     public SwerveChassis chassis;
-    public double auto_chassis_power = .6;
+    public double auto_chassis_power = .3;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -52,23 +57,31 @@ public class SigmaAutoTemplate extends LinearOpMode {
         }
         log.info("RoboSigma Autonomous finished initialization (CPU_time = %.2f sec)", getRuntime());
         // Wait for the game to start (driver presses PLAY)
+        List<Recognition> updatedRecognitions = null;
+        if (robot.cameraStoneDetector.getTfod()!=null) {
+            updatedRecognitions = robot.cameraStoneDetector.getTfod().getUpdatedRecognitions();
+        }
         waitForStart();
         robot.runtime.reset();
         // run until the end of the match (driver presses STOP or timeout)
-        while (opModeIsActive()) {
+        if (opModeIsActive()) {
             try {
                 // put autonomous steps here
-                // step-1: detect skystone location
+                // step-1: detect skystone location\
+                StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF();
+                telemetry.addLine(StoneLoc.toString());
+                telemetry.update();
+                sleep(10000); // 10 sec
                 // step-2: go to gran the first skystone
                 // step-3: deliver the first skystone
                 //
-                int skyStonePosition = 3; // Collin, this is for your function
-                getFirstSkyStone(skyStonePosition);
-                int count = 1;
-                while (getRuntime() < 25000){
-                    count++;
-                    getAnotherSkyStone(skyStonePosition, count);
-                }
+//                int skyStonePosition = 3; // Collin, this is for your function
+//                getFirstSkyStone(StoneLoc);
+//                int count = 1;
+//                while (getRuntime() < 25000){
+//                    count++;
+//                    getAnotherSkyStone(skyStonePosition, count);
+//                }
                 // move foundation
                 // park
 
@@ -79,17 +92,22 @@ public class SigmaAutoTemplate extends LinearOpMode {
             }
         }
     }
-    public void getFirstSkyStone(int skyStonePosition) throws InterruptedException{
+    public void getFirstSkyStone(ToboSigma.SkystoneLocation skyStonePosition) throws InterruptedException{
         chassis.driveStraightAuto(auto_chassis_power, 65, 0, 10000);
-        if(skyStonePosition == 1){
+        if(skyStonePosition == ToboSigma.SkystoneLocation.LEFT){
             chassis.driveStraightAuto(auto_chassis_power, 1, 90, 10000);  // test to get exact numbers
-        } else if(skyStonePosition == 2){
+        } else if(skyStonePosition == ToboSigma.SkystoneLocation.CENTER){
             chassis.driveStraightAuto(auto_chassis_power, 1, 90, 10000);  // test to get exact numbers
-        } else {
+        } else if(skyStonePosition == ToboSigma.SkystoneLocation.RIGHT) {
             chassis.driveStraightAuto(auto_chassis_power, 1, 90, 10000);  // test to get exact numbers
         }
         //grab skystone
-        chassis.driveStraightAuto(auto_chassis_power, 220 + 20 *skyStonePosition, -90, 15000);//probably too much
+        int ss_pos = 1;
+        if (skyStonePosition== ToboSigma.SkystoneLocation.RIGHT)
+            ss_pos = 3;
+        else if (skyStonePosition== ToboSigma.SkystoneLocation.CENTER)
+            ss_pos = 2;
+        chassis.driveStraightAuto(auto_chassis_power, 220 + 20 * ss_pos, -90, 15000);//probably too much
         //place skystone
     }
     public void getAnotherSkyStone(int skyStonePosition, int stoneNum) throws InterruptedException{//stoneNum - how many stones ara we going to have after this trip
