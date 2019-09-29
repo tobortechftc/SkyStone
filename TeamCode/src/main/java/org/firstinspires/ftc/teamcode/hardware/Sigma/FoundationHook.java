@@ -25,10 +25,14 @@ public class FoundationHook extends Logger<FoundationHook> implements Configurab
 
     final private CoreSystem core;
 
-    private AdjustableServo hook;
+    private AdjustableServo rightHook;
+    private AdjustableServo leftHook;
 
-    private final double HOOK_UP = 0.14;
-    private final double HOOK_DOWN = 0.9;
+    private final double RIGHT_HOOK_UP = 0.14;
+    private final double RIGHT_HOOK_DOWN = 0.9;
+
+    private final double LEFT_HOOK_UP = 0.14;
+    private final double LEFT_HOOK_DOWN = 0.9;
 
     private boolean hookIsDown = false;
     private ElapsedTime runtime = new ElapsedTime();
@@ -52,27 +56,36 @@ public class FoundationHook extends Logger<FoundationHook> implements Configurab
     }
 
     public void reset(boolean Auto) {
-        if (hook != null)
+        if (leftHook != null)
             hookUp();
     }
 
     public void configure(Configuration configuration, boolean auto) {
-        hook = new AdjustableServo(0,1).configureLogging(
+        leftHook = new AdjustableServo(0,1).configureLogging(
                 logTag + ":foundationHook", logLevel
         );
-        hook.configure(configuration.getHardwareMap(), "foundationHook");
-        configuration.register(hook);
+        leftHook.configure(configuration.getHardwareMap(), "leftHook");
+        configuration.register(leftHook);
+
+        rightHook = new AdjustableServo(0,1).configureLogging(
+                logTag + ":foundationHook", logLevel
+        );
+        rightHook.configure(configuration.getHardwareMap(), "rightHook");
+        configuration.register(rightHook);
+
         hookUp();
         // configuration.register(this);
     }
 
     public void hookUp() {
-        hook.setPosition(HOOK_UP);
+        leftHook.setPosition(LEFT_HOOK_UP);
+        rightHook.setPosition(RIGHT_HOOK_UP);
         hookIsDown = false;
     }
 
     public void hookDown() {
-        hook.setPosition(HOOK_DOWN);
+        leftHook.setPosition(LEFT_HOOK_DOWN);
+        rightHook.setPosition(RIGHT_HOOK_DOWN);
         hookIsDown = true;
     }
 
@@ -94,11 +107,20 @@ public class FoundationHook extends Logger<FoundationHook> implements Configurab
     public void setupTelemetry(Telemetry telemetry) {
         Telemetry.Line line = telemetry.addLine();
 
-        if (hook != null) {
-            line.addData("Hook", "pos=%.2f", new Func<Double>() {
+        if (leftHook != null) {
+            line.addData("Left Hook", "pos=%.2f", new Func<Double>() {
                 @Override
                 public Double value() {
-                    return hook.getPosition();
+                    return leftHook.getPosition();
+                }
+            });
+        }
+
+        if (rightHook != null) {
+            line.addData("Right Hook", "pos=%.2f", new Func<Double>() {
+                @Override
+                public Double value() {
+                    return rightHook.getPosition();
                 }
             });
         }

@@ -335,4 +335,45 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot {
         }
         return adjustment;
     }
+
+    public void getFirstSkyStone(SkystoneLocation skyStonePosition) throws InterruptedException{
+        chassis.driveStraightAuto(auto_chassis_power, 65, 0, 10000);
+        if(skyStonePosition == ToboSigma.SkystoneLocation.LEFT){
+            chassis.driveStraightAuto(auto_chassis_power, 1, 90, 10000);  // test to get exact numbers
+        } else if(skyStonePosition == ToboSigma.SkystoneLocation.CENTER){
+            chassis.driveStraightAuto(auto_chassis_power, 1, 90, 10000);  // test to get exact numbers
+        } else if(skyStonePosition == ToboSigma.SkystoneLocation.RIGHT) {
+            chassis.driveStraightAuto(auto_chassis_power, 1, 90, 10000);  // test to get exact numbers
+        }
+        //grab skystone
+        int ss_pos = 1;
+        if (skyStonePosition== ToboSigma.SkystoneLocation.RIGHT)
+            ss_pos = 3;
+        else if (skyStonePosition== ToboSigma.SkystoneLocation.CENTER)
+            ss_pos = 2;
+        chassis.driveStraightAuto(auto_chassis_power, 220 + 20 * ss_pos, -90, 15000);//probably too much
+        //place skystone
+    }
+    public void getAnotherSkyStone(SkystoneLocation skyStonePosition, int stoneNum) throws InterruptedException{//stoneNum - how many stones ara we going to have after this trip
+        int toTake;
+        if (skyStonePosition == SkystoneLocation.LEFT || skyStonePosition == SkystoneLocation.UNKNOWN) {
+            int [] a = {4, 2, 3, 5, 6};
+            toTake = a[stoneNum - 2];
+        } else if (skyStonePosition == SkystoneLocation.CENTER) {
+            int [] a = {5, 1, 3, 4, 6};
+            toTake = a[stoneNum - 2];
+        } else {
+            int[] a = {6, 1, 2, 4, 5};
+            toTake = a[stoneNum - 2];
+        }
+        chassis.driveStraightAuto(auto_chassis_power, 260 + 20 * stoneNum, 90, 15000);//numbers - probably not correct
+        chassis.driveStraightAuto(auto_chassis_power, 20, 0, 10000);
+        chassis.driveStraightAuto(auto_chassis_power, -5, 0, 10000);
+        //grab stone
+        chassis.driveStraightAuto(auto_chassis_power, 243 + 20 * stoneNum, -90, 15000);
+        // place stone on foundation
+
+    }
+
+
 }
