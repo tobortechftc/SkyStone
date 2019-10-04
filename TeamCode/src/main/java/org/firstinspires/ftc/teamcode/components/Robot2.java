@@ -6,7 +6,7 @@ import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
 /**
  * Core robot interface to be implemented by all robot classes
  */
-public interface Robot {
+public interface Robot2 {
 
     /**
      * Returns unique robot name, usually a result of calling <code>getClass().getSimpleName()</code>

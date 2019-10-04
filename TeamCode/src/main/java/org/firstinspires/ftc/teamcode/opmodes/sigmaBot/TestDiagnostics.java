@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.opmodes.sigmaBot;
 
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.components.Robot;
+import org.firstinspires.ftc.teamcode.components.Robot2;
 import org.firstinspires.ftc.teamcode.hardware.Sigma.ToboTest;
 import org.firstinspires.ftc.teamcode.support.diagnostics.DiagnosticsTeleOp;
 
@@ -17,7 +17,7 @@ public class TestDiagnostics extends DiagnosticsTeleOp {
     // static { LOG_LEVEL = Log.VERBOSE; }
 
     @Override
-    public Robot createRobot() {
+    public Robot2 createRobot() {
         return new ToboTest().configureLogging("ToboTest", LOG_LEVEL);
     }
 }

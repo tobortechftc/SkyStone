@@ -4,7 +4,7 @@ import android.util.Log;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.teamcode.components.Robot;
+import org.firstinspires.ftc.teamcode.components.Robot2;
 import org.firstinspires.ftc.teamcode.support.Logger;
 import org.firstinspires.ftc.teamcode.support.events.Button;
 import org.firstinspires.ftc.teamcode.support.events.EventManager;
@@ -42,20 +42,20 @@ public abstract class DiagnosticsTeleOp extends LinearOpMode {
      * where <code>MyRobot</code> is a name of robot class
      * @return created robot instance
      */
-    public abstract Robot createRobot();
+    public abstract Robot2 createRobot();
 
     @Override
     public void runOpMode() throws InterruptedException {
         telemetry.addData("Initializing Robot", "Please Wait ...");
         telemetry.update();
 
-        Robot robot = createRobot();
-        configuration = new Configuration(hardwareMap, robot.getName()).configureLogging("Config", LOG_LEVEL);
+        Robot2 robot2 = createRobot();
+        configuration = new Configuration(hardwareMap, robot2.getName()).configureLogging("Config", LOG_LEVEL);
         menu = new Menu();
         boolean enableTFOD = false; // set to true to enable testing TFOG
         try {
             // configure robot and reset all hardware
-            robot.configure(configuration, telemetry, enableTFOD);
+            robot2.configure(configuration, telemetry, enableTFOD);
             if (configuration.apply()) {
                 if (configuration.getLastModified()!=null) {
                     telemetry.addData("Phone adjustments", new SimpleDateFormat("MMM d, HH:mm").format(configuration.getLastModified()));
@@ -63,10 +63,10 @@ public abstract class DiagnosticsTeleOp extends LinearOpMode {
             } else {
                 telemetry.addData("WARNING", "Unable to load adjustments from phone or assets");
             }
-            robot.reset(false);
+            robot2.reset(false);
 
             // populate diagnostic menu entries
-            menu.detectEntries(robot);
+            menu.detectEntries(robot2);
             menu.detectEntries(this);
 
             telemetry.addData("Robot is ready", "Press Play");
