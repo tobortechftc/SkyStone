@@ -29,7 +29,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     public ElapsedTime runtime = new ElapsedTime();
     public double rotateRatio = 0.7; // slow down ratio for rotation
     public double motor_count = 0;
-    public double auto_chassis_power = .6;
+    public double auto_chassis_power = .3;
 
     @Override
     public String getName() {
@@ -42,9 +42,6 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         double ini_time = runtime.seconds();
         this.telemetry = telemetry;
 
-//        cameraSystem = new CameraSystem(null);
-//        cameraSystem.init(configuration.getHardwareMap());
-
         this.core = new CoreSystem();
         info("RoboSigma configure() after new CoreSystem()(run time = %.2f sec)", (runtime.seconds() - ini_time));
         chassis = new SwerveChassis(this.core).configureLogging("Swerve", logLevel); // Log.DEBUG
@@ -52,15 +49,15 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         info("RoboSigma configure() after init Chassis (run time = %.2f sec)", (runtime.seconds() - ini_time));
         if (auto) {
             cameraStoneDetector = new CameraStoneDetector().configureLogging("CameraStoneDetector", logLevel);
-            cameraStoneDetector.configure(configuration, true);
+            cameraStoneDetector.configure(configuration, false); // FIXME: change back to true once Ext Camera is in chassis
         }
         info("RoboSigma configure() after init cameraStoneDetector (run time = %.2f sec)", (runtime.seconds() - ini_time));
 
          foundationHook = new FoundationHook(this.core).configureLogging("FoundationHook", logLevel);
          foundationHook.configure(configuration, false);
 
-        // stoneGrabber = new StoneGrabber(this.core).configureLogging("StoneGrabber", logLevel);
-        // stoneGrabber.configure(configuration, false);
+         stoneGrabber = new StoneGrabber(this.core).configureLogging("StoneGrabber", logLevel);
+         stoneGrabber.configure(configuration, false);
 
     }
 
@@ -89,9 +86,6 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         chassis.setupTelemetry(telemetry);
 
         em.updateTelemetry(telemetry, 100);
-//        if (!hanging.latchIsBusy()) {
-//            hanging.resetLatch();
-//        }
 
         em.onStick(new Events.Listener() {
             @Override
@@ -311,44 +305,42 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         return adjustment;
     }
 
-    public void getFirstSkyStone(SkystoneLocation skyStonePosition) throws InterruptedException{
+    public void getFirstSkyStone(ToboSigma.SkystoneLocation skyStonePosition) throws InterruptedException{
         chassis.driveStraightAuto(auto_chassis_power, 65, 0, 10000);
-        if(skyStonePosition == ToboSigma.SkystoneLocation.LEFT){
+        if(skyStonePosition == ToboSigma.SkystoneLocation.LEFT || skyStonePosition == SkystoneLocation.UNKNOWN){
             chassis.driveStraightAuto(auto_chassis_power, 1, 90, 10000);  // test to get exact numbers
         } else if(skyStonePosition == ToboSigma.SkystoneLocation.CENTER){
             chassis.driveStraightAuto(auto_chassis_power, 1, 90, 10000);  // test to get exact numbers
         } else if(skyStonePosition == ToboSigma.SkystoneLocation.RIGHT) {
             chassis.driveStraightAuto(auto_chassis_power, 1, 90, 10000);  // test to get exact numbers
         }
+
         //grab skystone
         int ss_pos = 1;
         if (skyStonePosition== ToboSigma.SkystoneLocation.RIGHT)
             ss_pos = 3;
         else if (skyStonePosition== ToboSigma.SkystoneLocation.CENTER)
             ss_pos = 2;
-        chassis.driveStraightAuto(auto_chassis_power, 220 + 20 * ss_pos, -90, 15000);//probably too much
+        // go to foundation
+        chassis.driveStraightAuto(auto_chassis_power, 240 + 20 * ss_pos, -90, 15000);//probably too much
         //place skystone
     }
-    public void getAnotherSkyStone(SkystoneLocation skyStonePosition, int stoneNum) throws InterruptedException{//stoneNum - how many stones ara we going to have after this trip
+    public void getAnotherSkyStone(SkystoneLocation StoneLoc, int stoneNum) throws InterruptedException{//stoneNum - how many stones ara we going to have after this trip
         int toTake;
-        if (skyStonePosition == SkystoneLocation.LEFT || skyStonePosition == SkystoneLocation.UNKNOWN) {
+        if (StoneLoc == SkystoneLocation.LEFT) {
             int [] a = {4, 2, 3, 5, 6};
             toTake = a[stoneNum - 2];
-        } else if (skyStonePosition == SkystoneLocation.CENTER) {
+        } else if (StoneLoc == SkystoneLocation.CENTER) {
             int [] a = {5, 1, 3, 4, 6};
             toTake = a[stoneNum - 2];
-        } else {
+        } else { // right or unknown
             int[] a = {6, 1, 2, 4, 5};
             toTake = a[stoneNum - 2];
         }
         chassis.driveStraightAuto(auto_chassis_power, 260 + 20 * stoneNum, 90, 15000);//numbers - probably not correct
-        chassis.driveStraightAuto(auto_chassis_power, 20, 0, 10000);
-        chassis.driveStraightAuto(auto_chassis_power, -5, 0, 10000);
         //grab stone
         chassis.driveStraightAuto(auto_chassis_power, 243 + 20 * stoneNum, -90, 15000);
         // place stone on foundation
 
     }
-
-
 }
