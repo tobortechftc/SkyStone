@@ -24,10 +24,15 @@
     "left": 0.01,
     "right": 0.99
   },
-  "foundationHook": {
+  "leftHook": {
     "center": 0.5,
     "left": 0.01,
-    "right": 0.99
+    "right": 0.857
+  },
+  "rightHook": {
+    "center": 0.5,
+    "left": 0.01,
+    "right": 0.857
   },
   "chassis": {
     "track": 14.0,
