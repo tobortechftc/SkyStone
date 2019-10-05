@@ -232,6 +232,39 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
 
     }
 
+    @MenuEntry(label = "Test Stone Grabber", group = "Test")
+    public void testStoneGrabber(EventManager em) {
+
+        telemetry.addLine().addData(" < (LS) >", "Power").setRetained(true);
+        stoneGrabber.setupTelemetry(telemetry);
+        em.updateTelemetry(telemetry, 100);
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                stoneGrabber.liftUp();
+            }
+        }, new Button[]{Button.Y});
+        em.onButtonUp(new Events.Listener() {
+            @Override
+            public void buttonUp(EventManager source, Button button) throws InterruptedException {
+                stoneGrabber.liftStop();
+            }
+        }, new Button[]{Button.Y});
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+               stoneGrabber.liftDown();
+            }
+        }, new Button[]{Button.A});
+        em.onButtonUp(new Events.Listener() {
+            @Override
+            public void buttonUp(EventManager source, Button button) throws InterruptedException {
+                stoneGrabber.liftStop();
+            }
+        }, new Button[]{Button.A});
+
+
+    }
     @MenuEntry(label = "Drive Straight", group = "Test Chassis")
     public void testStraight(EventManager em) {
         telemetry.addLine().addData("(LS)", "Drive").setRetained(true)
