@@ -32,7 +32,7 @@
   "rightHook": {
     "center": 0.5,
     "left": 0.01,
-    "right": 0.857
+    "right": 0.9
   },
   "chassis": {
     "track": 14.0,
