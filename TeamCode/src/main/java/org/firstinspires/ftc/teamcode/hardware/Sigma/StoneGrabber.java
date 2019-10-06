@@ -43,9 +43,10 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double GRABBER_CLOSE = 0.55;
 
     private final int LIFT_DOWN = 50;
-    private final int LIFT_MAX = 1000;
-    private final int LIFT_SAFE_SWING = 250;
+    private final int LIFT_MAX = 12730;
+    private final int LIFT_SAFE_SWING = 2767;
     private final double LIFT_POWER = 0.5;
+    private final int LIFT_DELIVER = 3500;
 
 
     private boolean armIsDown = false;
@@ -172,16 +173,19 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
 
     public void liftUp () {
         if (lifter==null) return;
+        lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         lifter.setPower(LIFT_POWER);
     }
 
     public void liftDown() {
         if (lifter==null) return;
+        lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         lifter.setPower(-LIFT_POWER);
     }
 
     public void liftStop() {
         if (lifter==null) return;
+        lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         lifter.setPower(0);
     }
 
@@ -211,7 +215,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     }
 
     public void armOutCombo() {
-        final String taskName = "deliveryCombo";
+        final String taskName = "Arm Out Combo";
         if (!TaskManager.isComplete(taskName)) return;
 
         TaskManager.add(new Task() {
@@ -232,21 +236,102 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 return moveArm(ARM_OUT);
             }
         }, taskName);
-        liftToPosition(LIFT_DOWN);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                liftToPosition(LIFT_DOWN);
+                return new Progress() {
+                    @Override
+                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 20;
+                    }
+                };
+            }
+        }, taskName);
     }
 
     public void armInCombo() {
+        final String taskName = "Arm In Combo";
+        if (!TaskManager.isComplete(taskName)) return;
+        TaskManager.add(new Task () {
+            @Override
+            public Progress start() {
+                liftToPosition(LIFT_SAFE_SWING);
+                return new Progress() {
+                    @Override
+                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 20;
+                    }
+                };
+            }
+        }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                return moveArm(ARM_INITIAL);
+            }
+        }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                return moveArm(GRABBER_CLOSE);
+            }
+        }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                liftToPosition(LIFT_DOWN);
+                return new Progress() {
+                    @Override
+                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 20;
+                    }
+                };
 
+            }
+        }, taskName);
     }
 
-    public void grabStoneCombo() {
 
+    public void grabStoneCombo() {
+        final String taskName = "Grab Stone Combo";
+        if (!TaskManager.isComplete(taskName)) return;
+
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                grabberClose();
+                liftToPosition(LIFT_DELIVER);
+                return new Progress() {
+                    @Override
+                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 20;
+                    }
+                };
+            }
+        }, taskName);
     }
 
     public void deliverStoneCombo() {
+        final String taskName = "Deliver Stone Combo";
+        if (!TaskManager.isComplete(taskName)) return;
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                return moveArm(ARM_OUT);
+            }
+        }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+               return moveArm(GRABBER_OPEN);
+            }
+        }, taskName);
 
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                return moveArm(ARM_UP);
+            }
+        }, taskName);
     }
-    /**
+    /*
      * Set up telemetry lines for chassis metrics
      * Shows current motor power, orientation sensors,
      * drive mode, heading deviation / servo adjustment (in <code>STRAIGHT</code> mode)

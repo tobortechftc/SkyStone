@@ -196,6 +196,8 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
 
     }
 
+
+
     @MenuEntry(label = "Auto Straight", group = "Test Chassis")
     public void testStraightSkyStone(EventManager em) {
 
@@ -262,6 +264,21 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
                 stoneGrabber.liftStop();
             }
         }, new Button[]{Button.A});
+
+        em.onButtonUp(new Events.Listener() {
+            @Override
+            public void buttonUp(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.B)) {
+                    stoneGrabber.armOutCombo();
+                }else if (source.isPressed(Button.X)) {
+                    stoneGrabber.armInCombo();
+                }else if (source.isPressed(Button.A)) {
+                    stoneGrabber.grabStoneCombo();
+                }else if (source.isPressed(Button.Y)) {
+                    stoneGrabber.deliverStoneCombo();
+                }
+            }
+        }, Button.LEFT_BUMPER);
 
 
     }
