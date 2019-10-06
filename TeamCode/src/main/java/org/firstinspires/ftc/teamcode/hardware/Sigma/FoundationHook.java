@@ -73,7 +73,7 @@ public class FoundationHook extends Logger<FoundationHook> implements Configurab
         rightHook.configure(configuration.getHardwareMap(), "rightHook");
         configuration.register(rightHook);
 
-        hookUp();
+        hookDown();
         // configuration.register(this);
     }
 

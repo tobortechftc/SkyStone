@@ -57,9 +57,9 @@ public class SigmaAutoTemplate extends LinearOpMode {
         log.info("RoboSigma Autonomous finished initialization (CPU_time = %.2f sec)", getRuntime());
         // Wait for the game to start (driver presses PLAY)
         List<Recognition> updatedRecognitions = null;
-        if (robot.cameraStoneDetector.getTfod()!=null) {
-            updatedRecognitions = robot.cameraStoneDetector.getTfod().getUpdatedRecognitions();
-        }
+//        if (robot.cameraStoneDetector.getTfod()!=null) {
+//            updatedRecognitions = robot.cameraStoneDetector.getTfod().getUpdatedRecognitions();
+//        }
         int robot_pos = 1;
 
         waitForStart();
@@ -69,7 +69,7 @@ public class SigmaAutoTemplate extends LinearOpMode {
             try {
                 // put autonomous steps here
                 // step-1: detect skystone location
-                StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF(robot_pos);
+                StoneLoc = ToboSigma.SkystoneLocation.LEFT; // robot.cameraStoneDetector.getSkystonePositionTF(robot_pos);
                 // telemetry.addLine(StoneLoc.toString());
                 // telemetry.update();
                 // sleep(10000); // 10 sec
@@ -79,7 +79,7 @@ public class SigmaAutoTemplate extends LinearOpMode {
                 int count = 1;
 
                 // step-3: grab and deliver the next skystone/stone
-                if (getRuntime() < 250000){
+                while (getRuntime() < 2500000){
                     count++;
                     robot.getAnotherSkyStone(StoneLoc, count);
                 }

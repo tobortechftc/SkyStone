@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Func;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.components.CameraSystem;
 import org.firstinspires.ftc.teamcode.components.Robot2;
 import org.firstinspires.ftc.teamcode.components.SwerveChassis;
 import org.firstinspires.ftc.teamcode.support.CoreSystem;
@@ -48,16 +49,16 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         chassis.configure(configuration, auto, false);
         info("RoboSigma configure() after init Chassis (run time = %.2f sec)", (runtime.seconds() - ini_time));
         if (auto) {
-            cameraStoneDetector = new CameraStoneDetector().configureLogging("CameraStoneDetector", logLevel);
-            cameraStoneDetector.configure(configuration, false); // FIXME: change back to true once Ext Camera is in chassis
+            //cameraStoneDetector = new CameraStoneDetector().configureLogging("CameraStoneDetector", logLevel);
+            //cameraStoneDetector.configure(configuration, false); // FIXME: true for Webcam
         }
         info("RoboSigma configure() after init cameraStoneDetector (run time = %.2f sec)", (runtime.seconds() - ini_time));
 
          foundationHook = new FoundationHook(this.core).configureLogging("FoundationHook", logLevel);
-         foundationHook.configure(configuration, false);
+         foundationHook.configure(configuration, auto);
 
-         stoneGrabber = new StoneGrabber(this.core).configureLogging("StoneGrabber", logLevel);
-         stoneGrabber.configure(configuration, false);
+       //  stoneGrabber = new StoneGrabber(this.core).configureLogging("StoneGrabber", logLevel);
+         //stoneGrabber.configure(configuration, auto);
 
     }
 
@@ -306,13 +307,14 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     }
 
     public void getFirstSkyStone(ToboSigma.SkystoneLocation skyStonePosition) throws InterruptedException{
-        chassis.driveStraightAuto(auto_chassis_power, 65, 0, 10000);
+        chassis.driveStraightAuto(auto_chassis_power, -60, 0, 10000);
+        chassis.driveStraightAuto(auto_chassis_power, 15, 0, 10000);
         if(skyStonePosition == ToboSigma.SkystoneLocation.LEFT || skyStonePosition == SkystoneLocation.UNKNOWN){
-            chassis.driveStraightAuto(auto_chassis_power, 1, 90, 10000);  // test to get exact numbers
+            chassis.driveStraightAuto(auto_chassis_power, 1, -90, 10000);  // test to get exact numbers
         } else if(skyStonePosition == ToboSigma.SkystoneLocation.CENTER){
-            chassis.driveStraightAuto(auto_chassis_power, 1, 90, 10000);  // test to get exact numbers
+            chassis.driveStraightAuto(auto_chassis_power, 1, -90, 10000);  // test to get exact numbers
         } else if(skyStonePosition == ToboSigma.SkystoneLocation.RIGHT) {
-            chassis.driveStraightAuto(auto_chassis_power, 1, 90, 10000);  // test to get exact numbers
+            chassis.driveStraightAuto(auto_chassis_power, 1, -90, 10000);  // test to get exact numbers
         }
 
         //grab skystone
@@ -322,24 +324,30 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         else if (skyStonePosition== ToboSigma.SkystoneLocation.CENTER)
             ss_pos = 2;
         // go to foundation
-        chassis.driveStraightAuto(auto_chassis_power, 240 + 20 * ss_pos, -90, 15000);//probably too much
+        chassis.driveStraightAuto(auto_chassis_power, 220 + 20 * ss_pos, 90, 15000);//probably too much
+        chassis.driveStraightAuto(auto_chassis_power, -15, 0, 10000);
+        chassis.driveStraightAuto(auto_chassis_power, 15, 0, 10000);
         //place skystone
     }
     public void getAnotherSkyStone(SkystoneLocation StoneLoc, int stoneNum) throws InterruptedException{//stoneNum - how many stones ara we going to have after this trip
         int toTake;
-        if (StoneLoc == SkystoneLocation.LEFT) {
-            int [] a = {4, 2, 3, 5, 6};
+        if (StoneLoc == SkystoneLocation.RIGHT) {
+            int[] a = {6, 1, 2, 4, 5};
             toTake = a[stoneNum - 2];
         } else if (StoneLoc == SkystoneLocation.CENTER) {
             int [] a = {5, 1, 3, 4, 6};
             toTake = a[stoneNum - 2];
-        } else { // right or unknown
-            int[] a = {6, 1, 2, 4, 5};
+        } else { // left or unknown
+            int [] a = {4, 2, 3, 5, 6};
             toTake = a[stoneNum - 2];
         }
-        chassis.driveStraightAuto(auto_chassis_power, 260 + 20 * stoneNum, 90, 15000);//numbers - probably not correct
+        chassis.driveStraightAuto(auto_chassis_power, 240 + 20 * stoneNum, -90, 15000);//numbers - probably not correct
+        chassis.driveStraightAuto(auto_chassis_power, -15, 0, 10000);
         //grab stone
-        chassis.driveStraightAuto(auto_chassis_power, 243 + 20 * stoneNum, -90, 15000);
+        chassis.driveStraightAuto(auto_chassis_power, 15, 0, 10000);
+        chassis.driveStraightAuto(auto_chassis_power, 223 + 20 * stoneNum, 90, 15000);
+        chassis.driveStraightAuto(auto_chassis_power, -15, 0, 10000);
+        chassis.driveStraightAuto(auto_chassis_power, 15, 0, 10000);
         // place stone on foundation
 
     }
