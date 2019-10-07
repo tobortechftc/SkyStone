@@ -3,17 +3,12 @@ package org.firstinspires.ftc.teamcode.opmodes.sigmaBot;
 import android.util.Log;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
-import org.firstinspires.ftc.teamcode.components.SwerveChassis;
 import org.firstinspires.ftc.teamcode.hardware.Sigma.ToboSigma;
 import org.firstinspires.ftc.teamcode.support.Logger;
-import org.firstinspires.ftc.teamcode.support.events.EventManager;
 import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
-import org.firstinspires.ftc.teamcode.support.tasks.TaskManager;
 
 import java.util.List;
 
@@ -22,7 +17,7 @@ import java.util.List;
  */
 
 @Autonomous(name="Sigma-Auto", group="Sigma")
-public class SigmaAutoTemplate extends LinearOpMode {
+public class SigmaAutoRedRight extends LinearOpMode {
     private ToboSigma.SkystoneLocation StoneLoc;
 
     protected static int LOG_LEVEL = Log.INFO;
@@ -67,8 +62,8 @@ public class SigmaAutoTemplate extends LinearOpMode {
         // run until the end of the match (driver presses STOP or timeout)
         if (opModeIsActive()) {
             try {
-                boolean isBlue = true;
-                boolean isLeft = false;
+                boolean isBlue = false;
+                boolean isLeft = true;
                 // put autonomous steps here
                 // step-1: detect skystone location
                 StoneLoc = ToboSigma.SkystoneLocation.LEFT; // robot.cameraStoneDetector.getSkystonePositionTF(robot_pos);

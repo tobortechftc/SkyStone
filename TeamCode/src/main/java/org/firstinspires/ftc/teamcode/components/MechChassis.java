@@ -214,7 +214,6 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         motorBL.setPower(sgn * power);
         motorBR.setPower(-sgn * power);
     }
-
     public void driveStraightAuto(double power, double cm, int timeout) throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) return;
 

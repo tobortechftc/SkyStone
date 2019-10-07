@@ -1102,4 +1102,11 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             if (resetServo) servo.reset();
         }
     }
+    public void driveStraightAutoPlus(double power, double cm, double heading, int timeout) throws InterruptedException {
+        driveStraightAuto(power, cm *.7,heading,  timeout);
+        driveStraightAuto(power/2, cm *.2, heading,  timeout);
+        driveStraightAuto(power/4, cm *.1, heading,  timeout);
+
+    }
+
 }
