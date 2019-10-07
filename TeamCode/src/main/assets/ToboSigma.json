@@ -1,23 +1,23 @@
 {
   "servoBackLeft": {
-    "center": 0.511,
-    "left": 0.192,
-    "right": 0.797
+    "center": 0.508,
+    "left": 0.197,
+    "right": 0.792
   },
   "servoFrontLeft": {
-    "center": 0.493,
-    "left": 0.178,
-    "right": 0.782
+    "center": 0.494,
+    "left": 0.181,
+    "right": 0.777
   },
   "servoBackRight": {
-    "center": 0.537,
-    "left": 0.226,
-    "right": 0.829
+    "center": 0.518,
+    "left": 0.206,
+    "right": 0.801
   },
   "servoFrontRight": {
-    "center": 0.491,
+    "center": 0.493,
     "left": 0.177,
-    "right": 0.780
+    "right": 0.782
   },
   "arm": {
     "center": 0.5,
