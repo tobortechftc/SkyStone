@@ -16,7 +16,7 @@ import java.util.List;
  * Created by 28761 on 6/29/2019.
  */
 
-@Autonomous(name="Sigma-Auto", group="Sigma")
+@Autonomous(name="Sigma-Blue-Left", group="Sigma")
 public class SigmaAutoBlueLeft extends LinearOpMode {
     private ToboSigma.SkystoneLocation StoneLoc;
 
