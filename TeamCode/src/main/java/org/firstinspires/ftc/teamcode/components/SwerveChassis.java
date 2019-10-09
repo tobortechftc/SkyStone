@@ -846,13 +846,17 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     }
 
     public void rotateTo(double power, double finalHeading) throws InterruptedException {
+        if (Thread.currentThread().isInterrupted()) return;
         rawRotateTo(power, finalHeading, true);//!!! A very bold move
-        sleep(200);
-        rawRotateTo(0.25, finalHeading, false);
+        if (power>0.25) {
+            sleep(200);
+            rawRotateTo(0.25, finalHeading, false);
+        }
     }
 
     //final heading needs to be with in range(-180,180]
     private void rawRotateTo(double power, double finalHeading, boolean stopEarly) throws InterruptedException {
+        if (Thread.currentThread().isInterrupted()) return;
         debug("rotateT0(pwr: %.3f, finalHeading: %.1f)", power, finalHeading);
         double iniHeading = orientationSensor.getHeading();
         double deltaD = finalHeading - iniHeading;
@@ -889,7 +893,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             }
             debug("currentHeading: %.1f, finalHeading: %.1f)", currentHeading, finalHeading);
             //if within acceptable range, terminate
-            if (Math.abs(finalHeading - currentHeading) < (stopEarly ? 10.0 : 0.5)) break;
+            if (Math.abs(finalHeading - currentHeading) < (stopEarly ? power*10.0 : 0.5)) break;
             //if overshoot, terminate
             if (deltaD > 0 && currentHeading - finalHeading > 0) break;
             if (deltaD < 0 && currentHeading - finalHeading < 0) break;
@@ -1103,6 +1107,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         }
     }
     public void driveStraightAutoPlus(double power, double cm, double heading, int timeout) throws InterruptedException {
+        if (Thread.currentThread().isInterrupted()) return;
         driveStraightAuto(power, cm *.7,heading,  timeout);
         driveStraightAuto(power/2, cm *.2, heading,  timeout);
         driveStraightAuto(power/4, cm *.1, heading,  timeout);

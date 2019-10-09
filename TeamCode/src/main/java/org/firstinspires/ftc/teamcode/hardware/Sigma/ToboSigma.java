@@ -30,7 +30,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     public ElapsedTime runtime = new ElapsedTime();
     public double rotateRatio = 0.7; // slow down ratio for rotation
     public double motor_count = 0;
-    public double auto_chassis_power = .3;
+    public double auto_chassis_power = .6;
 
     @Override
     public String getName() {
@@ -312,7 +312,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             factor = -1;
         }
 
-        chassis.driveStraightAutoPlus(auto_chassis_power, -60, 0, 10000);
+        chassis.driveStraightAutoPlus(auto_chassis_power, -55, 0, 10000);
+        chassis.rotateTo(.2, 0);
         if(isLeft){
             if(skyStonePosition == ToboSigma.SkystoneLocation.LEFT || skyStonePosition == SkystoneLocation.UNKNOWN){
                 chassis.driveStraightAuto(auto_chassis_power, 22, -90 * factor, 10000);  // test to get exact numbers
@@ -328,6 +329,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         } else if(skyStonePosition == ToboSigma.SkystoneLocation.RIGHT) {
             chassis.driveStraightAuto(auto_chassis_power, 20, -90 * factor, 10000);  // test to get exact numbers
         }
+        chassis.rotateTo(.2, 0);
         chassis.driveStraightAuto(auto_chassis_power, 15, 0, 10000);
 
 
@@ -338,7 +340,9 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         else if (skyStonePosition== ToboSigma.SkystoneLocation.CENTER)
             ss_pos = 2;
         // go to foundation
-        chassis.driveStraightAuto(auto_chassis_power, 190 + 20 * ss_pos, 90 * factor, 15000);//probably too much
+        chassis.rotateTo(.2, 0);
+        chassis.driveStraightAutoPlus(auto_chassis_power, 170 + 20 * ss_pos, 90 * factor, 15000);//probably too much
+        chassis.rotateTo(.2, 0);
         chassis.driveStraightAuto(auto_chassis_power, -15, 0, 10000);
         chassis.driveStraightAuto(auto_chassis_power, 15, 0, 10000);
         //place skystone
@@ -359,13 +363,22 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             int [] a = {4, 2, 3, 5, 6};
             toTake = a[stoneNum - 2];
         }
-        chassis.driveStraightAutoPlus(auto_chassis_power, 230 + 20 * stoneNum, -90* factor, 15000);//numbers - probably not correct
+        chassis.rotateTo(.2, 0);
+
+        chassis.driveStraightAutoPlus(auto_chassis_power, 210 + 20 * stoneNum, -90* factor, 15000);//numbers - probably not correct
+        chassis.rotateTo(.2, 0);
+
         chassis.driveStraightAuto(auto_chassis_power, -15, 0, 10000);
+
         //grab stone
         chassis.driveStraightAuto(auto_chassis_power, 15, 0, 10000);
-        chassis.driveStraightAuto(auto_chassis_power, 225 + 20 * stoneNum, 90 * factor, 15000);
+         chassis.rotateTo(.2, 0);
+        chassis.driveStraightAutoPlus(auto_chassis_power, 205 + 20 * stoneNum, 90 * factor, 15000);
+        chassis.rotateTo(.2, 0);
         chassis.driveStraightAuto(auto_chassis_power, -12, 0, 10000);
+
         chassis.driveStraightAuto(auto_chassis_power, 12, 0, 10000);
+
         // place stone on foundation
 
     }
