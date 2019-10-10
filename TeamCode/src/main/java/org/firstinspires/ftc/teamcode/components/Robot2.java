@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.components;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.hardware.Sigma.ToboSigma;
 import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
 
 /**
@@ -23,7 +24,7 @@ public interface Robot2 {
      * @see Configuration
      * @see Telemetry
      */
-    void configure(Configuration configuration, Telemetry telemetry, boolean auto);
+    void configure(Configuration configuration, Telemetry telemetry, ToboSigma.AutoTeamColor autoColor);
 
     /**
      * Reset robot. All applicable hardware devices should be reset to their initial state.

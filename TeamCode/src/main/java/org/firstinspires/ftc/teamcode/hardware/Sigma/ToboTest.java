@@ -37,7 +37,7 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
     }
 
     @Override
-    public void configure(Configuration configuration, Telemetry telemetry, boolean auto) {
+    public void configure(Configuration configuration, Telemetry telemetry, ToboSigma.AutoTeamColor autoColor) {
         runtime.reset();
         double ini_time = runtime.seconds();
         this.telemetry = telemetry;

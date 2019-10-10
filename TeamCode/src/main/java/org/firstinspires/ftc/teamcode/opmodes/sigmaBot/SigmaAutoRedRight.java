@@ -40,7 +40,7 @@ public class SigmaAutoRedRight extends LinearOpMode {
 
         try {
             // configure robot and reset all hardware
-            robot.configure(configuration, telemetry, true);
+            robot.configure(configuration, telemetry, ToboSigma.AutoTeamColor.AUTO_RED);
             configuration.apply();
             robot.reset(true);
             telemetry.addData("Robot is ready", "Press Play");

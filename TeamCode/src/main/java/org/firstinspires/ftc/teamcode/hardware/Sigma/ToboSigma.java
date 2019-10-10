@@ -4,7 +4,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Func;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.components.CameraSystem;
 import org.firstinspires.ftc.teamcode.components.Robot2;
 import org.firstinspires.ftc.teamcode.components.SwerveChassis;
 import org.firstinspires.ftc.teamcode.support.CoreSystem;
@@ -25,7 +24,13 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     public enum SkystoneLocation {
         LEFT, CENTER, RIGHT, UNKNOWN
     }
+    public enum CameraSource {
+        INTERNAL, WEBCAM_RIGHT, WEBCAM_LEFT
+    }
 
+    public enum AutoTeamColor {
+        NOT_AUTO, AUTO_RED, AUTO_BLUE
+    }
     public CoreSystem core;
     public ElapsedTime runtime = new ElapsedTime();
     public double rotateRatio = 0.7; // slow down ratio for rotation
@@ -38,7 +43,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     }
 
     @Override
-    public void configure(Configuration configuration, Telemetry telemetry, boolean auto) {
+    public void configure(Configuration configuration, Telemetry telemetry, AutoTeamColor autoColor) {
         runtime.reset();
         double ini_time = runtime.seconds();
         this.telemetry = telemetry;
@@ -46,16 +51,17 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         this.core = new CoreSystem();
         info("RoboSigma configure() after new CoreSystem()(run time = %.2f sec)", (runtime.seconds() - ini_time));
         chassis = new SwerveChassis(this.core).configureLogging("Swerve", logLevel); // Log.DEBUG
-        chassis.configure(configuration, auto, false);
+        chassis.configure(configuration, (autoColor!=AutoTeamColor.NOT_AUTO), false);
         info("RoboSigma configure() after init Chassis (run time = %.2f sec)", (runtime.seconds() - ini_time));
-        if (auto) {
-            //cameraStoneDetector = new CameraStoneDetector().configureLogging("CameraStoneDetector", logLevel);
-            //cameraStoneDetector.configure(configuration, false); // FIXME: true for Webcam
+        if (autoColor!=AutoTeamColor.NOT_AUTO) {
+            cameraStoneDetector = new CameraStoneDetector().configureLogging("CameraStoneDetector", logLevel);
+            // cameraStoneDetector.configure(configuration, CameraSource.INTERNAL);
+            cameraStoneDetector.configure(configuration, (autoColor==AutoTeamColor.AUTO_RED?CameraSource.WEBCAM_RIGHT :CameraSource.WEBCAM_LEFT));
         }
         info("RoboSigma configure() after init cameraStoneDetector (run time = %.2f sec)", (runtime.seconds() - ini_time));
 
          foundationHook = new FoundationHook(this.core).configureLogging("FoundationHook", logLevel);
-         foundationHook.configure(configuration, auto);
+         foundationHook.configure(configuration, (autoColor!=AutoTeamColor.NOT_AUTO));
 
        //  stoneGrabber = new StoneGrabber(this.core).configureLogging("StoneGrabber", logLevel);
          //stoneGrabber.configure(configuration, auto);

@@ -5,6 +5,7 @@ import android.util.Log;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.components.Robot2;
+import org.firstinspires.ftc.teamcode.hardware.Sigma.ToboSigma;
 import org.firstinspires.ftc.teamcode.support.Logger;
 import org.firstinspires.ftc.teamcode.support.events.Button;
 import org.firstinspires.ftc.teamcode.support.events.EventManager;
@@ -52,10 +53,10 @@ public abstract class DiagnosticsTeleOp extends LinearOpMode {
         Robot2 robot2 = createRobot();
         configuration = new Configuration(hardwareMap, robot2.getName()).configureLogging("Config", LOG_LEVEL);
         menu = new Menu();
-        boolean enableTFOD = false; // set to true to enable testing TFOG
+        ToboSigma.AutoTeamColor autoColor = ToboSigma.AutoTeamColor.NOT_AUTO; // set to true to enable testing TFOD
         try {
             // configure robot and reset all hardware
-            robot2.configure(configuration, telemetry, enableTFOD);
+            robot2.configure(configuration, telemetry, autoColor);
             if (configuration.apply()) {
                 if (configuration.getLastModified()!=null) {
                     telemetry.addData("Phone adjustments", new SimpleDateFormat("MMM d, HH:mm").format(configuration.getLastModified()));

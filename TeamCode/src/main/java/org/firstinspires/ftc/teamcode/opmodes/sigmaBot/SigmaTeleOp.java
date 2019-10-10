@@ -38,7 +38,7 @@ public class SigmaTeleOp extends LinearOpMode {
 
         try {
             // configure robot and reset all hardware
-            robot.configure(configuration, telemetry, false);
+            robot.configure(configuration, telemetry, ToboSigma.AutoTeamColor.NOT_AUTO);
             configuration.apply();
             robot.reset(false);
 

@@ -9,7 +9,6 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
-import org.firstinspires.ftc.robotcore.external.tfod.TfodRoverRuckus;
 import org.firstinspires.ftc.teamcode.support.Logger;
 import org.firstinspires.ftc.teamcode.support.hardware.Configurable;
 import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
@@ -53,7 +52,7 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
     }
     public TFObjectDetector getTfod() { return tfod; }
 
-    public void configure(Configuration configuration, boolean useExtCam) {
+    public void configure(Configuration configuration, ToboSigma.CameraSource cameraSource) {
         logger.verbose("Start Configuration");
         /*
          * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
@@ -61,8 +60,10 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
 
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
-        if (useExtCam) {
-            parameters.cameraName = configuration.getHardwareMap().get(WebcamName.class, "Webcam 1");
+        if (cameraSource== ToboSigma.CameraSource.WEBCAM_RIGHT) {
+            parameters.cameraName = configuration.getHardwareMap().get(WebcamName.class, "WebcamRight");
+        } else if (cameraSource== ToboSigma.CameraSource.WEBCAM_LEFT) {
+            parameters.cameraName = configuration.getHardwareMap().get(WebcamName.class, "WebcamLeft");
         } else {
             parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
         }
@@ -82,7 +83,7 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
 
         tfodParameters.minimumConfidence = 0.6;
 
-        if (!useExtCam)
+        if (cameraSource== ToboSigma.CameraSource.INTERNAL)
             com.vuforia.CameraDevice.getInstance().setFlashTorchMode(true);
 //        com.vuforia.CameraDevice.getInstance().setField("iso", "800");
 
