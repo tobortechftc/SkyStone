@@ -60,13 +60,15 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
 
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
-        if (cameraSource== ToboSigma.CameraSource.WEBCAM_RIGHT) {
+     /*   if (cameraSource== ToboSigma.CameraSource.WEBCAM_RIGHT) {
             parameters.cameraName = configuration.getHardwareMap().get(WebcamName.class, "WebcamRight");
         } else if (cameraSource== ToboSigma.CameraSource.WEBCAM_LEFT) {
             parameters.cameraName = configuration.getHardwareMap().get(WebcamName.class, "WebcamLeft");
         } else {
             parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
         }
+        */
+        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
         //  Instantiate the Vuforia engine
         vuforia = ClassFactory.getInstance().createVuforia(parameters);
 

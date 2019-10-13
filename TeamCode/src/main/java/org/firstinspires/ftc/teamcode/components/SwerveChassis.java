@@ -27,6 +27,7 @@ import static java.lang.Thread.sleep;
  */
 public class SwerveChassis extends Logger<SwerveChassis> implements Configurable {
 
+
     final private CoreSystem core;
 
     public enum DriveMode {
@@ -60,10 +61,10 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     private WheelAssembly[] wheels = new WheelAssembly[4];
     public CombinedOrientationSensor orientationSensor;
 
-    private DistanceSensor frontRangeSensor;
-    private DistanceSensor backRangeSensor;
-    private DistanceSensor leftRangeSensor;
-    private DistanceSensor rightRangeSensor;
+    public DistanceSensor frontRangeSensor;
+    public DistanceSensor backRangeSensor;
+    public DistanceSensor leftRangeSensor;
+    public DistanceSensor rightRangeSensor;
 
     private DriveMode driveMode = DriveMode.STOP;      // current drive mode
     private double targetHeading;     // intended heading for DriveMode.STRAIGHT as reported by orientation sensor
@@ -185,10 +186,10 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         }
 
         if ((auto || setRangeSensorTelemetry)&& enableSensors) {
-            frontRangeSensor = configuration.getHardwareMap().get(DistanceSensor.class, "front_range");
-            backRangeSensor = configuration.getHardwareMap().get(DistanceSensor.class, "back_range");
-            leftRangeSensor = configuration.getHardwareMap().get(DistanceSensor.class, "left_range");
-            rightRangeSensor = configuration.getHardwareMap().get(DistanceSensor.class, "right_range");
+            frontRangeSensor = configuration.getHardwareMap().get(DistanceSensor.class, "frontRange");
+            backRangeSensor = configuration.getHardwareMap().get(DistanceSensor.class, "backRange");
+            leftRangeSensor = configuration.getHardwareMap().get(DistanceSensor.class, "leftRange");
+            rightRangeSensor = configuration.getHardwareMap().get(DistanceSensor.class, "rightRange");
         }
 
         // register chassis as configurable component
@@ -1108,9 +1109,8 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     }
     public void driveStraightAutoPlus(double power, double cm, double heading, int timeout) throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) return;
-        driveStraightAuto(power, cm *.7,heading,  timeout);
-        driveStraightAuto(power/2, cm *.2, heading,  timeout);
-        driveStraightAuto(power/4, cm *.1, heading,  timeout);
+        driveStraightAuto(power, cm *.9,heading,  timeout);
+        driveStraightAuto(power/2, cm *.1, heading,  timeout);
 
     }
 

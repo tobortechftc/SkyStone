@@ -28,11 +28,11 @@ public class FoundationHook extends Logger<FoundationHook> implements Configurab
     private AdjustableServo rightHook;
     private AdjustableServo leftHook;
 
-    private final double RIGHT_HOOK_UP = 0.25;
-    private final double RIGHT_HOOK_DOWN = 1.0;
+    private final double RIGHT_HOOK_UP = 1.0;
+    private final double RIGHT_HOOK_DOWN = .25;
 
-    private final double LEFT_HOOK_UP = 0.25;
-    private final double LEFT_HOOK_DOWN = 1.0;
+    private final double LEFT_HOOK_UP = 1.0;
+    private final double LEFT_HOOK_DOWN = .25;
 
     private boolean hookIsDown = false;
     private ElapsedTime runtime = new ElapsedTime();
@@ -73,7 +73,7 @@ public class FoundationHook extends Logger<FoundationHook> implements Configurab
         rightHook.configure(configuration.getHardwareMap(), "rightHook");
         configuration.register(rightHook);
 
-        hookDown();
+        hookUp();
         // configuration.register(this);
     }
 

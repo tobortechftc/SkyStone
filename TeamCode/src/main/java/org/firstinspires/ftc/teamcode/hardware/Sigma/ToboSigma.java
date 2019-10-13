@@ -35,7 +35,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     public ElapsedTime runtime = new ElapsedTime();
     public double rotateRatio = 0.7; // slow down ratio for rotation
     public double motor_count = 0;
-    public double auto_chassis_power = .6;
+    public double auto_chassis_power = .7;
 
     @Override
     public String getName() {
@@ -51,7 +51,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         this.core = new CoreSystem();
         info("RoboSigma configure() after new CoreSystem()(run time = %.2f sec)", (runtime.seconds() - ini_time));
         chassis = new SwerveChassis(this.core).configureLogging("Swerve", logLevel); // Log.DEBUG
-        chassis.configure(configuration, (autoColor!=AutoTeamColor.NOT_AUTO), false);
+        chassis.enableRangeSensorTelemetry();//Comment out later
+        chassis.configure(configuration, (autoColor!=AutoTeamColor.NOT_AUTO), true);
         info("RoboSigma configure() after init Chassis (run time = %.2f sec)", (runtime.seconds() - ini_time));
         if (autoColor!=AutoTeamColor.NOT_AUTO) {
             cameraStoneDetector = new CameraStoneDetector().configureLogging("CameraStoneDetector", logLevel);
@@ -318,7 +319,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             factor = -1;
         }
 
-        chassis.driveStraightAutoPlus(auto_chassis_power, -55, 0, 10000);
+        chassis.driveStraightAutoPlus(auto_chassis_power, -45, 0, 10000);
         chassis.rotateTo(.2, 0);
         if(isLeft){
             if(skyStonePosition == ToboSigma.SkystoneLocation.LEFT || skyStonePosition == SkystoneLocation.UNKNOWN){
@@ -347,10 +348,21 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             ss_pos = 2;
         // go to foundation
         chassis.rotateTo(.2, 0);
-        chassis.driveStraightAutoPlus(auto_chassis_power, 170 + 20 * ss_pos, 90 * factor, 15000);//probably too much
+        chassis.driveStraightAutoPlus(auto_chassis_power, 150 + 20 * ss_pos, 90 * factor, 15000);
+        double dist;
         chassis.rotateTo(.2, 0);
-        chassis.driveStraightAuto(auto_chassis_power, -15, 0, 10000);
-        chassis.driveStraightAuto(auto_chassis_power, 15, 0, 10000);
+        if (isBlue) {
+            dist = chassis.getDistance(SwerveChassis.Direction.RIGHT);
+        } else{
+            dist = chassis.getDistance(SwerveChassis.Direction.LEFT);
+        }
+        if (dist > 128){
+            dist = 20;
+        }
+        chassis.driveStraightAutoPlus(auto_chassis_power, dist - 40, 90 * factor, 15000);
+
+        chassis.driveStraightAuto(auto_chassis_power, -10, 0, 10000);
+        chassis.driveStraightAuto(auto_chassis_power, 10, 0, 10000);
         //place skystone
     }
     public void getAnotherSkyStone(SkystoneLocation StoneLoc, int stoneNum, boolean isBlue) throws InterruptedException{//stoneNum - how many stones ara we going to have after this trip
@@ -370,22 +382,51 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             toTake = a[stoneNum - 2];
         }
         chassis.rotateTo(.2, 0);
-
-        chassis.driveStraightAutoPlus(auto_chassis_power, 210 + 20 * stoneNum, -90* factor, 15000);//numbers - probably not correct
+    double dist;
+        chassis.driveStraightAutoPlus(auto_chassis_power, 180 + 20 * stoneNum, -90* factor, 15000);
         chassis.rotateTo(.2, 0);
+        if (isBlue) {
+            dist = chassis.getDistance(SwerveChassis.Direction.LEFT);
+        } else{
+            dist = chassis.getDistance(SwerveChassis.Direction.RIGHT);
+        }
+        if (dist > 128){
+            dist = 0;
+        }
+        chassis.driveStraightAuto(auto_chassis_power, dist +15 -20 * stoneNum, -90* factor, 15000);
+        dist = chassis.getDistance(SwerveChassis.Direction.BACK);
 
-        chassis.driveStraightAuto(auto_chassis_power, -15, 0, 10000);
+
+        chassis.driveStraightAuto(auto_chassis_power, -(dist - 20), 0, 10000);
 
         //grab stone
-        chassis.driveStraightAuto(auto_chassis_power, 15, 0, 10000);
-         chassis.rotateTo(.2, 0);
-        chassis.driveStraightAutoPlus(auto_chassis_power, 205 + 20 * stoneNum, 90 * factor, 15000);
-        chassis.rotateTo(.2, 0);
-        chassis.driveStraightAuto(auto_chassis_power, -12, 0, 10000);
-
         chassis.driveStraightAuto(auto_chassis_power, 12, 0, 10000);
+         chassis.rotateTo(.2, 0);
+        chassis.driveStraightAutoPlus(auto_chassis_power, 175 + 20 * stoneNum, 90 * factor, 15000);
+        chassis.rotateTo(.2, 0);
+        if (isBlue) {
+            dist = chassis.getDistance(SwerveChassis.Direction.RIGHT);
+        } else{
+            dist = chassis.getDistance(SwerveChassis.Direction.LEFT);
+        }
+        if (dist > 128){
+            dist = 20;
+        }
+        chassis.driveStraightAutoPlus(auto_chassis_power, dist - 40, 90 * factor, 15000);
+
 
         // place stone on foundation
 
+    }
+    public void grabAndPark() throws InterruptedException{
+        double dist = chassis.getDistance(SwerveChassis.Direction.FRONT);
+        chassis.driveStraightAuto(auto_chassis_power/2, -80 + dist, 0, 10000);
+        Thread.sleep(500);
+        foundationHook.hookDown();
+        chassis.driveStraightAutoPlus(auto_chassis_power, -30, 90 , 15000);
+        dist = chassis.getDistance(SwerveChassis.Direction.FRONT);
+        chassis.driveStraightAuto(auto_chassis_power/2, dist - 7, 0, 10000);
+        foundationHook.hookUp();
+        chassis.driveStraightAutoPlus(auto_chassis_power, 80, -90, 15000);
     }
 }

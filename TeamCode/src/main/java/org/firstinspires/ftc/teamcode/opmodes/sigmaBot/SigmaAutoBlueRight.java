@@ -70,7 +70,6 @@ public class SigmaAutoBlueRight extends LinearOpMode {
                 // telemetry.addLine(StoneLoc.toString());
                 // telemetry.update();
                 // sleep(10000); // 10 sec
-
                 // step-2: go to grab the first skystone and deliver
                 robot.getFirstSkyStone(StoneLoc, isBlue, isLeft);
                 int count = 1;
@@ -80,6 +79,7 @@ public class SigmaAutoBlueRight extends LinearOpMode {
                     count++;
                     robot.getAnotherSkyStone(StoneLoc, count, isBlue);
                 }
+                robot.grabAndPark();
                 // move foundation
                 // park
 
