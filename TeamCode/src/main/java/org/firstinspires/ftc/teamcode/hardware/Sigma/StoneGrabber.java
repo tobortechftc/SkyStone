@@ -50,6 +50,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
 
 
     private boolean armIsDown = false;
+    private boolean isGrabberOpened = false;
     private ElapsedTime runtime = new ElapsedTime();
 
     @Override
@@ -102,7 +103,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         grabberInit();
 
         lifter = configuration.getHardwareMap().tryGet(DcMotor.class, "lifter");
-        if (lifter != null) lifter.setDirection(DcMotorSimple.Direction.FORWARD);
+        if (lifter != null) lifter.setDirection(DcMotorSimple.Direction.REVERSE);
         lifter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         // register hanging as configurable component
@@ -116,6 +117,21 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
 
     public void armOut() {
         arm.setPosition(ARM_OUT);
+        armIsDown = false;
+    }
+
+    public void armUpInc() {
+        double cur_pos = arm.getPosition();
+        cur_pos += 0.05;
+        if (cur_pos>1) cur_pos=1;
+        arm.setPosition(cur_pos);
+        armIsDown = false;
+    }
+    public void armDownInc() {
+        double cur_pos = arm.getPosition();
+        cur_pos -= 0.05;
+        if (cur_pos<0) cur_pos=0;
+        arm.setPosition(cur_pos);
         armIsDown = false;
     }
 
@@ -164,11 +180,20 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     public void grabberOpen () {
         if (grabber==null) return;
         grabber.setPosition(GRABBER_OPEN);
+        isGrabberOpened = true;
     }
 
     public void grabberClose () {
         if (grabber==null) return;
         grabber.setPosition(GRABBER_CLOSE);
+        isGrabberOpened = false;
+    }
+
+    public void grabberAuto() {
+        if (isGrabberOpened)
+            grabberClose();
+        else
+            grabberOpen();
     }
 
     public void liftUp () {
@@ -187,6 +212,10 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         if (lifter==null) return;
         lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         lifter.setPower(0);
+    }
+
+    public void liftToSafe() {
+        liftToPosition(LIFT_SAFE_SWING);
     }
 
     public Progress liftToPosition(int pos) {
@@ -317,17 +346,11 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 return moveArm(ARM_OUT);
             }
         }, taskName);
-        TaskManager.add(new Task() {
-            @Override
-            public Progress start() {
-               return moveArm(GRABBER_OPEN);
-            }
-        }, taskName);
 
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
-                return moveArm(ARM_UP);
+                grabberOpen(); return liftToPosition(LIFT_SAFE_SWING);
             }
         }, taskName);
     }

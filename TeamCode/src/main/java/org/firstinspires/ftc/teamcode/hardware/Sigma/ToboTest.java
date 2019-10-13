@@ -240,34 +240,10 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
         telemetry.addLine().addData(" < (LS) >", "Power").setRetained(true);
         stoneGrabber.setupTelemetry(telemetry);
         em.updateTelemetry(telemetry, 100);
-        em.onButtonDown(new Events.Listener() {
-            @Override
-            public void buttonDown(EventManager source, Button button) throws InterruptedException {
-                stoneGrabber.liftUp();
-            }
-        }, new Button[]{Button.Y});
-        em.onButtonUp(new Events.Listener() {
-            @Override
-            public void buttonUp(EventManager source, Button button) throws InterruptedException {
-                stoneGrabber.liftStop();
-            }
-        }, new Button[]{Button.Y});
-        em.onButtonDown(new Events.Listener() {
-            @Override
-            public void buttonDown(EventManager source, Button button) throws InterruptedException {
-               stoneGrabber.liftDown();
-            }
-        }, new Button[]{Button.A});
-        em.onButtonUp(new Events.Listener() {
-            @Override
-            public void buttonUp(EventManager source, Button button) throws InterruptedException {
-                stoneGrabber.liftStop();
-            }
-        }, new Button[]{Button.A});
 
-        em.onButtonUp(new Events.Listener() {
+        em.onButtonDown(new Events.Listener() {
             @Override
-            public void buttonUp(EventManager source, Button button) throws InterruptedException {
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (source.isPressed(Button.B)) {
                     stoneGrabber.armOutCombo();
                 }else if (source.isPressed(Button.X)) {
@@ -276,11 +252,68 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
                     stoneGrabber.grabStoneCombo();
                 }else if (source.isPressed(Button.Y)) {
                     stoneGrabber.deliverStoneCombo();
+                } else if (source.isPressed(Button.RIGHT_BUMPER)) {
+                    stoneGrabber.liftToSafe();
                 }
             }
         }, Button.LEFT_BUMPER);
 
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (!source.isPressed(Button.LEFT_BUMPER))
+                    stoneGrabber.liftUp();
+            }
+        }, new Button[]{Button.Y});
+        em.onButtonUp(new Events.Listener() {
+            @Override
+            public void buttonUp(EventManager source, Button button) throws InterruptedException {
+                stoneGrabber.liftStop();
+            }
+        }, new Button[]{Button.Y});
 
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (!source.isPressed(Button.LEFT_BUMPER))
+                    stoneGrabber.liftDown();
+            }
+        }, new Button[]{Button.A});
+        em.onButtonUp(new Events.Listener() {
+            @Override
+            public void buttonUp(EventManager source, Button button) throws InterruptedException {
+                stoneGrabber.liftStop();
+            }
+        }, new Button[]{Button.A});
+
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (!source.isPressed(Button.LEFT_BUMPER))
+                    stoneGrabber.grabberAuto();
+            }
+        }, new Button[]{Button.X});
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (!source.isPressed(Button.LEFT_BUMPER))
+                    stoneGrabber.liftToSafe();
+            }
+        }, new Button[]{Button.B});
+
+        em.onStick(new Events.Listener() {
+            @Override
+            public void stickMoved(EventManager source, Events.Side side, float currentX, float changeX,
+                                   float currentY, float changeY) throws InterruptedException {
+                if (Math.abs(source.getStick(Events.Side.LEFT, Events.Axis.Y_ONLY)) > 0.2) {
+                    // left stick with idle right stick rotates robot in place
+                    if (source.getStick(Events.Side.LEFT, Events.Axis.Y_ONLY) > 0)
+                        stoneGrabber.armUpInc();
+                    else
+                        stoneGrabber.armDownInc();
+                }
+            }
+        }, Events.Axis.Y_ONLY, Events.Side.LEFT);
     }
     @MenuEntry(label = "Drive Straight", group = "Test Chassis")
     public void testStraight(EventManager em) {
