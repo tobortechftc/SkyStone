@@ -31,7 +31,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double ARM_UP = 0.1;
     private final double ARM_DOWN = 0.9;
     private final double ARM_INITIAL = 0.9;
-    private final double ARM_OUT = 0.47;
+    private final double ARM_OUT = 0.45;
     private final double ARM_DELIVER = 0.3;
     private final double ARM_INC_UNIT = 0.02;
 
@@ -43,7 +43,8 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double GRABBER_OPEN = 0.01;
     private final double GRABBER_CLOSE = 0.55;
 
-    private final int LIFT_DOWN = 1423;
+    private final int LIFT_DOWN = 50;
+    private final int LIFT_GRAB = 1400;
     private final int LIFT_MAX = 12730;
     private final int LIFT_SAFE_SWING = 2767;
     private final double LIFT_POWER = 0.5;
@@ -197,6 +198,22 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             grabberOpen();
     }
 
+    public Progress moveGrabber(boolean closed) {
+        double target = closed ? GRABBER_CLOSE : GRABBER_OPEN;
+
+        double adjustment = Math.abs(grabber.getPosition() - target);
+        debug("moveGrabber(): target=%.2f, adjustment=%.2f", target, adjustment);
+        // entire move from up to down takes 1 seconds
+        final long doneBy = System.currentTimeMillis() + Math.round(600 * adjustment);
+        grabber.setPosition(target);
+        return new Progress() {
+            @Override
+            public boolean isDone() {
+                return System.currentTimeMillis() >= doneBy;
+            }
+        };
+    }
+
     public void liftUp () {
         if (lifter==null) return;
         lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -269,7 +286,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
-                liftToPosition(LIFT_DOWN);
+                liftToPosition(LIFT_GRAB);
                 return new Progress() {
                     @Override
                     public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 20;
@@ -322,8 +339,30 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
+                liftToPosition(LIFT_DOWN);
+                return new Progress() {
+                    @Override
+                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 250;
+                    }
+                };
+            }
+        }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                final Progress grabberProgress = moveGrabber(true);
+                return new Progress() {
+                    @Override
+                    public boolean isDone() { return grabberProgress.isDone();}
+                };
+            }
+        }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
                 grabberClose();
-                liftToPosition(LIFT_DELIVER);
+                arm.setPosition(ARM_DELIVER);
+                liftToPosition(LIFT_DOWN);
                 return new Progress() {
                     @Override
                     public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 20;
@@ -331,6 +370,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 };
             }
         }, taskName);
+
     }
 
     public void deliverStoneCombo() {
@@ -342,7 +382,6 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 return moveArm(ARM_OUT);
             }
         }, taskName);
-
         TaskManager.add(new Task() {
             @Override
             public Progress start() {

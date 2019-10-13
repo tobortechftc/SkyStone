@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.opmodes.mechBot;
 
 import android.util.Log;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -10,7 +11,7 @@ import org.firstinspires.ftc.teamcode.hardware.Sigma.ToboSigma;
 import org.firstinspires.ftc.teamcode.support.Logger;
 import org.firstinspires.ftc.teamcode.support.events.EventManager;
 import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
-
+@Disabled
 @TeleOp(name="Mec-CarOp", group="MechBot")
 public class MecCarMode extends LinearOpMode {
     protected static int LOG_LEVEL = Log.INFO;
