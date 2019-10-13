@@ -1,7 +1,12 @@
 package org.firstinspires.ftc.teamcode.components;
 
+import android.graphics.Color;
+
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
+import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 
 import org.firstinspires.ftc.robotcore.external.Func;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -40,6 +45,11 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         //  the driver; opposite servos are in central position
     }
 
+    public enum LineColor {
+        BLUE,
+        RED
+    }
+
     // distance between the centers of left and right wheels, inches
     private double track = 11.5;
     // distance between the centers of front and back wheels, inches
@@ -65,6 +75,8 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     public DistanceSensor backRangeSensor;
     public DistanceSensor leftRangeSensor;
     public DistanceSensor rightRangeSensor;
+
+    public NormalizedColorSensor bottomColor;
 
     private DriveMode driveMode = DriveMode.STOP;      // current drive mode
     private double targetHeading;     // intended heading for DriveMode.STRAIGHT as reported by orientation sensor
@@ -190,6 +202,8 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             backRangeSensor = configuration.getHardwareMap().get(DistanceSensor.class, "backRange");
             leftRangeSensor = configuration.getHardwareMap().get(DistanceSensor.class, "leftRange");
             rightRangeSensor = configuration.getHardwareMap().get(DistanceSensor.class, "rightRange");
+
+            bottomColor = configuration.getHardwareMap().get(NormalizedColorSensor.class, "bottomColor");
         }
 
         // register chassis as configurable component
@@ -329,6 +343,25 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         if (dist > maxRange)
             dist = maxRange;
         return dist;
+    }
+
+
+
+    public boolean lineDetected(LineColor color){
+        float[] hsvValues = new float[3];
+        final float values[] = hsvValues;
+        NormalizedRGBA colors = bottomColor.getNormalizedColors();
+        Color.colorToHSV(colors.toColor(), hsvValues);
+        if(hsvValues[1]>=0.7) {
+            if ((hsvValues[0] <= 15 && hsvValues[0] >= 0) || (hsvValues[0] >= 350 && hsvValues[0] <= 360)) {
+                // detect red
+                if (color==LineColor.RED) return true;
+            } else if (hsvValues[0] >= 200 && hsvValues[0] <= 230) {
+                // detect blue
+                if (color==LineColor.BLUE) return true;
+            }
+        }
+        return false;
     }
 
     public void reset() {
@@ -1030,6 +1063,20 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                     }
                 });
             }
+        }
+        if (bottomColor!=null) {
+            line.addData("blue color = ", "%s", new Func<String>() {
+                @Override
+                public String value() {
+                    return (lineDetected(LineColor.BLUE)?"T":"F");
+                }
+            });
+            line.addData("red color = ", "%s", new Func<String>() {
+                @Override
+                public String value() {
+                    return (lineDetected(LineColor.RED)?"T":"F");
+                }
+            });
         }
 
         telemetry.addLine().addData("M", new Func<String>() {
