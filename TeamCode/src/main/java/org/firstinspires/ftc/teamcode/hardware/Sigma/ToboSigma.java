@@ -64,8 +64,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
          foundationHook = new FoundationHook(this.core).configureLogging("FoundationHook", logLevel);
          foundationHook.configure(configuration, (autoColor!=AutoTeamColor.NOT_AUTO));
 
-       //  stoneGrabber = new StoneGrabber(this.core).configureLogging("StoneGrabber", logLevel);
-         //stoneGrabber.configure(configuration, auto);
+        stoneGrabber = new StoneGrabber(this.core).configureLogging("StoneGrabber", logLevel);
+        stoneGrabber.configure(configuration, (autoColor!=AutoTeamColor.NOT_AUTO));
 
     }
 
@@ -92,6 +92,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             }
         });
         chassis.setupTelemetry(telemetry);
+        stoneGrabber.setupTelemetry(telemetry);
 
         em.updateTelemetry(telemetry, 100);
 
@@ -196,6 +197,72 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             }
         }, Button.A);
 
+        //The following are all events for Driver 2
+
+        em2.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.LEFT_BUMPER))
+                    stoneGrabber.deliverStoneCombo();
+            }
+        }, new Button[]{Button.Y});
+
+        em2.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.LEFT_BUMPER))
+                    stoneGrabber.grabStoneCombo();
+            }
+        }, new Button[]{Button.A});
+
+        em2.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.LEFT_BUMPER))
+                    stoneGrabber.armInCombo();
+                else
+                    stoneGrabber.grabberAuto();
+            }
+        }, new Button[]{Button.X});
+
+        em2.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.LEFT_BUMPER))
+                    stoneGrabber.armOutCombo();
+                else
+                    stoneGrabber.liftToSafe();
+            }
+        }, new Button[]{Button.B});
+
+        em2.onStick(new Events.Listener() {
+            @Override
+            public void stickMoved(EventManager source, Events.Side side, float currentX, float changeX,
+                                   float currentY, float changeY) throws InterruptedException {
+                if (Math.abs(source.getStick(Events.Side.LEFT, Events.Axis.Y_ONLY)) > 0.2) {
+                    // left stick with idle right stick rotates robot in place
+                    if (source.getStick(Events.Side.LEFT, Events.Axis.Y_ONLY) > 0)
+                        stoneGrabber.armUpInc();
+                    else
+                        stoneGrabber.armDownInc();
+                }
+            }
+        }, Events.Axis.Y_ONLY, Events.Side.LEFT);
+
+        em2.onStick(new Events.Listener() {
+            @Override
+            public void stickMoved(EventManager source, Events.Side side, float currentX, float changeX,
+                                   float currentY, float changeY) throws InterruptedException {
+                if (Math.abs(source.getStick(Events.Side.RIGHT, Events.Axis.Y_ONLY)) > 0.2) {
+                    // left stick with idle right stick rotates robot in place
+                    if (source.getStick(Events.Side.RIGHT, Events.Axis.Y_ONLY) > 0)
+                        stoneGrabber.liftUp();
+                    else
+                        stoneGrabber.liftDown();
+                } else
+                    stoneGrabber.liftStop();
+            }
+        }, Events.Axis.Y_ONLY, Events.Side.RIGHT);
     }
 
     @MenuEntry(label = "Auto Straight", group = "Test Chassis")

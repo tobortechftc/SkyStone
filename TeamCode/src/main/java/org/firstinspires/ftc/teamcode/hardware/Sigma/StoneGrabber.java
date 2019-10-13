@@ -31,18 +31,19 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double ARM_UP = 0.1;
     private final double ARM_DOWN = 0.9;
     private final double ARM_INITIAL = 0.9;
-    private final double ARM_OUT = 0.4;
+    private final double ARM_OUT = 0.47;
     private final double ARM_DELIVER = 0.3;
+    private final double ARM_INC_UNIT = 0.02;
 
     private final double WRIST_INIT = 0.5;
     private final double WRIST_PARALLEL = 0.151;
     private final double WRIST_PERPENDICULAR = 0.5;
 
-    private final double GRABBER_INIT = 0.5;
-    private final double GRABBER_OPEN = 0.143;
+    private final double GRABBER_INIT = 0.75;
+    private final double GRABBER_OPEN = 0.01;
     private final double GRABBER_CLOSE = 0.55;
 
-    private final int LIFT_DOWN = 50;
+    private final int LIFT_DOWN = 1423;
     private final int LIFT_MAX = 12730;
     private final int LIFT_SAFE_SWING = 2767;
     private final double LIFT_POWER = 0.5;
@@ -120,16 +121,16 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         armIsDown = false;
     }
 
-    public void armUpInc() {
+    public void armDownInc() {
         double cur_pos = arm.getPosition();
-        cur_pos += 0.05;
+        cur_pos += ARM_INC_UNIT;
         if (cur_pos>1) cur_pos=1;
         arm.setPosition(cur_pos);
         armIsDown = false;
     }
-    public void armDownInc() {
+    public void armUpInc() {
         double cur_pos = arm.getPosition();
-        cur_pos -= 0.05;
+        cur_pos -= ARM_INC_UNIT;
         if (cur_pos<0) cur_pos=0;
         arm.setPosition(cur_pos);
         armIsDown = false;
@@ -301,12 +302,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
-                return moveArm(GRABBER_CLOSE);
-            }
-        }, taskName);
-        TaskManager.add(new Task() {
-            @Override
-            public Progress start() {
+                grabberClose();
                 liftToPosition(LIFT_DOWN);
                 return new Progress() {
                     @Override
