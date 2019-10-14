@@ -31,6 +31,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double ARM_UP = 0.1;
     private final double ARM_DOWN = 0.9;
     private final double ARM_INITIAL = 0.9;
+    private final double ARM_LOW = 0.6;
     private final double ARM_OUT = 0.45;
     private final double ARM_DELIVER = 0.3;
     private final double ARM_INC_UNIT = 0.02;
@@ -39,16 +40,16 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double WRIST_PARALLEL = 0.151;
     private final double WRIST_PERPENDICULAR = 0.5;
 
-    private final double GRABBER_INIT = 0.75;
+    private final double GRABBER_INIT = 0.99;
     private final double GRABBER_OPEN = 0.01;
-    private final double GRABBER_CLOSE = 0.55;
+    private final double GRABBER_CLOSE = 0.88;
 
-    private final int LIFT_DOWN = 50;
-    private final int LIFT_GRAB = 1400;
-    private final int LIFT_MAX = 12730;
-    private final int LIFT_SAFE_SWING = 2767;
+    private final int LIFT_DOWN = 20;
+    private final int LIFT_GRAB = 400;
+    private final int LIFT_MAX = 3640;
+    private final int LIFT_SAFE_SWING = 790;
     private final double LIFT_POWER = 0.5;
-    private final int LIFT_DELIVER = 3500;
+    private final int LIFT_DELIVER = 1000;
 
 
     private boolean armIsDown = false;
@@ -108,6 +109,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         if (lifter != null) lifter.setDirection(DcMotorSimple.Direction.REVERSE);
         lifter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        lifter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         // register hanging as configurable component
         // configuration.register(this);
     }
@@ -200,7 +202,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
 
     public Progress moveGrabber(boolean closed) {
         double target = closed ? GRABBER_CLOSE : GRABBER_OPEN;
-
+        isGrabberOpened = !closed;
         double adjustment = Math.abs(grabber.getPosition() - target);
         debug("moveGrabber(): target=%.2f, adjustment=%.2f", target, adjustment);
         // entire move from up to down takes 1 seconds
@@ -269,7 +271,11 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             @Override
             public Progress start() {
                 grabberOpen();
-                liftToPosition(LIFT_SAFE_SWING);
+                if (arm.getPosition()>ARM_LOW) // arm inside the robot
+                    liftToPosition(LIFT_SAFE_SWING);
+                else
+                    liftToPosition(LIFT_GRAB);
+
                 return new Progress() {
                     @Override
                     public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 20;
@@ -345,6 +351,12 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                     public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 250;
                     }
                 };
+            }
+        }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                return moveArm(ARM_OUT);
             }
         }, taskName);
         TaskManager.add(new Task() {
