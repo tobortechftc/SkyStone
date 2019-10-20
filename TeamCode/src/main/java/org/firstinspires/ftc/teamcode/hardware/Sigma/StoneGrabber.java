@@ -45,7 +45,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double GRABBER_CLOSE = 0.387;
 
     private final int LIFT_DOWN = 20;
-    private final int LIFT_GRAB = 400;
+    private final int LIFT_GRAB = 640;
     private final int LIFT_MAX = 3640;
     private final int LIFT_SAFE_SWING = 790;
     private final double LIFT_POWER = 0.5;
