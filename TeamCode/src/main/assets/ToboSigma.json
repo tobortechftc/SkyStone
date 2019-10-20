@@ -1,20 +1,20 @@
 {
-  "servoBackLeft": {
+  "servoFrontRight": {
     "center": 0.505,
     "left": 0.197,
     "right": 0.792
   },
-  "servoFrontLeft": {
+  "servoBackRight": {
     "center": 0.494,
     "left": 0.181,
     "right": 0.777
   },
-  "servoBackRight": {
+  "servoFrontLeft": {
     "center": 0.518,
     "left": 0.206,
     "right": 0.801
   },
-  "servoFrontRight": {
+  "servoBackLeft": {
     "center": 0.493,
     "left": 0.177,
     "right": 0.782
