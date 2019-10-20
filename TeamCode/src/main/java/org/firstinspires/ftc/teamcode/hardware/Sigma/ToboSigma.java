@@ -264,7 +264,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (source.isPressed(Button.LEFT_BUMPER))
-                    stoneGrabber.armOutCombo(!source.isPressed(Button.BACK));
+                    stoneGrabber.armOutCombo();
                 else if (!source.isPressed(Button.START))
                     stoneGrabber.wristAuto();
             }
@@ -424,7 +424,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
         //arm out
 
-        stoneGrabber.armOutComboAuto(true);
+        stoneGrabber.armOutComboAuto();
 
         // go to stones
 
@@ -483,7 +483,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         chassis.driveStraightAuto(auto_chassis_power, -30, 0, 10000);
         stoneGrabber.deliverStoneComboAuto();
         chassis.driveStraightAuto(auto_chassis_power, 30, 0, 10000);
-        stoneGrabber.armInComboAuto(true);
+        stoneGrabber.armInComboAuto(false);
 
     }
     public void getAnotherSkyStone(SkystoneLocation StoneLoc, int stoneNum, boolean isBlue) throws InterruptedException{//stoneNum - how many stones ara we going to have after this trip
@@ -522,7 +522,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         }
 
         //arm out
-        stoneGrabber.armOutComboAuto(true);
+        stoneGrabber.armOutComboAuto();
 
         // get close to stones
         chassis.driveStraightAuto(auto_chassis_power, dist +15 -20 * stoneNum, -90* factor, 15000);
@@ -549,9 +549,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
         stoneGrabber.deliverStoneComboAuto();
         chassis.driveStraightAuto(auto_chassis_power, 20, 0, 10000);
-        stoneGrabber.armInComboAuto(true);
-
-
+        stoneGrabber.armInComboAuto(false);
 
     }
     public void grabAndPark() throws InterruptedException{
