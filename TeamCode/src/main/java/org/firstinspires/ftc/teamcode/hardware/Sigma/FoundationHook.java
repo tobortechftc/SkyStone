@@ -18,6 +18,8 @@ import org.firstinspires.ftc.teamcode.support.tasks.Progress;
 import org.firstinspires.ftc.teamcode.support.tasks.Task;
 import org.firstinspires.ftc.teamcode.support.tasks.TaskManager;
 
+import com.qualcomm.robotcore.hardware.TouchSensor;
+
 /**
  * FoundationHook spec:
  */
@@ -27,6 +29,9 @@ public class FoundationHook extends Logger<FoundationHook> implements Configurab
 
     private AdjustableServo rightHook;
     private AdjustableServo leftHook;
+    /*private*/ public TouchSensor magTouch;
+    public DistanceSensor rangetouch;
+
 
     private final double RIGHT_HOOK_INIT = 0.1;
     private final double RIGHT_HOOK_UP = 0.284;
@@ -63,18 +68,20 @@ public class FoundationHook extends Logger<FoundationHook> implements Configurab
     }
 
     public void configure(Configuration configuration, boolean auto) {
-        leftHook = new AdjustableServo(0,1).configureLogging(
+        leftHook = new AdjustableServo(0, 1).configureLogging(
                 logTag + ":foundationHook", logLevel
         );
         leftHook.configure(configuration.getHardwareMap(), "leftHook");
         configuration.register(leftHook);
 
-        rightHook = new AdjustableServo(0,1).configureLogging(
+        rightHook = new AdjustableServo(0, 1).configureLogging(
                 logTag + ":foundationHook", logLevel
         );
         rightHook.configure(configuration.getHardwareMap(), "rightHook");
         configuration.register(rightHook);
 
+        magTouch = configuration.getHardwareMap().touchSensor.get("mag_touch");
+        rangetouch = configuration.getHardwareMap().get(DistanceSensor.class, "backRange");
         hookInit();
         // configuration.register(this);
     }
@@ -83,6 +90,16 @@ public class FoundationHook extends Logger<FoundationHook> implements Configurab
         leftHook.setPosition(LEFT_HOOK_INIT);
         rightHook.setPosition(RIGHT_HOOK_INIT);
         hookIsDown = false;
+        hookUp();
+        // configuration.register(this);
+    }
+
+    public boolean touchingState() {
+        return magTouch.isPressed();
+    }
+
+    public double rangeReading() {
+        return rangetouch.getDistance(DistanceUnit.CM);
     }
 
     public void hookUp() {

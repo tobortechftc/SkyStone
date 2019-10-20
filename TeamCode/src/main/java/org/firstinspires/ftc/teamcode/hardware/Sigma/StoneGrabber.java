@@ -132,6 +132,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         arm.setPosition(cur_pos);
         armIsDown = false;
     }
+
     public void armUpInc() {
         double cur_pos = arm.getPosition();
         cur_pos -= ARM_INC_UNIT;
