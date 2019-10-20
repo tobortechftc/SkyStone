@@ -50,6 +50,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         RED
     }
 
+
     // distance between the centers of left and right wheels, inches
     private double track = 11.5;
     // distance between the centers of front and back wheels, inches
@@ -77,6 +78,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     public DistanceSensor rightRangeSensor;
 
     public NormalizedColorSensor bottomColor;
+    public NormalizedColorSensor frontColor;
 
     private DriveMode driveMode = DriveMode.STOP;      // current drive mode
     private double targetHeading;     // intended heading for DriveMode.STRAIGHT as reported by orientation sensor
@@ -204,6 +206,8 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             rightRangeSensor = configuration.getHardwareMap().get(DistanceSensor.class, "rightRange");
 
             bottomColor = configuration.getHardwareMap().get(NormalizedColorSensor.class, "bottomColor");
+            frontColor = configuration.getHardwareMap().get(NormalizedColorSensor.class, "frontColor");
+
         }
 
         // register chassis as configurable component
@@ -348,20 +352,42 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
 
 
     public boolean lineDetected(LineColor color){
+        int hueTolerance=15;              //Tolerance of hues (15 is best)
+        double satSensitivity=0.7;        //How sensitive line detection is (Higher values less sensitive, 0.8 is highest)
         float[] hsvValues = new float[3];
-        final float values[] = hsvValues;
+        //final float values[] = hsvValues;
         NormalizedRGBA colors = bottomColor.getNormalizedColors();
         Color.colorToHSV(colors.toColor(), hsvValues);
-        if(hsvValues[1]>=0.7) {
-            if ((hsvValues[0] <= 15 && hsvValues[0] >= 0) || (hsvValues[0] >= 350 && hsvValues[0] <= 360)) {
+        if(hsvValues[1]>=satSensitivity) {
+            if ((hsvValues[0] <= hueTolerance && hsvValues[0] >= 0) || (hsvValues[0] >= 360-hueTolerance && hsvValues[0] <= 360)) {
                 // detect red
                 if (color==LineColor.RED) return true;
-            } else if (hsvValues[0] >= 200 && hsvValues[0] <= 230) {
+            } else if (hsvValues[0] >= 220-hueTolerance && hsvValues[0] <= 220+hueTolerance) {
                 // detect blue
                 if (color==LineColor.BLUE) return true;
             }
         }
         return false;
+    }
+
+    public boolean isSkystone(){
+        NormalizedRGBA colors = frontColor.getNormalizedColors();
+        double distB = getDistance(Direction.BACK);
+        double addedColors = colors.alpha+colors.red+colors.green+colors.blue;
+        double threshold;
+        if(distB<=7) {
+            threshold = -0.221456225 + (1.52138259 / distB);
+        } else {
+            threshold = 0.006;
+        }
+        if(addedColors<=threshold)//.015 ideal for 1.5 cm away
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     public void reset() {
@@ -1075,6 +1101,22 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                 @Override
                 public String value() {
                     return (lineDetected(LineColor.RED)?"T":"F");
+                }
+            });
+        }
+        if (frontColor!=null) {
+            line.addData("Skystone Detected = ", "%s", new Func<String>() {
+                @Override
+                public String value() {
+                    return (isSkystone() ?"T":"F");
+                }
+            });
+            line.addData("Front-Color-Sum = ", "%.3f", new Func<Double>() {
+                @Override
+                public Double value() {
+                    NormalizedRGBA colors = frontColor.getNormalizedColors();
+                    double addedColors = colors.alpha+colors.red+colors.green+colors.blue;
+                    return addedColors;
                 }
             });
         }
