@@ -56,7 +56,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         chassis = new SwerveChassis(this.core).configureLogging("Swerve", logLevel); // Log.DEBUG
 
         // Warning: MUST disable the following line during competition
-        chassis.enableRangeSensorTelemetry();//Comment out later
+        // chassis.enableRangeSensorTelemetry();//Comment out later
 
         chassis.configure(configuration, (autoColor!=AutoTeamColor.NOT_AUTO), true);
         info("RoboSigma configure() after init Chassis (run time = %.2f sec)", (runtime.seconds() - ini_time));
@@ -385,6 +385,19 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         }, Events.Axis.X_ONLY, Events.Side.LEFT);
     }
 
+    @MenuEntry(label = "Crab", group = "Test Chassis")
+    public void testCrab(EventManager em) {
+        telemetry.addLine().addData(" < (LS) >", "Power").setRetained(true);
+        chassis.setupTelemetry(telemetry);
+        em.updateTelemetry(telemetry, 100);
+        em.onStick(new Events.Listener() {
+            @Override
+            public void stickMoved(EventManager source, Events.Side side, float currentX, float changeX,
+                                   float currentY, float changeY) throws InterruptedException {
+                chassis.driveStraightAuto(.5, 120, 90, 100000);
+            }
+        }, Events.Axis.X_ONLY, Events.Side.LEFT);
+    }
 
     /**
      * Returns angle (-180 to 180 degrees) between positive Y axis
@@ -434,18 +447,18 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         chassis.rotateTo(.2, 0);
         if(isLeft){
             if(skyStonePosition == ToboSigma.SkystoneLocation.LEFT || skyStonePosition == SkystoneLocation.UNKNOWN){
-                chassis.driveStraightAuto(auto_chassis_power, 22, -90 * factor, 10000);  // test to get exact numbers
+                chassis.driveStraightAuto(auto_chassis_power, 17, -90 * factor, 10000);  // test to get exact numbers
             } else if(skyStonePosition == ToboSigma.SkystoneLocation.CENTER){
-                chassis.driveStraightAuto(auto_chassis_power, 42, -90 * factor, 10000);  // test to get exact numbers
+                chassis.driveStraightAuto(auto_chassis_power, 37, -90 * factor, 10000);  // test to get exact numbers
             } else if(skyStonePosition == ToboSigma.SkystoneLocation.RIGHT) {
-                chassis.driveStraightAuto(auto_chassis_power, 62, -90 * factor, 10000);  // test to get exact numbers
+                chassis.driveStraightAuto(auto_chassis_power, 57, -90 * factor, 10000);  // test to get exact numbers
             }
         } else if(skyStonePosition == ToboSigma.SkystoneLocation.LEFT || skyStonePosition == SkystoneLocation.UNKNOWN){
-            chassis.driveStraightAuto(auto_chassis_power, -20, -90 * factor, 10000);  // test to get exact numbers
+            chassis.driveStraightAuto(auto_chassis_power, -15, -90 * factor, 10000);  // test to get exact numbers
         } else if(skyStonePosition == ToboSigma.SkystoneLocation.CENTER){
-            chassis.driveStraightAuto(auto_chassis_power, 0, -90 * factor, 10000);  // test to get exact numbers
+            chassis.driveStraightAuto(auto_chassis_power, 5, -90 * factor, 10000);  // test to get exact numbers
         } else if(skyStonePosition == ToboSigma.SkystoneLocation.RIGHT) {
-            chassis.driveStraightAuto(auto_chassis_power, 20, -90 * factor, 10000);  // test to get exact numbers
+            chassis.driveStraightAuto(auto_chassis_power, 25, -90 * factor, 10000);  // test to get exact numbers
         }
 
         //grab stone

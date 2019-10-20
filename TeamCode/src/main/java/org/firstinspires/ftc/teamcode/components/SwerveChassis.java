@@ -11,6 +11,8 @@ import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import org.firstinspires.ftc.robotcore.external.Func;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.hardware.MechBot.ToboMech;
+import org.firstinspires.ftc.teamcode.hardware.Sigma.ToboSigma;
 import org.firstinspires.ftc.teamcode.support.CoreSystem;
 import org.firstinspires.ftc.teamcode.support.Logger;
 import org.firstinspires.ftc.teamcode.support.hardware.Adjustable;
@@ -77,8 +79,8 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     public DistanceSensor leftRangeSensor;
     public DistanceSensor rightRangeSensor;
 
-    public NormalizedColorSensor bottomColor;
-    public NormalizedColorSensor frontColor;
+    public NormalizedColorSensor BLColor;
+    public NormalizedColorSensor BRColor;
 
     private DriveMode driveMode = DriveMode.STOP;      // current drive mode
     private double targetHeading;     // intended heading for DriveMode.STRAIGHT as reported by orientation sensor
@@ -205,8 +207,8 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             leftRangeSensor = configuration.getHardwareMap().get(DistanceSensor.class, "leftRange");
             rightRangeSensor = configuration.getHardwareMap().get(DistanceSensor.class, "rightRange");
 
-            bottomColor = configuration.getHardwareMap().get(NormalizedColorSensor.class, "bottomColor");
-            frontColor = configuration.getHardwareMap().get(NormalizedColorSensor.class, "frontColor");
+            BLColor = configuration.getHardwareMap().get(NormalizedColorSensor.class, "BLColor");
+            BRColor = configuration.getHardwareMap().get(NormalizedColorSensor.class, "BRColor");
 
         }
 
@@ -356,7 +358,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         double satSensitivity=0.7;        //How sensitive line detection is (Higher values less sensitive, 0.8 is highest)
         float[] hsvValues = new float[3];
         //final float values[] = hsvValues;
-        NormalizedRGBA colors = bottomColor.getNormalizedColors();
+        NormalizedRGBA colors = BLColor.getNormalizedColors();
         Color.colorToHSV(colors.toColor(), hsvValues);
         if(hsvValues[1]>=satSensitivity) {
             if ((hsvValues[0] <= hueTolerance && hsvValues[0] >= 0) || (hsvValues[0] >= 360-hueTolerance && hsvValues[0] <= 360)) {
@@ -370,24 +372,79 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         return false;
     }
 
-    public boolean isSkystone(){
-        NormalizedRGBA colors = frontColor.getNormalizedColors();
+    public boolean isSkystone(boolean isRight){
         double distB = getDistance(Direction.BACK);
-        double addedColors = colors.alpha+colors.red+colors.green+colors.blue;
+        double addedColors;
         double threshold;
-        if(distB<=7) {
-            threshold = -0.221456225 + (1.52138259 / distB);
-        } else {
-            threshold = 0.006;
-        }
-        if(addedColors<=threshold)//.015 ideal for 1.5 cm away
+        NormalizedRGBA colors;
+        if(isRight)
         {
-            return true;
+            colors = BRColor.getNormalizedColors();
+            addedColors = colors.alpha+colors.red+colors.green+colors.blue;
+            if(distB<=7) {
+                threshold = -0.221456225 + (1.52138259 / distB);
+            } else {
+                threshold = 0.006;
+            }
+            if(addedColors<=threshold)//.015 ideal for 1.5 cm away
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        else {
+            colors = BLColor.getNormalizedColors();
+            addedColors = colors.alpha + colors.red + colors.green + colors.blue;
+            if (distB <= 7) {
+                threshold = -0.221456225 + (1.52138259 / distB);
+            } else {
+                threshold = 0.006;
+            }
+            if (addedColors <= threshold)//.015 ideal for 1.5 cm away
+            {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    public ToboSigma.SkystoneLocation skyStoneLocation(boolean isBlue)
+    {
+        if(isBlue)
+        {
+            if(isSkystone(true)&&!isSkystone(false))
+            {
+                return ToboSigma.SkystoneLocation.CENTER;
+            }
+            else if (isSkystone(false)&&!isSkystone(true))
+            {
+                return ToboSigma.SkystoneLocation.RIGHT;
+            }
+            else if (!isSkystone(true)&&!isSkystone(false))
+            {
+                return ToboSigma.SkystoneLocation.LEFT;
+            }
         }
         else
         {
-            return false;
+            if(isSkystone(true)&&!isSkystone(false))
+            {
+                return ToboSigma.SkystoneLocation.LEFT;
+            }
+            else if (isSkystone(false)&&!isSkystone(true))
+            {
+                return ToboSigma.SkystoneLocation.CENTER;
+            }
+            else if (!isSkystone(true)&&!isSkystone(false))
+            {
+                return ToboSigma.SkystoneLocation.RIGHT;
+            }
         }
+        return ToboSigma.SkystoneLocation.UNKNOWN;
     }
 
     public void reset() {
@@ -1090,33 +1147,59 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                 });
             }
         }
-        if (bottomColor!=null) {
-            line.addData("blue color = ", "%s", new Func<String>() {
+
+//        if (BLColor!=null) {
+//            line.addData("blue color = ", "%s", new Func<String>() {
+//                @Override
+//                public String value() {
+//                    return (lineDetected(LineColor.BLUE)?"T":"F");
+//                }
+//            });
+//            line.addData("red color = ", "%s", new Func<String>() {
+//                @Override
+//                public String value() {
+//                    return (lineDetected(LineColor.RED)?"T":"F");
+//                }
+//            });
+//        }
+        if (BRColor!=null) {
+            line.addData("Skystone BR = ", "%s", new Func<String>() {
                 @Override
                 public String value() {
-                    return (lineDetected(LineColor.BLUE)?"T":"F");
+                    return (isSkystone(true) ? "T" : "F");
                 }
             });
-            line.addData("red color = ", "%s", new Func<String>() {
+            line.addData("BRColor-Sum = ", "%.3f", new Func<Double>() {
                 @Override
-                public String value() {
-                    return (lineDetected(LineColor.RED)?"T":"F");
+                public Double value() {
+                    NormalizedRGBA colors = BRColor.getNormalizedColors();
+                    double addedColors = colors.alpha + colors.red + colors.green + colors.blue;
+                    return addedColors;
                 }
             });
         }
-        if (frontColor!=null) {
-            line.addData("Skystone Detected = ", "%s", new Func<String>() {
+        if (BLColor!=null) {
+            line.addData("Skystone BL = ", "%s", new Func<String>() {
                 @Override
                 public String value() {
-                    return (isSkystone() ?"T":"F");
+                    return (isSkystone(false) ? "T" : "F");
                 }
             });
-            line.addData("Front-Color-Sum = ", "%.3f", new Func<Double>() {
+            line.addData("BLColor-Sum = ", "%.3f", new Func<Double>() {
                 @Override
                 public Double value() {
-                    NormalizedRGBA colors = frontColor.getNormalizedColors();
-                    double addedColors = colors.alpha+colors.red+colors.green+colors.blue;
+                    NormalizedRGBA colors = BLColor.getNormalizedColors();
+                    double addedColors = colors.alpha + colors.red + colors.green + colors.blue;
                     return addedColors;
+                }
+            });
+        }
+        if (BRColor!=null && BLColor!=null) {
+            line.addData("SkystoneLOC = ", "%s", new Func<String>() {
+                @Override
+                public String value() {
+                    ToboSigma.SkystoneLocation loc = skyStoneLocation(true);
+                    return loc.toString();
                 }
             });
         }

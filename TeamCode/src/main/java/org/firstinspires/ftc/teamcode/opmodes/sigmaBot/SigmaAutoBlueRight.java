@@ -66,7 +66,7 @@ public class SigmaAutoBlueRight extends LinearOpMode {
                 boolean isLeft = false;
                 // put autonomous steps here
                 // step-1: detect skystone location
-                StoneLoc = ToboSigma.SkystoneLocation.LEFT; // robot.cameraStoneDetector.getSkystonePositionTF(robot_pos);
+                StoneLoc = robot.chassis.skyStoneLocation(isBlue); ; // robot.cameraStoneDetector.getSkystonePositionTF(robot_pos);
                 // telemetry.addLine(StoneLoc.toString());
                 // telemetry.update();
                 // sleep(10000); // 10 sec
