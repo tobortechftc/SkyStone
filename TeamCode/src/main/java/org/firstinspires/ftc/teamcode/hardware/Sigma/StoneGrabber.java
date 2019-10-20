@@ -231,7 +231,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         double adjustment = Math.abs(grabber.getPosition() - target);
         debug("moveGrabber(): target=%.2f, adjustment=%.2f", target, adjustment);
         // entire move from up to down takes 1 seconds
-        final long doneBy = System.currentTimeMillis() + Math.round(600 * adjustment);
+        final long doneBy = System.currentTimeMillis() + Math.round(1000 * adjustment);
         grabber.setPosition(target);
         return new Progress() {
             @Override
@@ -288,6 +288,14 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         };
     }
 
+    public void armOutComboAuto(final boolean shouldOpenGrabber) {
+        armOutCombo(shouldOpenGrabber);
+        while (!TaskManager.isComplete("Arm Out Combo")) {
+            TaskManager.processTasks();
+        }
+    }
+
+
     public void armOutCombo(final boolean shouldOpenGrabber) {
         final String taskName = "Arm Out Combo";
         if (!TaskManager.isComplete(taskName)) return;
@@ -326,7 +334,12 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             }
         }, taskName);
     }
-
+    public void armInComboAuto(final boolean shouldOpenGrabber) {
+        armInCombo(shouldOpenGrabber);
+        while (!TaskManager.isComplete("Arm In Combo")) {
+            TaskManager.processTasks();
+        }
+    }
     public void armInCombo(final boolean wristParallel) {
         final String taskName = "Arm In Combo";
         if (!TaskManager.isComplete(taskName)) return;
@@ -373,7 +386,12 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         }, taskName);
     }
 
-
+    public void grabStoneComboAuto() {
+        grabStoneCombo();
+        while (!TaskManager.isComplete("Grab Stone Combo")) {
+            TaskManager.processTasks();
+        }
+    }
     public void grabStoneCombo() {
         final String taskName = "Grab Stone Combo";
         if (!TaskManager.isComplete(taskName)) return;
@@ -420,7 +438,12 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         }, taskName);
 
     }
-
+    public void deliverStoneComboAuto() {
+        deliverStoneCombo();
+        while (!TaskManager.isComplete("Deliver Stone Combo")) {
+            TaskManager.processTasks();
+        }
+    }
     public void deliverStoneCombo() {
         final String taskName = "Deliver Stone Combo";
         if (!TaskManager.isComplete(taskName)) return;

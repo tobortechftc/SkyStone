@@ -72,13 +72,13 @@ public class SigmaAutoBlueRight extends LinearOpMode {
                 // sleep(10000); // 10 sec
                 // step-2: go to grab the first skystone and deliver
                 robot.getFirstSkyStone(StoneLoc, isBlue, isLeft);
-                int count = 1;
 
                 // step-3: grab and deliver the next skystone/stone
-                if (getRuntime() < 25000){
-                    count++;
-                    robot.getAnotherSkyStone(StoneLoc, count, isBlue);
-                }
+                int count = 1;
+               // if (getRuntime() < 25000){
+                   //robot.getAnotherSkyStone(StoneLoc, count, isBlue);
+                   //count++;
+               // }
                 robot.grabAndPark();
                 // move foundation
                 // park
