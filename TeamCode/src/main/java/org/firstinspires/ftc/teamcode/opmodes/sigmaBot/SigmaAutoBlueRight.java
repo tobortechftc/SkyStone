@@ -79,7 +79,7 @@ public class SigmaAutoBlueRight extends LinearOpMode {
                    //robot.getAnotherSkyStone(StoneLoc, count, isBlue);
                    //count++;
                // }
-                robot.grabAndPark();
+                robot.grabAndPark(true);
                 // move foundation
                 // park
 
