@@ -36,13 +36,13 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double ARM_DELIVER = 0.3;
     private final double ARM_INC_UNIT = 0.02;
 
-    private final double WRIST_INIT = 0.5;
-    private final double WRIST_PARALLEL = 0.151;
-    private final double WRIST_PERPENDICULAR = 0.5;
+    private final double WRIST_PARALLEL = 0.18;
+    private final double WRIST_PERPENDICULAR = 0.72;
+    private final double WRIST_INIT = WRIST_PERPENDICULAR;
 
-    private final double GRABBER_INIT = 0.99;
-    private final double GRABBER_OPEN = 0.01;
-    private final double GRABBER_CLOSE = 0.88;
+    private final double GRABBER_INIT = 0.31;
+    private final double GRABBER_OPEN = 0.89;
+    private final double GRABBER_CLOSE = 0.387;
 
     private final int LIFT_DOWN = 20;
     private final int LIFT_GRAB = 400;
@@ -54,6 +54,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
 
     private boolean armIsDown = false;
     private boolean isGrabberOpened = false;
+    private boolean isWristParallel = false;
     private ElapsedTime runtime = new ElapsedTime();
 
     @Override
@@ -164,16 +165,40 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     public void wristInit() {
         if (wrist==null) return;
         wrist.setPosition(WRIST_INIT);
+        isWristParallel = false;
     }
 
     public void wristParallel () {
         if (wrist==null) return;
         wrist.setPosition(WRIST_PARALLEL);
+        isWristParallel = true;
     }
 
     public void wristPerpendicular () {
         if (wrist==null) return;
         wrist.setPosition(WRIST_PERPENDICULAR);
+        isWristParallel = false;
+    }
+
+    public void wristAuto() {
+        if (isWristParallel) wristPerpendicular();
+        else wristParallel();
+    }
+
+    public Progress moveWrist(boolean parallel) {
+        double target = parallel ? WRIST_PARALLEL : WRIST_PERPENDICULAR;
+        isWristParallel = parallel;
+        double adjustment = Math.abs(grabber.getPosition() - target);
+        debug("moveGrabber(): target=%.2f, adjustment=%.2f", target, adjustment);
+        // entire move from parallel to vertical takes 2 seconds
+        final long doneBy = System.currentTimeMillis() + Math.round(1200 * adjustment);
+        wrist.setPosition(target);
+        return new Progress() {
+            @Override
+            public boolean isDone() {
+                return System.currentTimeMillis() >= doneBy;
+            }
+        };
     }
 
     public void grabberInit() {
@@ -263,14 +288,14 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         };
     }
 
-    public void armOutCombo() {
+    public void armOutCombo(final boolean shouldOpenGrabber) {
         final String taskName = "Arm Out Combo";
         if (!TaskManager.isComplete(taskName)) return;
 
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
-                grabberOpen();
+                if (shouldOpenGrabber) grabberOpen();
                 if (arm.getPosition()>ARM_LOW) // arm inside the robot
                     liftToPosition(LIFT_SAFE_SWING);
                 else
@@ -302,13 +327,24 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         }, taskName);
     }
 
-    public void armInCombo() {
+    public void armInCombo(final boolean wristParallel) {
         final String taskName = "Arm In Combo";
         if (!TaskManager.isComplete(taskName)) return;
         TaskManager.add(new Task () {
             @Override
             public Progress start() {
                 liftToPosition(LIFT_SAFE_SWING);
+                return new Progress() {
+                    @Override
+                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 20;
+                    }
+                };
+            }
+        }, taskName);
+        TaskManager.add(new Task () {
+            @Override
+            public Progress start() {
+                moveWrist(wristParallel);
                 return new Progress() {
                     @Override
                     public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 20;
@@ -348,7 +384,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 liftToPosition(LIFT_DOWN);
                 return new Progress() {
                     @Override
-                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 250;
+                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 100;
                     }
                 };
             }

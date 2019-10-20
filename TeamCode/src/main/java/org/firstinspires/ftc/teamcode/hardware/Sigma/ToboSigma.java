@@ -251,7 +251,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (source.isPressed(Button.LEFT_BUMPER))
-                    stoneGrabber.armInCombo();
+                    stoneGrabber.armInCombo(source.isPressed(Button.BACK));
                 else
                     stoneGrabber.grabberAuto();
             }
@@ -261,9 +261,9 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (source.isPressed(Button.LEFT_BUMPER))
-                    stoneGrabber.armOutCombo();
+                    stoneGrabber.armOutCombo(!source.isPressed(Button.BACK));
                 else if (!source.isPressed(Button.START))
-                    stoneGrabber.liftToSafe();
+                    stoneGrabber.wristAuto();
             }
         }, new Button[]{Button.B});
 
