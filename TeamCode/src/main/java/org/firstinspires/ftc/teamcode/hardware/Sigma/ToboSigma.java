@@ -56,7 +56,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         chassis = new SwerveChassis(this.core).configureLogging("Swerve", logLevel); // Log.DEBUG
 
         // Warning: MUST disable the following line during competition
-        // chassis.enableRangeSensorTelemetry();//Comment out later
+        chassis.enableRangeSensorTelemetry();//Comment out later
 
         chassis.configure(configuration, (autoColor!=AutoTeamColor.NOT_AUTO), true);
         info("RoboSigma configure() after init Chassis (run time = %.2f sec)", (runtime.seconds() - ini_time));
@@ -304,7 +304,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     @MenuEntry(label = "Auto Straight", group = "Test Chassis")
     public void testStraightSkyStone(EventManager em) {
 
-        telemetry.addLine().addData(" < (LS) >", "Power").setRetained(true);
+        telemetry.addLine().addData(" < (BACK) >", "Power(%.2f)",auto_chassis_power).setRetained(true);
         chassis.setupTelemetry(telemetry);
         em.updateTelemetry(telemetry, 100);
         em.onButtonDown(new Events.Listener() {
@@ -387,14 +387,14 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
     @MenuEntry(label = "Crab", group = "Test Chassis")
     public void testCrab(EventManager em) {
-        telemetry.addLine().addData(" < (LS) >", "Power").setRetained(true);
+        telemetry.addLine().addData(" < (LS) >", "Direction").setRetained(true);
         chassis.setupTelemetry(telemetry);
         em.updateTelemetry(telemetry, 100);
         em.onStick(new Events.Listener() {
             @Override
             public void stickMoved(EventManager source, Events.Side side, float currentX, float changeX,
                                    float currentY, float changeY) throws InterruptedException {
-                chassis.driveStraightAuto(.5, 120, 90, 100000);
+                chassis.driveStraightAuto(.5, 120, 90*Math.signum(currentX), 100000);
             }
         }, Events.Axis.X_ONLY, Events.Side.LEFT);
     }
@@ -483,9 +483,9 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         double dist;
         chassis.rotateTo(.2, 0);
         if (isBlue) {
-            dist = chassis.getDistance(SwerveChassis.Direction.RIGHT);
-        } else{
             dist = chassis.getDistance(SwerveChassis.Direction.LEFT);
+        } else{
+            dist = chassis.getDistance(SwerveChassis.Direction.RIGHT);
         }
         if (dist > 128){
             dist = 20;
@@ -528,9 +528,9 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         chassis.driveStraightAutoPlus(auto_chassis_power, 180 + 20 * stoneNum, 90* factor, 15000);
         chassis.rotateTo(.2, 0);
         if (isBlue) {
-            dist = chassis.getDistance(SwerveChassis.Direction.LEFT);
-        } else{
             dist = chassis.getDistance(SwerveChassis.Direction.RIGHT);
+        } else{
+            dist = chassis.getDistance(SwerveChassis.Direction.LEFT);
         }
         if (dist > 128){
             dist = 0;
@@ -542,7 +542,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
         // get close to stones
         chassis.driveStraightAuto(auto_chassis_power, dist +15 -20 * stoneNum, 90* factor, 15000);
-        dist = chassis.getDistance(SwerveChassis.Direction.BACK);
+        dist = chassis.getDistance(SwerveChassis.Direction.FRONT);
         chassis.driveStraightAuto(auto_chassis_power, (dist - 20), 0, 10000);
 
         //grab stone
@@ -554,9 +554,9 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         chassis.driveStraightAutoPlus(auto_chassis_power, 175 + 20 * stoneNum, -90 * factor, 15000);
         chassis.rotateTo(.2, 0);
         if (isBlue) {
-            dist = chassis.getDistance(SwerveChassis.Direction.RIGHT);
-        } else{
             dist = chassis.getDistance(SwerveChassis.Direction.LEFT);
+        } else{
+            dist = chassis.getDistance(SwerveChassis.Direction.RIGHT);
         }
         if (dist > 128){
             dist = 20;
@@ -573,18 +573,18 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         if(!isBlue){
             factor = -1;
         }
-        double dist = chassis.getDistance(SwerveChassis.Direction.FRONT);
+        double dist = chassis.getDistance(SwerveChassis.Direction.BACK);
         chassis.driveStraightAuto(auto_chassis_power/2, 80 - dist, 0, 10000);
         Thread.sleep(500);
         foundationHook.hookDown();
-        dist = chassis.getDistance(SwerveChassis.Direction.FRONT);
+        dist = chassis.getDistance(SwerveChassis.Direction.BACK);
         chassis.driveStraightAuto(auto_chassis_power/2, -dist - 10*(1- auto_chassis_power) , -7* factor, 10000);
         chassis.rotateTo(.2, 0);
         foundationHook.hookUp();
         if (isBlue) {
-            dist = chassis.getDistance(SwerveChassis.Direction.RIGHT);
-        } else{
             dist = chassis.getDistance(SwerveChassis.Direction.LEFT);
+        } else{
+            dist = chassis.getDistance(SwerveChassis.Direction.RIGHT);
         }
         if (dist > 128){
             dist = 20;

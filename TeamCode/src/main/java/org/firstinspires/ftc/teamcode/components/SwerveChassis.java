@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.components;
 
 import android.graphics.Color;
 
-import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
@@ -11,7 +10,6 @@ import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 import org.firstinspires.ftc.robotcore.external.Func;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.hardware.MechBot.ToboMech;
 import org.firstinspires.ftc.teamcode.hardware.Sigma.ToboSigma;
 import org.firstinspires.ftc.teamcode.support.CoreSystem;
 import org.firstinspires.ftc.teamcode.support.Logger;
@@ -74,13 +72,14 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     private WheelAssembly[] wheels = new WheelAssembly[4];
     public CombinedOrientationSensor orientationSensor;
 
-    public DistanceSensor frontRangeSensor;
+    public DistanceSensor frontLeftRangeSensor;
+    public DistanceSensor frontRightRangeSensor;
     public DistanceSensor backRangeSensor;
     public DistanceSensor leftRangeSensor;
     public DistanceSensor rightRangeSensor;
 
-    public NormalizedColorSensor BLColor;
-    public NormalizedColorSensor BRColor;
+    public NormalizedColorSensor FRColor;
+    public NormalizedColorSensor FLColor;
 
     private DriveMode driveMode = DriveMode.STOP;      // current drive mode
     private double targetHeading;     // intended heading for DriveMode.STRAIGHT as reported by orientation sensor
@@ -202,13 +201,14 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         }
 
         if ((auto || setRangeSensorTelemetry)&& enableSensors) {
-            frontRangeSensor = configuration.getHardwareMap().get(DistanceSensor.class, "frontRange");
+            frontLeftRangeSensor = configuration.getHardwareMap().get(DistanceSensor.class, "frontLeftRange");
+            frontRightRangeSensor = configuration.getHardwareMap().get(DistanceSensor.class, "frontRightRange");
             backRangeSensor = configuration.getHardwareMap().get(DistanceSensor.class, "backRange");
             leftRangeSensor = configuration.getHardwareMap().get(DistanceSensor.class, "leftRange");
             rightRangeSensor = configuration.getHardwareMap().get(DistanceSensor.class, "rightRange");
 
-            BLColor = configuration.getHardwareMap().get(NormalizedColorSensor.class, "BLColor");
-            BRColor = configuration.getHardwareMap().get(NormalizedColorSensor.class, "BRColor");
+            FRColor = configuration.getHardwareMap().get(NormalizedColorSensor.class, "FRColor");
+            FLColor = configuration.getHardwareMap().get(NormalizedColorSensor.class, "FLColor");
 
         }
 
@@ -228,8 +228,11 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         DistanceSensor rangeSensor;
 
         switch (direction) {
-            case FRONT:
-                rangeSensor = frontRangeSensor;
+            case FRONT: case FRONT_LEFT:
+                rangeSensor = frontLeftRangeSensor;
+                break;
+            case FRONT_RIGHT:
+                rangeSensor = frontRightRangeSensor;
                 break;
             case LEFT:
                 rangeSensor = leftRangeSensor;
@@ -263,102 +266,12 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         return dist;
     }
 
-    @Deprecated
-    public double distanceToFront() {
-        if (frontRangeSensor == null)
-            return 0;
-        double dist = frontRangeSensor.getDistance(DistanceUnit.CM);
-        int count = 0;
-        while (dist > maxRange && (++count) < 5) {
-            try {
-                sleep(10);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            dist = frontRangeSensor.getDistance(DistanceUnit.CM);
-
-            // yield handler
-            this.core.yield();
-        }
-        if (dist > maxRange)
-            dist = maxRange;
-        return dist;
-    }
-
-    @Deprecated
-    public double distanceToBack() {
-        if (backRangeSensor == null)
-            return 0;
-        double dist = backRangeSensor.getDistance(DistanceUnit.CM);
-        int count = 0;
-        while (dist > maxRange && (++count) < 5) {
-            try {
-                sleep(10);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            dist = backRangeSensor.getDistance(DistanceUnit.CM);
-
-            // yield handler
-            this.core.yield();
-        }
-        if (dist > maxRange)
-            dist = maxRange;
-        return dist;
-    }
-
-    @Deprecated
-    public double distanceToLeft() {
-        if (leftRangeSensor == null)
-            return 0;
-        double dist = leftRangeSensor.getDistance(DistanceUnit.CM);
-        int count = 0;
-        while (dist > maxRange && (++count) < 5) {
-            try {
-                sleep(10);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            dist = leftRangeSensor.getDistance(DistanceUnit.CM);
-
-            // yield handler
-            this.core.yield();
-        }
-        if (dist > maxRange)
-            dist = maxRange;
-        return dist;
-    }
-
-    @Deprecated
-    public double distanceToRight() {
-        if (rightRangeSensor == null)
-            return 0;
-        double dist = rightRangeSensor.getDistance(DistanceUnit.CM);
-        int count = 0;
-        while (dist > maxRange && (++count) < 5) {
-            try {
-                sleep(10);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            dist = rightRangeSensor.getDistance(DistanceUnit.CM);
-
-            // yield handler
-            this.core.yield();
-        }
-        if (dist > maxRange)
-            dist = maxRange;
-        return dist;
-    }
-
-
-
     public boolean lineDetected(LineColor color){
         int hueTolerance=15;              //Tolerance of hues (15 is best)
         double satSensitivity=0.7;        //How sensitive line detection is (Higher values less sensitive, 0.8 is highest)
         float[] hsvValues = new float[3];
         //final float values[] = hsvValues;
-        NormalizedRGBA colors = BLColor.getNormalizedColors();
+        NormalizedRGBA colors = FRColor.getNormalizedColors();
         Color.colorToHSV(colors.toColor(), hsvValues);
         if(hsvValues[1]>=satSensitivity) {
             if ((hsvValues[0] <= hueTolerance && hsvValues[0] >= 0) || (hsvValues[0] >= 360-hueTolerance && hsvValues[0] <= 360)) {
@@ -379,7 +292,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         NormalizedRGBA colors;
         if(isRight)
         {
-            colors = BRColor.getNormalizedColors();
+            colors = FLColor.getNormalizedColors();
             addedColors = colors.alpha+colors.red+colors.green+colors.blue;
             if(distB<=7) {
                 threshold = -0.221456225 + (1.52138259 / distB);
@@ -396,7 +309,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             }
         }
         else {
-            colors = BLColor.getNormalizedColors();
+            colors = FRColor.getNormalizedColors();
             addedColors = colors.alpha + colors.red + colors.green + colors.blue;
             if (distB <= 7) {
                 threshold = -0.221456225 + (1.52138259 / distB);
@@ -622,7 +535,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     }
 
     public enum Direction {
-        FRONT, LEFT, RIGHT, BACK;
+        FRONT, LEFT, RIGHT, BACK, FRONT_LEFT, FRONT_RIGHT;
     }
 
     public enum Wall {
@@ -631,108 +544,6 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
 
     public double getCurHeading() {
         return curHeading;
-    }
-
-    /**
-     * @param power   should always be positive
-     * @param driveCm distance to drive(forward positive, backward negative) in cm
-     * @param side    which wall to drive along
-     */
-    public void driveAlongTheWall(double power, double driveCm, double cmToWall, Wall side, int timeout) throws InterruptedException {
-        debug("driveAlongTheWall(pwr: %.3f, cmToWall: %.1f)", power, cmToWall);
-        if (power < 0 || power > 1) {
-            throw new IllegalArgumentException("Power must be between 0 and 1");
-        }
-        if (cmToWall < 5 || cmToWall > 30) {
-            throw new IllegalArgumentException("cmToWall must be between 5 and 30");
-        }
-
-        double distance = TICKS_PER_CM * driveCm;
-
-        //zero power call
-        if (power == 0) {
-            driveMode = DriveMode.STOP;
-            targetHeading = 0;
-            headingDeviation = 0;
-            servoCorrection = 0;
-            for (WheelAssembly wheel : wheels) wheel.motor.setPower(0);
-            orientationSensor.enableCorrections(false);
-            return;
-        }
-
-        //drive back
-        if (distance < 0) {
-            power = -power;
-            distance = -distance;
-        }
-
-        //motor settings
-        driveMode = DriveMode.STRAIGHT;
-        int[] startingCount = new int[4];
-        for (int i = 0; i < 4; i++) {
-            wheels[i].motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            wheels[i].motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            startingCount[i] = wheels[i].motor.getCurrentPosition();
-        }
-
-        //servo settings
-        double[] newServoPositions = new double[4];
-        Arrays.fill(newServoPositions, 0);
-        changeServoPositions(newServoPositions);
-
-        //start powering wheels
-        for (WheelAssembly wheel : wheels) wheel.motor.setPower(power);
-
-        //record time
-        long iniTime = System.currentTimeMillis();
-
-        //waiting loop
-        double multiplier = side == Wall.RIGHT ? +1.0 : -1.0;
-        while (true) {
-            // check and correct heading as needed
-            double disToWall = side == Wall.RIGHT ? distanceToRight() : distanceToLeft();
-            double deviation = disToWall - cmToWall;
-            debug("detected dis to wall: %.3f", disToWall);
-            debug("deviation: %.3f", deviation);
-            if (Math.abs(deviation) > 1) {
-                //if there's deviation
-                if (driveCm < 0) {
-                    backLeft.servo.setPosition(-multiplier * Math.min(15, deviation / 2.0));
-                    backRight.servo.setPosition(-multiplier * Math.min(15, deviation / 2.0));
-                } else {
-                    frontLeft.servo.setPosition(multiplier * Math.min(15, deviation / 2.0));
-                    frontRight.servo.setPosition(multiplier * Math.min(15, deviation / 2.0));
-                }
-            } else {
-                servoCorrection = 0;
-                if (driveCm < 0) {
-                    backLeft.servo.setPosition(frontLeft.servo.getPosition());
-                    backRight.servo.setPosition(frontRight.servo.getPosition());
-                } else {
-                    frontLeft.servo.setPosition(backLeft.servo.getPosition());
-                    frontRight.servo.setPosition(backRight.servo.getPosition());
-                }
-            }
-            //determine if target distance is reached
-            int maxTraveled = Integer.MIN_VALUE;
-            for (int i = 0; i < 4; i++) {
-                maxTraveled = Math.abs(Math.max(maxTraveled, wheels[i].motor.getCurrentPosition() - startingCount[i]));
-            }
-            //reached target goal
-            if (distance - maxTraveled < 10)
-                break;
-            //determine if time limit is reached
-            if (System.currentTimeMillis() - iniTime > timeout)
-                break;
-            //stop at stop button bring pushed
-            if (Thread.currentThread().isInterrupted())
-                break;
-            // yield handler
-            this.core.yield();
-        }
-        //stop everything
-        for (WheelAssembly wheel : wheels) wheel.motor.setPower(0);
-        driveMode = DriveMode.STOP;
     }
 
     /**
@@ -1130,11 +941,19 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                     }
                 });
             }
-            if (frontRangeSensor != null) {
-                line.addData("rangeF", "%.1f", new Func<Double>() {
+            if (frontLeftRangeSensor != null) {
+                line.addData("rangeFL", "%.1f", new Func<Double>() {
                     @Override
                     public Double value() {
-                        return frontRangeSensor.getDistance(DistanceUnit.CM);
+                        return frontLeftRangeSensor.getDistance(DistanceUnit.CM);
+                    }
+                });
+            }
+            if (frontRightRangeSensor != null) {
+                line.addData("rangeFR", "%.1f", new Func<Double>() {
+                    @Override
+                    public Double value() {
+                        return frontRightRangeSensor.getDistance(DistanceUnit.CM);
                     }
                 });
             }
@@ -1148,7 +967,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             }
         }
 
-//        if (BLColor!=null) {
+//        if (FRColor!=null) {
 //            line.addData("blue color = ", "%s", new Func<String>() {
 //                @Override
 //                public String value() {
@@ -1162,39 +981,39 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
 //                }
 //            });
 //        }
-        if (BRColor!=null) {
+        if (FLColor !=null) {
             line.addData("Skystone BR = ", "%s", new Func<String>() {
                 @Override
                 public String value() {
                     return (isSkystone(true) ? "T" : "F");
                 }
             });
-            line.addData("BRColor-Sum = ", "%.3f", new Func<Double>() {
+            line.addData("FLColor-Sum = ", "%.3f", new Func<Double>() {
                 @Override
                 public Double value() {
-                    NormalizedRGBA colors = BRColor.getNormalizedColors();
+                    NormalizedRGBA colors = FLColor.getNormalizedColors();
                     double addedColors = colors.alpha + colors.red + colors.green + colors.blue;
                     return addedColors;
                 }
             });
         }
-        if (BLColor!=null) {
+        if (FRColor !=null) {
             line.addData("Skystone BL = ", "%s", new Func<String>() {
                 @Override
                 public String value() {
                     return (isSkystone(false) ? "T" : "F");
                 }
             });
-            line.addData("BLColor-Sum = ", "%.3f", new Func<Double>() {
+            line.addData("FRColor-Sum = ", "%.3f", new Func<Double>() {
                 @Override
                 public Double value() {
-                    NormalizedRGBA colors = BLColor.getNormalizedColors();
+                    NormalizedRGBA colors = FRColor.getNormalizedColors();
                     double addedColors = colors.alpha + colors.red + colors.green + colors.blue;
                     return addedColors;
                 }
             });
         }
-        if (BRColor!=null && BLColor!=null) {
+        if (FLColor !=null && FRColor !=null) {
             line.addData("SkystoneLOC = ", "%s", new Func<String>() {
                 @Override
                 public String value() {

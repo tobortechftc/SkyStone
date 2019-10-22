@@ -28,13 +28,13 @@ public class FoundationHook extends Logger<FoundationHook> implements Configurab
     private AdjustableServo rightHook;
     private AdjustableServo leftHook;
 
-    private final double RIGHT_HOOK_INIT = 0.1;
-    private final double RIGHT_HOOK_UP = 0.284;
-    private final double RIGHT_HOOK_DOWN = 0.8;
+    private final double LEFT_HOOK_INIT = 0.1;
+    private final double LEFT_HOOK_UP = 0.284;
+    private final double LEFT_HOOK_DOWN = 0.8;
 
-    private final double LEFT_HOOK_INIT = 0.99;
-    private final double LEFT_HOOK_UP = 0.89;
-    private final double LEFT_HOOK_DOWN = .322;
+    private final double RIGHT_HOOK_INIT = 0.99;
+    private final double RIGHT_HOOK_UP = 0.89;
+    private final double RIGHT_HOOK_DOWN = .322;
 
     private boolean hookIsDown = false;
     private ElapsedTime runtime = new ElapsedTime();
