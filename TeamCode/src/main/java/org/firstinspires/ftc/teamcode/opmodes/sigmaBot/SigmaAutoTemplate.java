@@ -11,6 +11,8 @@ import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.components.SwerveChassis;
 import org.firstinspires.ftc.teamcode.hardware.Sigma.ToboSigma;
 import org.firstinspires.ftc.teamcode.support.Logger;
+import org.firstinspires.ftc.teamcode.support.OpModeTerminationException;
+import org.firstinspires.ftc.teamcode.support.YieldHandler;
 import org.firstinspires.ftc.teamcode.support.events.EventManager;
 import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
 import org.firstinspires.ftc.teamcode.support.tasks.TaskManager;
@@ -22,7 +24,7 @@ import java.util.List;
  */
 @Disabled
 @Autonomous(name="Sigma-Auto", group="Sigma")
-public class SigmaAutoTemplate extends LinearOpMode {
+public class SigmaAutoTemplate extends LinearOpMode implements YieldHandler {
     private ToboSigma.SkystoneLocation StoneLoc;
 
     protected static int LOG_LEVEL = Log.INFO;
@@ -64,6 +66,8 @@ public class SigmaAutoTemplate extends LinearOpMode {
 
         waitForStart();
         robot.runtime.reset();
+        robot.core.set_yield_handler(this); // uses this class as yield handler
+
         // run until the end of the match (driver presses STOP or timeout)
         if (opModeIsActive()) {
             try {
@@ -104,5 +108,10 @@ public class SigmaAutoTemplate extends LinearOpMode {
             if (--linesToShow == 0) break;
         }
         telemetry.update();
+    }
+
+    public void on_yield() {
+        if (!opModeIsActive())
+            throw new OpModeTerminationException();
     }
 }

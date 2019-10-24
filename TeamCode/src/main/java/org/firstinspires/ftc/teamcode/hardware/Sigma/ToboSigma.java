@@ -32,7 +32,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     }
 
     public enum AutoTeamColor {
-        NOT_AUTO, AUTO_RED, AUTO_BLUE
+        NOT_AUTO, AUTO_RED, AUTO_BLUE, DIAGNOSIS
     }
     public CoreSystem core;
     public ElapsedTime runtime = new ElapsedTime();
@@ -56,7 +56,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         chassis = new SwerveChassis(this.core).configureLogging("Swerve", logLevel); // Log.DEBUG
 
         // Warning: MUST disable the following line during competition
-        chassis.enableRangeSensorTelemetry();//Comment out later
+        // chassis.enableRangeSensorTelemetry();//Comment out later
 
         chassis.configure(configuration, (autoColor!=AutoTeamColor.NOT_AUTO), true);
         info("RoboSigma configure() after init Chassis (run time = %.2f sec)", (runtime.seconds() - ini_time));
