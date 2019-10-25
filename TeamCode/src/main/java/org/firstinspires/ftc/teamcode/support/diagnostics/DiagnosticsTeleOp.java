@@ -54,6 +54,7 @@ public abstract class DiagnosticsTeleOp extends LinearOpMode {
         configuration = new Configuration(hardwareMap, robot2.getName()).configureLogging("Config", LOG_LEVEL);
         menu = new Menu();
         ToboSigma.AutoTeamColor autoColor = ToboSigma.AutoTeamColor.DIAGNOSIS;
+
         try {
             // configure robot and reset all hardware
             robot2.configure(configuration, telemetry, autoColor);

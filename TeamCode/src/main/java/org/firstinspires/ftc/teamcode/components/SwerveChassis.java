@@ -286,38 +286,36 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     }
 
     public boolean isSkystone(boolean isRight){
-        double distB = getDistance(Direction.BACK);
+        double distB;
         double addedColors;
         double threshold;
         NormalizedRGBA colors;
         if(isRight)
         {
-            colors = FLColor.getNormalizedColors();
+            distB = getDistance(Direction.FRONT_RIGHT);
+            colors = FRColor.getNormalizedColors();
             addedColors = colors.alpha+colors.red+colors.green+colors.blue;
             if(distB<=7) {
-                threshold = -0.221456225 + (1.52138259 / distB);
+                threshold = -0.206456225 + (1.52138259 / distB);//.221 changed to .206 to keep threshold above skystone argb sum
             } else {
                 threshold = 0.006;
             }
-            if(addedColors<=threshold)//.015 ideal for 1.5 cm away
-            {
+            if(addedColors<=threshold) {
                 return true;
-            }
-            else
-            {
+            } else {
                 return false;
             }
         }
         else {
-            colors = FRColor.getNormalizedColors();
+            distB = getDistance(Direction.FRONT_LEFT);
+            colors = FLColor.getNormalizedColors();
             addedColors = colors.alpha + colors.red + colors.green + colors.blue;
             if (distB <= 7) {
-                threshold = -0.221456225 + (1.52138259 / distB);
+                threshold = -0.206456225 + (1.52138259 / distB);//.221
             } else {
                 threshold = 0.006;
             }
-            if (addedColors <= threshold)//.015 ideal for 1.5 cm away
-            {
+            if (addedColors <= threshold) {
                 return true;
             } else {
                 return false;
@@ -329,30 +327,30 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     {
         if(isBlue)
         {
-            if(isSkystone(true)&&!isSkystone(false))
+            if(isSkystone(false)&&!isSkystone(true))
             {
                 return ToboSigma.SkystoneLocation.CENTER;
             }
-            else if (isSkystone(false)&&!isSkystone(true))
+            else if (!isSkystone(false)&&isSkystone(true))
             {
                 return ToboSigma.SkystoneLocation.RIGHT;
             }
-            else if (!isSkystone(true)&&!isSkystone(false))
+            else if (!isSkystone(false)&&!isSkystone(true))
             {
                 return ToboSigma.SkystoneLocation.LEFT;
             }
         }
         else
         {
-            if(isSkystone(true)&&!isSkystone(false))
+            if(isSkystone(false)&&!isSkystone(true))
             {
                 return ToboSigma.SkystoneLocation.LEFT;
             }
-            else if (isSkystone(false)&&!isSkystone(true))
+            else if (!isSkystone(false)&&isSkystone(true))
             {
                 return ToboSigma.SkystoneLocation.CENTER;
             }
-            else if (!isSkystone(true)&&!isSkystone(false))
+            else if (!isSkystone(false)&&!isSkystone(true))
             {
                 return ToboSigma.SkystoneLocation.RIGHT;
             }
@@ -982,7 +980,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
 //            });
 //        }
         if (FLColor !=null) {
-            line.addData("Skystone BR = ", "%s", new Func<String>() {
+            line.addData("Skystone-FL = ", "%s", new Func<String>() {
                 @Override
                 public String value() {
                     return (isSkystone(true) ? "T" : "F");
@@ -998,7 +996,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             });
         }
         if (FRColor !=null) {
-            line.addData("Skystone BL = ", "%s", new Func<String>() {
+            line.addData("Skystone-FR = ", "%s", new Func<String>() {
                 @Override
                 public String value() {
                     return (isSkystone(false) ? "T" : "F");
@@ -1014,10 +1012,17 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             });
         }
         if (FLColor !=null && FRColor !=null) {
-            line.addData("SkystoneLOC = ", "%s", new Func<String>() {
+            line.addData("SkystoneLOC(Blue) = ", "%s", new Func<String>() {
                 @Override
                 public String value() {
                     ToboSigma.SkystoneLocation loc = skyStoneLocation(true);
+                    return loc.toString();
+                }
+            });
+            line.addData("SkystoneLOC(Red) = ", "%s", new Func<String>() {
+                @Override
+                public String value() {
+                    ToboSigma.SkystoneLocation loc = skyStoneLocation(false);
                     return loc.toString();
                 }
             });
