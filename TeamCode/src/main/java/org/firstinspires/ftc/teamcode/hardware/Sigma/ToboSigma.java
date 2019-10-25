@@ -39,6 +39,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     public double rotateRatio = 0.7; // slow down ratio for rotation
     public double motor_count = 0;
     public double auto_chassis_power = .6;
+    public double auto_chassis_power_slow = .3;
+
 
     @Override
     public String getName() {
@@ -56,7 +58,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         chassis = new SwerveChassis(this.core).configureLogging("Swerve", logLevel); // Log.DEBUG
 
         // Warning: MUST disable the following line during competition
-        chassis.enableRangeSensorTelemetry();//Comment out later
+        // chassis.enableRangeSensorTelemetry();//Comment out later
 
         chassis.configure(configuration, (autoColor!=AutoTeamColor.NOT_AUTO), true);
         info("RoboSigma configure() after init Chassis (run time = %.2f sec)", (runtime.seconds() - ini_time));
@@ -445,20 +447,24 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         chassis.driveStraightAutoPlus(auto_chassis_power, 46, 0, 10000);
 
         chassis.rotateTo(.2, 0);
+        skyStonePosition = chassis.skyStoneLocation(isBlue); // using color sensors need to be close enough to the stones
+
         if(isLeft){
-            if(skyStonePosition == SkystoneLocation.RIGHT && !isBlue||skyStonePosition == ToboSigma.SkystoneLocation.LEFT && isBlue|| skyStonePosition == SkystoneLocation.UNKNOWN){
-                chassis.driveStraightAuto(auto_chassis_power, 17, 90 * factor, 10000);  // test to get exact numbers
+            if((skyStonePosition == SkystoneLocation.LEFT && !isBlue)||(skyStonePosition == ToboSigma.SkystoneLocation.RIGHT && isBlue)|| skyStonePosition == SkystoneLocation.UNKNOWN){
+                chassis.driveStraightAuto(auto_chassis_power_slow, 10, -90 * factor, 1000);  // test to get exact numbers
             } else if(skyStonePosition == ToboSigma.SkystoneLocation.CENTER){
-                chassis.driveStraightAuto(auto_chassis_power, 37, 90 * factor, 10000);  // test to get exact numbers
-            } else if(skyStonePosition == ToboSigma.SkystoneLocation.RIGHT && isBlue||skyStonePosition == ToboSigma.SkystoneLocation.LEFT && !isBlue) {
-                chassis.driveStraightAuto(auto_chassis_power, 57, 90 * factor, 10000);  // test to get exact numbers
+                chassis.driveStraightAuto(auto_chassis_power_slow, 10, 90 * factor, 1000);  // test to get exact numbers
+            } else if((skyStonePosition == ToboSigma.SkystoneLocation.LEFT && isBlue)||(skyStonePosition == ToboSigma.SkystoneLocation.RIGHT && !isBlue)) {
+                chassis.driveStraightAuto(auto_chassis_power_slow, 30, 90 * factor, 1000);  // test to get exact numbers
             }
-        } else if(skyStonePosition == SkystoneLocation.RIGHT && !isBlue||skyStonePosition == ToboSigma.SkystoneLocation.LEFT && isBlue|| skyStonePosition == SkystoneLocation.UNKNOWN){
-            chassis.driveStraightAuto(auto_chassis_power, -15, 90 * factor, 10000);  // test to get exact numbers
-        } else if(skyStonePosition == ToboSigma.SkystoneLocation.CENTER){
-            chassis.driveStraightAuto(auto_chassis_power, 5, 90 * factor, 10000);  // test to get exact numbers
-        } else if(skyStonePosition == ToboSigma.SkystoneLocation.RIGHT && isBlue||skyStonePosition == ToboSigma.SkystoneLocation.LEFT && !isBlue) {
-            chassis.driveStraightAuto(auto_chassis_power, 25, 90 * factor, 10000);  // test to get exact numbers
+        } else { // Right position
+            if (skyStonePosition == SkystoneLocation.LEFT && !isBlue || (skyStonePosition == ToboSigma.SkystoneLocation.RIGHT && isBlue) || skyStonePosition == SkystoneLocation.UNKNOWN) {
+                chassis.driveStraightAuto(auto_chassis_power_slow, 15, 90 * factor, 10000);  // test to get exact numbers
+            } else if (skyStonePosition == ToboSigma.SkystoneLocation.CENTER) {
+                chassis.driveStraightAuto(auto_chassis_power_slow, 5, -90 * factor, 10000);  // test to get exact numbers
+            } else if (skyStonePosition == ToboSigma.SkystoneLocation.LEFT && isBlue || skyStonePosition == ToboSigma.SkystoneLocation.LEFT && !isBlue) {
+                chassis.driveStraightAuto(auto_chassis_power_slow, 25, -90 * factor, 10000);  // test to get exact numbers
+            }
         }
 
         //grab stone
@@ -470,10 +476,17 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         // go to foundation
 
         int ss_pos = 1;
-        if (skyStonePosition== ToboSigma.SkystoneLocation.RIGHT)
-            ss_pos = 3;
-        else if (skyStonePosition== ToboSigma.SkystoneLocation.CENTER)
-            ss_pos = 2;
+        if (isBlue) {
+            if (skyStonePosition == ToboSigma.SkystoneLocation.RIGHT)
+                ss_pos = 3;
+            else if (skyStonePosition == ToboSigma.SkystoneLocation.CENTER)
+                ss_pos = 2;
+        } else { // red
+            if (skyStonePosition == ToboSigma.SkystoneLocation.LEFT)
+                ss_pos = 3;
+            else if (skyStonePosition == ToboSigma.SkystoneLocation.CENTER)
+                ss_pos = 2;
+        }
 
         chassis.rotateTo(.2, 0);
         chassis.driveStraightAutoPlus(auto_chassis_power, 150 + 20 * ss_pos, -90 * factor, 15000);
