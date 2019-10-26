@@ -444,13 +444,16 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
         // go to stones
 
-        chassis.driveStraightAutoPlus(auto_chassis_power, 46, 0, 10000);
-        chassis.driveStraightAutoPlus(auto_chassis_power_slow, 5, 0, 10000);
+        chassis.driveStraightAutoPlus(.4, 46, 0, 10000);
+        core.yield_for(0.5);
+        double dist = chassis.getDistance(SwerveChassis.Direction.FRONT) - 11;
+        if (dist>20) dist=20;
+        chassis.driveStraightAutoPlus(.3,  dist, 0,1000);
 
         chassis.rotateTo(.2, 0);
         core.yield_for(0.2);
         skyStonePosition = chassis.skyStoneLocation(isBlue); // using color sensors need to be close enough to the stones
-
+        chassis.driveStraightAutoPlus(auto_chassis_power_slow,  -2, 0,1000);
         if(isLeft){
             if((skyStonePosition == SkystoneLocation.LEFT && !isBlue)||(skyStonePosition == ToboSigma.SkystoneLocation.RIGHT && isBlue)|| skyStonePosition == SkystoneLocation.UNKNOWN){
                 chassis.driveStraightAuto(auto_chassis_power_slow, 10, -90 * factor, 1000);  // test to get exact numbers
@@ -473,7 +476,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
         stoneGrabber.grabStoneComboAuto();
         chassis.rotateTo(.2, 0);
-        chassis.driveStraightAuto(auto_chassis_power, -5, 0, 1000);
+        chassis.driveStraightAuto(.3, -5, 0, 1000);
         stoneGrabber.armInComboAuto(true);
 
         // go to foundation
@@ -496,7 +499,6 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
         //align
 
-        double dist;
         chassis.rotateTo(.2, 0);
         if (isBlue) {
             dist = chassis.getDistance(SwerveChassis.Direction.LEFT);
@@ -512,10 +514,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         //place stone
         stoneGrabber.armOutComboAuto();
         stoneGrabber.wristPerpendicular();
-        chassis.driveStraightAuto(auto_chassis_power, 3, 0, 1000);
-        stoneGrabber.deliverStoneComboAuto();
-        chassis.driveStraightAuto(auto_chassis_power, -3, 0, 1000);
-        stoneGrabber.armInComboAuto(false);
+        chassis.driveStraightAuto(auto_chassis_power, 13, 0, 1000);
+
     }
 
     public void getAnotherSkyStone(SkystoneLocation StoneLoc, int stoneNum, boolean isBlue) throws InterruptedException{//stoneNum - how many stones ara we going to have after this trip
@@ -590,13 +590,19 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         if(!isBlue){
             factor = -1;
         }
-        double dist = chassis.getDistance(SwerveChassis.Direction.BACK);
-        chassis.driveStraightAuto(auto_chassis_power/2, 80 - dist, 0, 10000);
-        Thread.sleep(500);
+       double dist ;
+               //= chassis.getDistance(SwerveChassis.Direction.FRONT);
+
+        chassis.driveStraightAuto(auto_chassis_power_slow, 5, 0, 10000);
         foundationHook.hookDown();
+        Thread.sleep(500);
         dist = chassis.getDistance(SwerveChassis.Direction.BACK);
+        if (dist > 120){
+            dist = 120;
+        }
         chassis.driveStraightAuto(auto_chassis_power/2, -dist - 10*(1- auto_chassis_power) , 7* factor, 10000);
         foundationHook.hookUp();
+        stoneGrabber.deliverStoneComboAuto();
         chassis.rotateTo(.3, 0);
 
         if (isBlue) {
@@ -607,9 +613,15 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         if (dist > 128){
             dist = 20;
         }
-        chassis.driveStraightAutoPlus(auto_chassis_power, 90-dist, 90* factor, 15000);
-        chassis.driveStraightAutoPlus(.9, 40, 0, 15000);
-        chassis.driveStraightAutoPlus(.9, 20, 90* factor, 15000);
-        //30
+        chassis.driveStraightAutoPlus(auto_chassis_power, 90-dist, 90* factor, 1500);
+        stoneGrabber.armInComboAuto(false);
+
+        if ((isBlue && chassis.getDistance(SwerveChassis.Direction.RIGHT) > 40) || (!isBlue && chassis.getDistance(SwerveChassis.Direction.LEFT) > 40)){
+               chassis.driveStraightAutoPlus(.4, 40, 90* factor, 1500);
+        } else {
+             chassis.driveStraightAutoPlus(.5, 45, 0, 1500);
+             chassis.driveStraightAutoPlus(.4, 40, 90* factor, 1500);
+        }
+
     }
 }
