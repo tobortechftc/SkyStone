@@ -50,6 +50,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final int LIFT_GRAB_AUTO = 640;
     private final int LIFT_MAX = 3640;
     private final int LIFT_SAFE_SWING = 790;
+    private final int LIFT_SAFE_SWING_AUTO = 850;
     private final double LIFT_POWER = 0.5;
     private final int LIFT_DELIVER = 1000;
 
@@ -345,12 +346,12 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         }
     }
     public void armInComboAuto(final boolean wristParallel) {
-        armInCombo(wristParallel);
+        armInCombo(wristParallel, true);
         while (!TaskManager.isComplete("Arm In Combo")) {
             TaskManager.processTasks();
         }
     }
-    public void armInCombo(final boolean wristParallel) {
+    public void armInCombo(final boolean wristParallel, boolean isAuto) {
         final String taskName = "Arm In Combo";
         if (!TaskManager.isComplete(taskName)) return;
         boolean grabIsOpened = isGrabberOpened;
@@ -369,17 +370,33 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 }
             }, taskName);
         }
-        TaskManager.add(new Task () {
-            @Override
-            public Progress start() {
-                liftToPosition(LIFT_SAFE_SWING);
-                return new Progress() {
-                    @Override
-                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 20;
-                    }
-                };
-            }
-        }, taskName);
+        if (isAuto) {
+            TaskManager.add(new Task() {
+                @Override
+                public Progress start() {
+                    liftToPosition(LIFT_SAFE_SWING_AUTO);
+                    return new Progress() {
+                        @Override
+                        public boolean isDone() {
+                            return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 20;
+                        }
+                    };
+                }
+            }, taskName);
+        } else {
+            TaskManager.add(new Task() {
+                @Override
+                public Progress start() {
+                    liftToPosition(LIFT_SAFE_SWING);
+                    return new Progress() {
+                        @Override
+                        public boolean isDone() {
+                            return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 20;
+                        }
+                    };
+                }
+            }, taskName);
+        }
         TaskManager.add(new Task() {
             @Override
             public Progress start() {

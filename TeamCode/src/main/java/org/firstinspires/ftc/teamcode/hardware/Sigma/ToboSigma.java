@@ -256,7 +256,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (source.isPressed(Button.LEFT_BUMPER))
-                    stoneGrabber.armInCombo(source.isPressed(Button.BACK));
+                    stoneGrabber.armInCombo(source.isPressed(Button.BACK),false);
                 else
                     stoneGrabber.grabberAuto();
             }
@@ -445,7 +445,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         // go to stones
 
         chassis.driveStraightAutoPlus(.4, 46, 0, 10000);
-        core.yield_for(0.5);
+        chassis.rotateTo(.2, 0);
         double dist = chassis.getDistance(SwerveChassis.Direction.FRONT) - 11;
         if (dist>20) dist=20;
         chassis.driveStraightAutoPlus(.3,  dist, 0,1000);
@@ -464,19 +464,19 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             }
         } else { // Right position
             if (skyStonePosition == SkystoneLocation.LEFT && !isBlue || (skyStonePosition == ToboSigma.SkystoneLocation.RIGHT && isBlue) || skyStonePosition == SkystoneLocation.UNKNOWN) {
-                chassis.driveStraightAuto(auto_chassis_power_slow, 15, 90 * factor, 10000);  // test to get exact numbers
+                chassis.driveStraightAuto(auto_chassis_power_slow, 5, 90 * factor, 10000);  // test to get exact numbers
             } else if (skyStonePosition == ToboSigma.SkystoneLocation.CENTER) {
-                chassis.driveStraightAuto(auto_chassis_power_slow, 5, -90 * factor, 10000);  // test to get exact numbers
+                chassis.driveStraightAuto(auto_chassis_power_slow, 15, -90 * factor, 10000);  // test to get exact numbers
             } else if (skyStonePosition == ToboSigma.SkystoneLocation.LEFT && isBlue || skyStonePosition == ToboSigma.SkystoneLocation.LEFT && !isBlue) {
-                chassis.driveStraightAuto(auto_chassis_power_slow, 25, -90 * factor, 10000);  // test to get exact numbers
+                chassis.driveStraightAuto(auto_chassis_power_slow, 35, -90 * factor, 10000);  // test to get exact numbers
             }
         }
 
         //grab stone
 
         stoneGrabber.grabStoneComboAuto();
+        chassis.driveStraightAuto(.3, -8, 0, 1000);
         chassis.rotateTo(.2, 0);
-        chassis.driveStraightAuto(.3, -5, 0, 1000);
         stoneGrabber.armInComboAuto(true);
 
         // go to foundation
@@ -506,7 +506,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             dist = chassis.getDistance(SwerveChassis.Direction.RIGHT);
         }
         if (dist > 128){
-            dist = 20;
+            dist = 40;
         }
 
         chassis.driveStraightAutoPlus(auto_chassis_power, dist - 40, -90 * factor, 15000);

@@ -247,7 +247,7 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
                 if (source.isPressed(Button.B)) {
                     stoneGrabber.armOutCombo();
                 }else if (source.isPressed(Button.X)) {
-                    stoneGrabber.armInCombo(false);
+                    stoneGrabber.armInCombo(false, false);
                 }else if (source.isPressed(Button.A)) {
                     stoneGrabber.grabStoneCombo();
                 }else if (source.isPressed(Button.Y)) {

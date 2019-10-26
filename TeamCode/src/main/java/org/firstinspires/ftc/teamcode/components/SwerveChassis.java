@@ -307,7 +307,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             }
         }
         else {
-            distB = getDistance(Direction.FRONT_LEFT);
+            distB = getDistance(Direction.FRONT_RIGHT); // DISABLE FRONT_LEFT
             colors = FLColor.getNormalizedColors();
             addedColors = colors.alpha + colors.red + colors.green + colors.blue;
             if (distB <= 7) {
@@ -775,7 +775,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         if (Thread.currentThread().isInterrupted()) return;
         rawRotateTo(power, finalHeading, true);//!!! A very bold move
         if (power>0.25) {
-            sleep(200);
+            sleep(100);
             rawRotateTo(0.25, finalHeading, false);
         }
     }
@@ -1105,9 +1105,10 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     }
     public void driveStraightAutoPlus(double power, double cm, double heading, int timeout) throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) return;
+        // driveStraightAuto(power, cm ,heading,  timeout);
         driveStraightAuto(power, cm *.9,heading,  timeout);
+        // core.yield_for(100);
         driveStraightAuto(power/2, cm *.1, heading,  timeout);
-
     }
 
 }
