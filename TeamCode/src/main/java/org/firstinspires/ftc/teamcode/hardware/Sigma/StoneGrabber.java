@@ -43,7 +43,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double GRABBER_INIT = 0.31;
     private final double GRABBER_OPEN_IN = 0.6;
     private final double GRABBER_OPEN = 0.92;
-    private final double GRABBER_CLOSE = 0.387;
+    private final double GRABBER_CLOSE = 0.31;
 
     private final int LIFT_DOWN = 20;
     private final int LIFT_GRAB = 400;

@@ -445,8 +445,10 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         // go to stones
 
         chassis.driveStraightAutoPlus(auto_chassis_power, 46, 0, 10000);
+        chassis.driveStraightAutoPlus(auto_chassis_power_slow, 5, 0, 10000);
 
         chassis.rotateTo(.2, 0);
+        core.yield_for(0.2);
         skyStonePosition = chassis.skyStoneLocation(isBlue); // using color sensors need to be close enough to the stones
 
         if(isLeft){
@@ -471,8 +473,9 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
         stoneGrabber.grabStoneComboAuto();
         chassis.rotateTo(.2, 0);
-        chassis.driveStraightAuto(auto_chassis_power, -5, 0, 10000);
+        chassis.driveStraightAuto(auto_chassis_power, -5, 0, 1000);
         stoneGrabber.armInComboAuto(true);
+
         // go to foundation
 
         int ss_pos = 1;
@@ -509,11 +512,12 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         //place stone
         stoneGrabber.armOutComboAuto();
         stoneGrabber.wristPerpendicular();
-        chassis.driveStraightAuto(auto_chassis_power, 3, 0, 10000);
+        chassis.driveStraightAuto(auto_chassis_power, 3, 0, 1000);
         stoneGrabber.deliverStoneComboAuto();
-        chassis.driveStraightAuto(auto_chassis_power, -3, 0, 10000);
+        chassis.driveStraightAuto(auto_chassis_power, -3, 0, 1000);
         stoneGrabber.armInComboAuto(false);
     }
+
     public void getAnotherSkyStone(SkystoneLocation StoneLoc, int stoneNum, boolean isBlue) throws InterruptedException{//stoneNum - how many stones ara we going to have after this trip
         int factor = 1;
         if(!isBlue){
@@ -591,9 +595,10 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         Thread.sleep(500);
         foundationHook.hookDown();
         dist = chassis.getDistance(SwerveChassis.Direction.BACK);
-        chassis.driveStraightAuto(auto_chassis_power/2, -dist - 10*(1- auto_chassis_power) , 10* factor, 10000);
-        chassis.rotateTo(.2, 0);
+        chassis.driveStraightAuto(auto_chassis_power/2, -dist - 10*(1- auto_chassis_power) , 7* factor, 10000);
         foundationHook.hookUp();
+        chassis.rotateTo(.3, 0);
+
         if (isBlue) {
             dist = chassis.getDistance(SwerveChassis.Direction.LEFT);
         } else{
