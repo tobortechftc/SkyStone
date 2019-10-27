@@ -245,9 +245,9 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (source.isPressed(Button.B)) {
-                    stoneGrabber.armOutCombo(true);
+                    stoneGrabber.armOutCombo();
                 }else if (source.isPressed(Button.X)) {
-                    stoneGrabber.armInCombo(false);
+                    stoneGrabber.armInCombo(false, false);
                 }else if (source.isPressed(Button.A)) {
                     stoneGrabber.grabStoneCombo();
                 }else if (source.isPressed(Button.Y)) {

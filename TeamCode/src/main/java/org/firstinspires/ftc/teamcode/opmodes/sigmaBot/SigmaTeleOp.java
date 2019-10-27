@@ -7,6 +7,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.hardware.Sigma.ToboSigma;
 import org.firstinspires.ftc.teamcode.support.Logger;
+import org.firstinspires.ftc.teamcode.support.OpModeTerminationException;
+import org.firstinspires.ftc.teamcode.support.YieldHandler;
 import org.firstinspires.ftc.teamcode.support.events.EventManager;
 import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
 import org.firstinspires.ftc.teamcode.support.tasks.TaskManager;
@@ -15,7 +17,7 @@ import org.firstinspires.ftc.teamcode.support.tasks.TaskManager;
  * Created by 28761 on 6/29/2019.
  */
 @TeleOp(name="Sigma-TeleOp", group="Sigma")
-public class SigmaTeleOp extends LinearOpMode {
+public class SigmaTeleOp extends LinearOpMode implements YieldHandler {
     protected static int LOG_LEVEL = Log.INFO;
 
     private Configuration configuration;
@@ -56,7 +58,7 @@ public class SigmaTeleOp extends LinearOpMode {
         log.info("RoboSigma TeleOp finished initialization (CPU_time = %.2f sec)", getRuntime());
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
-
+        robot.core.set_yield_handler(this); // uses this class as yield handler
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
@@ -80,5 +82,10 @@ public class SigmaTeleOp extends LinearOpMode {
             if (--linesToShow == 0) break;
         }
         telemetry.update();
+    }
+
+    public void on_yield() {
+        if (!opModeIsActive())
+            throw new OpModeTerminationException();
     }
 }

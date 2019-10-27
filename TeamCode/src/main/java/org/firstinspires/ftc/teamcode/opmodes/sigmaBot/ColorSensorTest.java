@@ -106,7 +106,7 @@ public class ColorSensorTest extends LinearOpMode {
     boolean bCurrState = false;
 
     // Get a reference to our sensor object.
-    colorSensor = hardwareMap.get(NormalizedColorSensor.class, "bottomColor");
+    colorSensor = hardwareMap.get(NormalizedColorSensor.class, "FLColor");
 
     // If possible, turn the light on in the beginning (it might already be on anyway,
     // we just make sure it is if we can).
@@ -147,35 +147,25 @@ public class ColorSensorTest extends LinearOpMode {
               .addData("H", "%.3f", hsvValues[0])
               .addData("S", "%.3f", hsvValues[1])
               .addData("V", "%.3f", hsvValues[2]);
-      /*telemetry.addLine()
+      telemetry.addLine()
               .addData("a", "%.3f", colors.alpha)
               .addData("r", "%.3f", colors.red)
               .addData("g", "%.3f", colors.green)
-              .addData("b", "%.3f", colors.blue);*/
+              .addData("b", "%.3f", colors.blue);
 
-      int c;
+      boolean c;
 
-      if(hsvValues[1]>=0.7)
+      if(colors.alpha+colors.red+colors.green+colors.blue<=0.015)//.015 ideal for 1.5 cm away
       {
-
-        if((hsvValues[0]<=15&&hsvValues[0]>=0)||(hsvValues[0]>=350&&hsvValues[0]<=360))
-        {
-          c = 1;
-        }
-        else if(hsvValues[0]<=210&&hsvValues[0]>=230)
-        {
-          c = 2;
-        }
-
+        c = true;
 
       }
       else
       {
-
-        c = 0;
+        c = false;
 
       }
-
+      telemetry.addData("Skystone detected? ", "%s", (c?"Yes":"No"));
 
       /** We also display a conversion of the colors to an equivalent Android color integer.
        * @see Color */

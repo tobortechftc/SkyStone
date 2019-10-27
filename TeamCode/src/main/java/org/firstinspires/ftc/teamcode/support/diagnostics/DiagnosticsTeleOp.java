@@ -53,7 +53,8 @@ public abstract class DiagnosticsTeleOp extends LinearOpMode {
         Robot2 robot2 = createRobot();
         configuration = new Configuration(hardwareMap, robot2.getName()).configureLogging("Config", LOG_LEVEL);
         menu = new Menu();
-        ToboSigma.AutoTeamColor autoColor = ToboSigma.AutoTeamColor.NOT_AUTO; // set to true to enable testing TFOD
+        ToboSigma.AutoTeamColor autoColor = ToboSigma.AutoTeamColor.DIAGNOSIS;
+
         try {
             // configure robot and reset all hardware
             robot2.configure(configuration, telemetry, autoColor);
