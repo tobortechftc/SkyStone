@@ -8,8 +8,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.hardware.Sigma.ToboSigma;
 import org.firstinspires.ftc.teamcode.support.Logger;
-import org.firstinspires.ftc.teamcode.support.OpModeTerminationException;
-import org.firstinspires.ftc.teamcode.support.YieldHandler;
 import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
 
 import java.util.List;
@@ -19,7 +17,7 @@ import java.util.List;
  */
 
 @Autonomous(name="Sigma-Blue-Left", group="Sigma")
-public class SigmaAutoBlueLeft extends LinearOpMode implements YieldHandler {
+public class SigmaAutoBlueLeft extends LinearOpMode {
     private ToboSigma.SkystoneLocation StoneLoc;
 
     protected static int LOG_LEVEL = Log.INFO;
@@ -60,7 +58,6 @@ public class SigmaAutoBlueLeft extends LinearOpMode implements YieldHandler {
         int robot_pos = 1;
 
         waitForStart();
-        robot.core.set_yield_handler(this); // uses this class as yield handler
         robot.runtime.reset();
         // run until the end of the match (driver presses STOP or timeout)
         if (opModeIsActive()) {
@@ -89,7 +86,7 @@ public class SigmaAutoBlueLeft extends LinearOpMode implements YieldHandler {
             } catch (Exception E) {
                 telemetry.addData("Error in event handler", E.getMessage());
                 handleException(E);
-                robot.core.yield_for(5);
+                Thread.sleep(5000);
             }
         }
     }
@@ -102,9 +99,5 @@ public class SigmaAutoBlueLeft extends LinearOpMode implements YieldHandler {
             if (--linesToShow == 0) break;
         }
         telemetry.update();
-    }
-    public void on_yield() {
-        if (!opModeIsActive())
-            throw new OpModeTerminationException();
     }
 }
