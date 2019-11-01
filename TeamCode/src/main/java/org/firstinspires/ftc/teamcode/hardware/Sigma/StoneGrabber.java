@@ -45,13 +45,18 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double GRABBER_OPEN = 0.92;
     private final double GRABBER_CLOSE = 0.31;
 
+    //private final int LIFT_RUN_TO_POSITION_OFFSET = 20;   // V5.2 
+    private final int LIFT_RUN_TO_POSITION_OFFSET = 100;  // V5.3, new control for goBilda 5205 motor
     private final int LIFT_DOWN = 20;
     private final int LIFT_GRAB = 400;
     private final int LIFT_GRAB_AUTO = 640;
     private final int LIFT_MAX = 3640;
-    private final int LIFT_SAFE_SWING = 790;
-    private final int LIFT_SAFE_SWING_AUTO = 850;
-    private final double LIFT_POWER = 0.5;
+    //private final int LIFT_SAFE_SWING_AUTO = 850;
+    private final int LIFT_SAFE_SWING_AUTO = 950;
+    //private final int LIFT_SAFE_SWING = 790;
+    private final int LIFT_SAFE_SWING = LIFT_SAFE_SWING_AUTO;
+    //private final double LIFT_POWER = 0.5;   // V5.2
+    private final double LIFT_POWER = 1.0;  // V5.3
     private final int LIFT_DELIVER = 1000;
 
 
@@ -110,7 +115,8 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         grabberInit();
 
         lifter = configuration.getHardwareMap().tryGet(DcMotor.class, "lifter");
-        if (lifter != null) lifter.setDirection(DcMotorSimple.Direction.REVERSE);
+        //if (lifter != null) lifter.setDirection(DcMotorSimple.Direction.REVERSE);
+        if (lifter != null) lifter.setDirection(DcMotorSimple.Direction.FORWARD);
         lifter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         lifter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -273,7 +279,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         lifter.setPower(LIFT_POWER);
         return new Progress() {
             public boolean isDone() {
-                return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 20;
+                return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < LIFT_RUN_TO_POSITION_OFFSET; 
             }
         };
     }
@@ -314,7 +320,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
 
                 return new Progress() {
                     @Override
-                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 20;
+                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < LIFT_RUN_TO_POSITION_OFFSET;
                     }
                 };
             }
@@ -331,7 +337,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 liftToPosition(LIFT_GRAB);
                 return new Progress() {
                     @Override
-                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 20;
+                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < LIFT_RUN_TO_POSITION_OFFSET;
                     }
                 };
             }
@@ -364,7 +370,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                     return new Progress() {
                         @Override
                         public boolean isDone() {
-                            return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 20;
+                            return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < LIFT_RUN_TO_POSITION_OFFSET;
                         }
                     };
                 }
@@ -378,7 +384,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                     return new Progress() {
                         @Override
                         public boolean isDone() {
-                            return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 20;
+                            return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < LIFT_RUN_TO_POSITION_OFFSET;
                         }
                     };
                 }
@@ -391,7 +397,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                     return new Progress() {
                         @Override
                         public boolean isDone() {
-                            return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 20;
+                            return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 100;
                         }
                     };
                 }
@@ -410,7 +416,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 liftToPosition(LIFT_DOWN);
                 return new Progress() {
                     @Override
-                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 20;
+                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 100;
                     }
                 };
 
@@ -471,7 +477,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 liftToPosition(LIFT_DOWN);
                 return new Progress() {
                     @Override
-                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 20;
+                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < LIFT_RUN_TO_POSITION_OFFSET;
                     }
                 };
             }

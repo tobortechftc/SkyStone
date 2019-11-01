@@ -183,16 +183,20 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     public void configure(Configuration configuration, boolean auto, boolean enableSensors) {
         // set up motors / sensors as wheel assemblies
         wheels[0] = frontLeft = new WheelAssembly(
-                configuration, "FrontLeft", DcMotor.Direction.FORWARD
+                //configuration, "FrontLeft", DcMotor.Direction.FORWARD
+                configuration, "FrontLeft", DcMotor.Direction.REVERSE  // V5.3 goBilda 5202 motor
         );
         wheels[1] = frontRight = new WheelAssembly(
-                configuration, "FrontRight", DcMotor.Direction.REVERSE
+                //configuration, "FrontRight", DcMotor.Direction.REVERSE
+                configuration, "FrontRight", DcMotor.Direction.FORWARD // V5.3 goBilda 5202 motor
         );
         wheels[2] = backLeft = new WheelAssembly(
-                configuration, "BackLeft", DcMotor.Direction.FORWARD
+                //configuration, "BackLeft", DcMotor.Direction.FORWARD
+                configuration, "BackLeft", DcMotor.Direction.REVERSE   // V5.3 goBilda 5202 motor
         );
         wheels[3] = backRight = new WheelAssembly(
-                configuration, "BackRight", DcMotor.Direction.REVERSE
+                //configuration, "BackRight", DcMotor.Direction.REVERSE
+                configuration, "BackRight", DcMotor.Direction.FORWARD  // V5.3 goBilda 5202 motor
         );
 
         if (auto || setImuTelemetry) {
@@ -1105,10 +1109,10 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     }
     public void driveStraightAutoPlus(double power, double cm, double heading, int timeout) throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) return;
-        // driveStraightAuto(power, cm ,heading,  timeout);
-        driveStraightAuto(power, cm *.9,heading,  timeout);
+        driveStraightAuto(power, cm ,heading,  timeout);
+        //driveStraightAuto(power, cm *.9,heading,  timeout);
         // core.yield_for(100);
-        driveStraightAuto(power/2, cm *.1, heading,  timeout);
+        //driveStraightAuto(power/2, cm *.1, heading,  timeout);
     }
 
 }

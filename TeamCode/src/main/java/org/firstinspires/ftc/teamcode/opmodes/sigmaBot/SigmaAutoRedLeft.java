@@ -63,7 +63,7 @@ public class SigmaAutoRedLeft extends LinearOpMode {
         if (opModeIsActive()) {
             try {
                 boolean isBlue = false;
-                boolean isLeft = false;
+                boolean isLeft = true;
                 // put autonomous steps here
                 // step-1: detect skystone location
                 // StoneLoc = robot.chassis.skyStoneLocation(isBlue);
