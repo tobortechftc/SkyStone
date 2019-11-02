@@ -473,7 +473,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         //grab stone
 
         stoneGrabber.grabStoneComboAuto();
-        chassis.driveStraightAuto(.3, -8, 0, 1000);
+        //chassis.driveStraightAuto(.3, -8, 0, 1000);
+        chassis.driveStraightAuto(.3, -13, 0, 1000);
         chassis.rotateTo(.2, 0);
         stoneGrabber.armInComboAuto(true);
 
@@ -601,7 +602,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         }
 
         //chassis.driveStraightAuto(auto_chassis_power/2, -dist - 10*(1- auto_chassis_power) , 7* side, 10000);
-        chassis.driveStraightAuto(auto_chassis_power/2, -dist - 10*(1- auto_chassis_power) , 7* side, 5000);
+        chassis.driveStraightAuto(auto_chassis_power/1.5, -dist - 10*(1- auto_chassis_power) , 7* side, 4000);
         foundationHook.hookUp();
         stoneGrabber.deliverStoneComboAuto();
         chassis.rotateTo(.3, 0);

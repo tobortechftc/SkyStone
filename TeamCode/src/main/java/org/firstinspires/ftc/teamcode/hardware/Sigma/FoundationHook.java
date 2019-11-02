@@ -90,7 +90,7 @@ public class FoundationHook extends Logger<FoundationHook> implements Configurab
         leftHook.setPosition(LEFT_HOOK_INIT);
         rightHook.setPosition(RIGHT_HOOK_INIT);
         hookIsDown = false;
-        hookUp();
+        //hookUp();
         // configuration.register(this);
     }
 
