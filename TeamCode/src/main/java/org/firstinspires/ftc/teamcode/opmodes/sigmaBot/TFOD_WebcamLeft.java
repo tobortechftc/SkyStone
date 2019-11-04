@@ -37,16 +37,17 @@ import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
+import org.firstinspires.ftc.teamcode.hardware.Sigma.ToboSigma;
 
 import java.util.List;
 
 /**
  * This 2019-2020 OpMode illustrates the basics of using the TensorFlow Object Detection API to
  * determine the position of the Skystone game elements.
- *
+ * <p>
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list.
- *
+ * <p>
  * IMPORTANT: In order to use this OpMode, you need to obtain your own Vuforia license key as
  * is explained below.
  */
@@ -69,7 +70,7 @@ public class TFOD_WebcamLeft extends LinearOpMode {
      * and paste it in to your code on the next line, between the double quotes.
      */
 
-//    private static final String VUFORIA_KEY = "AaaZDWL/////AAAAGYIaD+Gn/UUDhEiR/gcOJxdEJlKEpCOKSLPfhYJfYthUNZ0vnEGm0VGPutkNgRq8bq1ufm3eAySnLhkJQ7d4w6VDT7os5FGPEOGPfsIWMYNAFMdX+wlJo2JCyljeSxQtXUd/YileyfYKBXOl2uFA4KnStCC9WkYTUBrAof3H7RGKorzYixDeOpbmCsf25rayjtAUQrKCwG4j6P5rRdxy7SC//v4VC6NirNwgJ/xn1r02/jbx8vUDrDODGyut9iLk06IzMnrq/P01yKOp48clTw0WIKNmVT7WUQweXy+E1w6xwFplTlPkjC+gzerDOpxHPqYg8RusWD2Y/IMlmnk1yzJba1B9Xf9Ih6BJbm/fVwL4";
+    //    private static final String VUFORIA_KEY = "AaaZDWL/////AAAAGYIaD+Gn/UUDhEiR/gcOJxdEJlKEpCOKSLPfhYJfYthUNZ0vnEGm0VGPutkNgRq8bq1ufm3eAySnLhkJQ7d4w6VDT7os5FGPEOGPfsIWMYNAFMdX+wlJo2JCyljeSxQtXUd/YileyfYKBXOl2uFA4KnStCC9WkYTUBrAof3H7RGKorzYixDeOpbmCsf25rayjtAUQrKCwG4j6P5rRdxy7SC//v4VC6NirNwgJ/xn1r02/jbx8vUDrDODGyut9iLk06IzMnrq/P01yKOp48clTw0WIKNmVT7WUQweXy+E1w6xwFplTlPkjC+gzerDOpxHPqYg8RusWD2Y/IMlmnk1yzJba1B9Xf9Ih6BJbm/fVwL4";
     private static final String VUFORIA_KEY = "AS0FKrL/////AAABmTcBCNs1gE8uh4tntGA7HSgXRT5npDQpV2pw5tlqbZCI6WJQRf0bKf458A218bGkQJCWkJzvJy6UtNnhziraRVDDZSnTSZGSD7s3WN9jNYqBiSoO3CVE6FU2dX1yuJNa1zfiEhcGT8ChTd+kucE/q3sXsy/nw1KqlW/7uEaEeRwaCPseqsbNrc1HZ1bi18PzwQpCaypDruqqVEyZ3dvTqDmjPg7WFBe2kStPR/qTtcLSXdE804RxxkgTGUtDMIG7TTbAdirInGVZw2p2APZKAQdYofYW2E0Ss5hZCeL55zflSuQK0QcW1sAyvaTUMd/fDse4FgqxhnfK0ip0Kc+ZqZ6XJpof/Nowwxv3IgDWZJzO";
 
     /**
@@ -109,28 +110,91 @@ public class TFOD_WebcamLeft extends LinearOpMode {
         telemetry.update();
         waitForStart();
 
-        if (opModeIsActive()) {
-            while (opModeIsActive()) {
-                if (tfod != null) {
-                    // getUpdatedRecognitions() will return null if no new information is available since
-                    // the last time that call was made.
-                    List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
-                    if (updatedRecognitions != null) {
-                      telemetry.addData("# Object Detected", updatedRecognitions.size());
-                      // step through the list of recognitions and display boundary info.
-                      int i = 0;
-                      for (Recognition recognition : updatedRecognitions) {
-                        telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
-                        telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
-                                recognition.getLeft(), recognition.getTop());
-                        telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
-                                recognition.getRight(), recognition.getBottom());
-                      }
-                      telemetry.update();
-                    }
+
+        while (opModeIsActive()) {
+            if (tfod == null) {
+                continue;
+            }
+
+            boolean redSide = true;
+            int max_stone_width = 250;
+            int min_stone_width = 150;
+            int left_center_border_x = 200;
+            int center_right_border_x = 400;
+            ToboSigma.SkystoneLocation skystoneLocation;
+            // getUpdatedRecognitions() will return null if no new information is available since
+            // the last time that call was made.
+            List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+            if (updatedRecognitions == null) {
+                continue;
+            }
+            telemetry.addData("# Object Detected", updatedRecognitions.size());
+            // step through the list of recognitions and display boundary info.
+            int i = 0;
+            for (Recognition recognition : updatedRecognitions) {
+                telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
+                telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
+                        recognition.getLeft(), recognition.getTop());
+                telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
+                        recognition.getRight(), recognition.getBottom());
+            }
+            telemetry.update();
+
+            if (updatedRecognitions.size() < 1) {
+                continue;
+            }
+            //logger.verbose("Starting recognitions");
+            //logger.verbose("Recognitions: %d", (int) updatedRecognitions.size());
+            int validRecognitions = 0;
+            for (Recognition recognition :
+                    updatedRecognitions) {
+                double width = recognition.getRight() - recognition.getLeft();
+                if (width < max_stone_width && width > min_stone_width) {
+                    validRecognitions++;
                 }
             }
+            //logger.verbose("Valid recognitions: %d", validRecognitions);
+            if (validRecognitions <= 0 && validRecognitions >= 4) {
+               continue;
+            }
+            for (Recognition recognition :
+                    updatedRecognitions) {
+                if (recognition.getLabel() == "Stone") {
+                    continue;
+                }
+                double pos = (recognition.getRight() + recognition.getLeft()) / 2;
+                double skystone_width = recognition.getRight() - recognition.getLeft();
+                if (skystone_width>250) { // stone detected is twice as regular, assume the skystone is on the right half
+                    pos = (pos+recognition.getRight())/2;
+                }
+                if (redSide) {
+                    if (pos < left_center_border_x) {
+                        skystoneLocation = ToboSigma.SkystoneLocation.RIGHT;
+                    } else if (pos > center_right_border_x) {
+                        skystoneLocation = ToboSigma.SkystoneLocation.CENTER;
+                    } else if (pos >= left_center_border_x && pos <= center_right_border_x) {
+                        skystoneLocation = ToboSigma.SkystoneLocation.LEFT;
+                    } else {
+                        skystoneLocation = ToboSigma.SkystoneLocation.UNKNOWN;
+                    }
+                } else {
+                    if (pos < left_center_border_x) {
+                        skystoneLocation = ToboSigma.SkystoneLocation.CENTER;
+                    } else if (pos > center_right_border_x) {
+                        skystoneLocation = ToboSigma.SkystoneLocation.LEFT;
+                    } else if (pos >= left_center_border_x && pos <= center_right_border_x) {
+                        skystoneLocation = ToboSigma.SkystoneLocation.RIGHT;
+                    } else {
+                        skystoneLocation = ToboSigma.SkystoneLocation.UNKNOWN;
+                    }
+                }
+                telemetry.addData("Skystone Position: ", skystoneLocation);
+                telemetry.update();
+
+            }
+            telemetry.update();
         }
+
 
         if (tfod != null) {
             tfod.shutdown();
@@ -160,10 +224,10 @@ public class TFOD_WebcamLeft extends LinearOpMode {
      */
     private void initTfod() {
         int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
-            "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+                "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
-       tfodParameters.minimumConfidence = 0.8;
-       tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
-       tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT);
+        tfodParameters.minimumConfidence = 0.8;
+        tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
+        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT);
     }
 }

@@ -36,7 +36,7 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
     private static final String LABEL_FIRST_ELEMENT = "Stone";
     private static final String LABEL_SECOND_ELEMENT = "Skystone";
 
-    private static final String VUFORIA_KEY = "AaaZDWL/////AAAAGYIaD+Gn/UUDhEiR/gcOJxdEJlKEpCOKSLPfhYJfYthUNZ0vnEGm0VGPutkNgRq8bq1ufm3eAySnLhkJQ7d4w6VDT7os5FGPEOGPfsIWMYNAFMdX+wlJo2JCyljeSxQtXUd/YileyfYKBXOl2uFA4KnStCC9WkYTUBrAof3H7RGKorzYixDeOpbmCsf25rayjtAUQrKCwG4j6P5rRdxy7SC//v4VC6NirNwgJ/xn1r02/jbx8vUDrDODGyut9iLk06IzMnrq/P01yKOp48clTw0WIKNmVT7WUQweXy+E1w6xwFplTlPkjC+gzerDOpxHPqYg8RusWD2Y/IMlmnk1yzJba1B9Xf9Ih6BJbm/fVwL4";
+    private static final String VUFORIA_KEY = "AS0FKrL/////AAABmTcBCNs1gE8uh4tntGA7HSgXRT5npDQpV2pw5tlqbZCI6WJQRf0bKf458A218bGkQJCWkJzvJy6UtNnhziraRVDDZSnTSZGSD7s3WN9jNYqBiSoO3CVE6FU2dX1yuJNa1zfiEhcGT8ChTd+kucE/q3sXsy/nw1KqlW/7uEaEeRwaCPseqsbNrc1HZ1bi18PzwQpCaypDruqqVEyZ3dvTqDmjPg7WFBe2kStPR/qTtcLSXdE804RxxkgTGUtDMIG7TTbAdirInGVZw2p2APZKAQdYofYW2E0Ss5hZCeL55zflSuQK0QcW1sAyvaTUMd/fDse4FgqxhnfK0ip0Kc+ZqZ6XJpof/Nowwxv3IgDWZJzO";
     private VuforiaLocalizer vuforia;
     private TFObjectDetector tfod;
 
@@ -60,13 +60,13 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
 
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
-//        if (cameraSource== ToboSigma.CameraSource.WEBCAM_RIGHT) {
-//            parameters.cameraName = configuration.getHardwareMap().get(WebcamName.class, "WebcamRight");
-//        } else if (cameraSource== ToboSigma.CameraSource.WEBCAM_LEFT) {
-//            parameters.cameraName = configuration.getHardwareMap().get(WebcamName.class, "WebcamLeft");
-//        } else {
-//            parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
-//        }
+        if (cameraSource== ToboSigma.CameraSource.WEBCAM_RIGHT) {
+            parameters.cameraName = configuration.getHardwareMap().get(WebcamName.class, "WebcamRight");
+        } else if (cameraSource== ToboSigma.CameraSource.WEBCAM_LEFT) {
+            parameters.cameraName = configuration.getHardwareMap().get(WebcamName.class, "WebcamLeft");
+        } else {
+            parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
+        }
 
          parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
         //  Instantiate the Vuforia engine
@@ -100,15 +100,15 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
         configuration.register(this);
     }
 
-    public ToboSigma.SkystoneLocation getSkystonePositionTF(int robot_pos) {
+    public ToboSigma.SkystoneLocation getSkystonePositionTF(boolean redSide) {
         // The TFObjectDetector uses the camera frames from the VuforiaLocalizer, so we create that
         // first.
 
-        int left_center_border_x = (robot_pos==1?200:320);
-        int center_right_border_x = (robot_pos==1?400:520);
+        int left_center_border_x = 200;
+        int center_right_border_x = 400;
 
-        int min_stone_width = (robot_pos==1?150:100);
-        int max_stone_width = (robot_pos==1?250:200);
+        int min_stone_width = 150;
+        int max_stone_width = 250;
 
         logger.verbose("Start getGoldPositionTF()");
 
@@ -116,46 +116,57 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
         elapsedTime.startTime();
 
         ToboSigma.SkystoneLocation skystoneLocation = ToboSigma.SkystoneLocation.UNKNOWN;
-        int goldXCoord = -1;
-        int silverXCoord = -1;
+        //int goldXCoord = -1;
+        //int silverXCoord = -1;
         while (elapsedTime.seconds() < 2 && skystoneLocation == ToboSigma.SkystoneLocation.UNKNOWN) {
-            if (tfod != null) {
-                // getUpdatedRecognitions() will return null if no new information is available since
-                // the last time that call was made.
-                List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
-                if (updatedRecognitions != null) {
-                    if (updatedRecognitions.size() >= 2) {
-                        logger.verbose("Starting recognitions");
-                        logger.verbose("Recognitions: %d", (int) updatedRecognitions.size());
-                        int validRecognitions = 0;
-                        for (Recognition recognition :
-                                updatedRecognitions) {
-                            double width = recognition.getRight()-recognition.getLeft();
-                            if ( width < max_stone_width && width > min_stone_width) {
-                                validRecognitions++;
-                            }
-                        }
-                        logger.verbose("Valid recognitions: %d", validRecognitions);
-                        if (validRecognitions > 0 && validRecognitions < 4) {
-                            for (Recognition recognition :
-                                    updatedRecognitions) {
-                                if (recognition.getLabel()=="Skystone"){
-                                    double pos = (recognition.getRight()+recognition.getLeft())/2;
-                                    double skystone_width = recognition.getRight()-recognition.getLeft();
-                                    if (skystone_width>250) {
-                                        // ??? how to deal with this case
-                                    } else {
-                                        if (pos < left_center_border_x) {
-                                            skystoneLocation = ToboSigma.SkystoneLocation.LEFT;
-                                        } else if (pos > center_right_border_x) {
-                                            skystoneLocation = ToboSigma.SkystoneLocation.RIGHT;
-                                        } else {
-                                            skystoneLocation = ToboSigma.SkystoneLocation.CENTER;
-                                        }
-                                    }
-                                }
-                            }
-                        }
+            List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+
+            if (updatedRecognitions.size() < 1) {
+                continue;
+            }
+            //logger.verbose("Starting recognitions");
+            //logger.verbose("Recognitions: %d", (int) updatedRecognitions.size());
+            int validRecognitions = 0;
+            for (Recognition recognition :
+                    updatedRecognitions) {
+                double width = recognition.getRight() - recognition.getLeft();
+                if (width < max_stone_width && width > min_stone_width) {
+                    validRecognitions++;
+                }
+            }
+            //logger.verbose("Valid recognitions: %d", validRecognitions);
+            if (validRecognitions < 1 || validRecognitions > 3) {
+                continue;
+            }
+            for (Recognition recognition :
+                    updatedRecognitions) {
+                if (recognition.getLabel() == "Stone") {
+                    continue;
+                }
+                double pos = (recognition.getRight() + recognition.getLeft()) / 2;
+                double skystone_width = recognition.getRight() - recognition.getLeft();
+                if (skystone_width>250) { // stone detected is twice as regular, assume the skystone is on the right half
+                    pos = (pos+recognition.getRight())/2;
+                }
+                if (redSide) {
+                    if (pos < left_center_border_x) {
+                        skystoneLocation = ToboSigma.SkystoneLocation.RIGHT;
+                    } else if (pos > center_right_border_x) {
+                        skystoneLocation = ToboSigma.SkystoneLocation.CENTER;
+                    } else if (pos >= left_center_border_x && pos <= center_right_border_x) {
+                        skystoneLocation = ToboSigma.SkystoneLocation.LEFT;
+                    } else {
+                        skystoneLocation = ToboSigma.SkystoneLocation.UNKNOWN;
+                    }
+                } else {
+                    if (pos < left_center_border_x) {
+                        skystoneLocation = ToboSigma.SkystoneLocation.CENTER;
+                    } else if (pos > center_right_border_x) {
+                        skystoneLocation = ToboSigma.SkystoneLocation.LEFT;
+                    } else if (pos >= left_center_border_x && pos <= center_right_border_x) {
+                        skystoneLocation = ToboSigma.SkystoneLocation.RIGHT;
+                    } else {
+                        skystoneLocation = ToboSigma.SkystoneLocation.UNKNOWN;
                     }
                 }
             }
