@@ -344,8 +344,46 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
 
     }
+    @MenuEntry(label = "New Auto Straight", group = "Test Chassis")
+    public void testStraightNewSkyStone(EventManager em) {
 
-    @MenuEntry(label = "Drive Straight", group = "Test Chassis")
+        try {
+            chassis.driveStraightAutoRunToPosition(.8, 200, 0, 10000, telemetry);
+        }catch (InterruptedException e){
+
+        }
+
+
+        /*
+        telemetry.addLine().addData(" < (BACK) >", "Power(%.2f)", auto_chassis_power).setRetained(true);
+        chassis.setupTelemetry(telemetry);
+        em.updateTelemetry(telemetry, 100);
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.BACK)) {
+                    auto_chassis_power += 0.1;
+                    if (auto_chassis_power > 1) auto_chassis_power = 1;
+                } else {
+                    chassis.driveStraightAutoNew(auto_chassis_power, 100, 0, 10000);
+
+                }
+            }
+        }, new Button[]{Button.Y});
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.BACK)) {
+                    auto_chassis_power -= 0.1;
+                    if (auto_chassis_power < 0.1) auto_chassis_power = 0.1;
+                }
+            }
+        }, new Button[]{Button.A});
+        *
+         */
+    }
+
+        @MenuEntry(label = "Drive Straight", group = "Test Chassis")
     public void testStraight(EventManager em) {
         telemetry.addLine().addData("(LS)", "Drive").setRetained(true)
                 .addData("Hold [LB]/[RB]", "45 degree").setRetained(true);

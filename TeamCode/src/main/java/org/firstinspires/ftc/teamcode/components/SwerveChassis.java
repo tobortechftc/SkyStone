@@ -50,7 +50,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         RED
     }
 
-
+    public static final double cutoffPercent = .8;
     // distance between the centers of left and right wheels, inches
     private double track = 11.5;
     // distance between the centers of front and back wheels, inches
@@ -91,7 +91,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     private boolean setImuTelemetry = true;//unless debugging, don't set telemetry for imu
     private boolean setRangeSensorTelemetry = false;//unless debugging, don't set telemetry for range sensor
 
-    final double TICKS_PER_CM = 16.86;//number of encoder ticks per cm of driving
+    final double TICKS_PER_CM = 537.6 / (4.0 * 2.54 * Math.PI); // 16.86; //number of encoder ticks per cm of driving
 
     public void enableRangeSensorTelemetry() { // must be call before reset() or setupTelemetry()
         setRangeSensorTelemetry = true;
@@ -204,7 +204,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             orientationSensor.configure(configuration.getHardwareMap(), "imu", "imu2");
         }
 
-        if ((auto || setRangeSensorTelemetry)&& enableSensors) {
+        if ((auto || setRangeSensorTelemetry) && enableSensors) {
             frontLeftRangeSensor = configuration.getHardwareMap().get(DistanceSensor.class, "frontLeftRange");
             frontRightRangeSensor = configuration.getHardwareMap().get(DistanceSensor.class, "frontRightRange");
             backRangeSensor = configuration.getHardwareMap().get(DistanceSensor.class, "backRange");
@@ -232,10 +232,11 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         DistanceSensor rangeSensor;
 
         switch (direction) {
-             case FRONT_LEFT:
+            case FRONT_LEFT:
                 rangeSensor = frontLeftRangeSensor;
                 break;
-            case FRONT_RIGHT: case FRONT:
+            case FRONT_RIGHT:
+            case FRONT:
                 rangeSensor = frontRightRangeSensor;
                 break;
             case LEFT:
@@ -270,47 +271,45 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         return dist;
     }
 
-    public boolean lineDetected(LineColor color){
-        int hueTolerance=15;              //Tolerance of hues (15 is best)
-        double satSensitivity=0.7;        //How sensitive line detection is (Higher values less sensitive, 0.8 is highest)
+    public boolean lineDetected(LineColor color) {
+        int hueTolerance = 15;              //Tolerance of hues (15 is best)
+        double satSensitivity = 0.7;        //How sensitive line detection is (Higher values less sensitive, 0.8 is highest)
         float[] hsvValues = new float[3];
         //final float values[] = hsvValues;
         NormalizedRGBA colors = FRColor.getNormalizedColors();
         Color.colorToHSV(colors.toColor(), hsvValues);
-        if(hsvValues[1]>=satSensitivity) {
-            if ((hsvValues[0] <= hueTolerance && hsvValues[0] >= 0) || (hsvValues[0] >= 360-hueTolerance && hsvValues[0] <= 360)) {
+        if (hsvValues[1] >= satSensitivity) {
+            if ((hsvValues[0] <= hueTolerance && hsvValues[0] >= 0) || (hsvValues[0] >= 360 - hueTolerance && hsvValues[0] <= 360)) {
                 // detect red
-                if (color==LineColor.RED) return true;
-            } else if (hsvValues[0] >= 220-hueTolerance && hsvValues[0] <= 220+hueTolerance) {
+                if (color == LineColor.RED) return true;
+            } else if (hsvValues[0] >= 220 - hueTolerance && hsvValues[0] <= 220 + hueTolerance) {
                 // detect blue
-                if (color==LineColor.BLUE) return true;
+                if (color == LineColor.BLUE) return true;
             }
         }
         return false;
     }
 
-    public boolean isSkystone(boolean isRight){
+    public boolean isSkystone(boolean isRight) {
         double distB;
         double addedColors;
         double threshold;
         NormalizedRGBA colors;
-        if(isRight)
-        {
+        if (isRight) {
             distB = getDistance(Direction.FRONT_RIGHT);
             colors = FRColor.getNormalizedColors();
-            addedColors = colors.alpha+colors.red+colors.green+colors.blue;
-            if(distB<=7) {
+            addedColors = colors.alpha + colors.red + colors.green + colors.blue;
+            if (distB <= 7) {
                 threshold = -0.206456225 + (1.52138259 / distB);//.221 changed to .206 to keep threshold above skystone argb sum
             } else {
                 threshold = 0.006;
             }
-            if(addedColors<=threshold) {
+            if (addedColors <= threshold) {
                 return true;
             } else {
                 return false;
             }
-        }
-        else {
+        } else {
             distB = getDistance(Direction.FRONT_RIGHT); // DISABLE FRONT_LEFT
             colors = FLColor.getNormalizedColors();
             addedColors = colors.alpha + colors.red + colors.green + colors.blue;
@@ -327,35 +326,21 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         }
     }
 
-    public ToboSigma.SkystoneLocation skyStoneLocation(boolean isBlue)
-    {
-        if(isBlue)
-        {
-            if(isSkystone(false)&&!isSkystone(true))
-            {
+    public ToboSigma.SkystoneLocation skyStoneLocation(boolean isBlue) {
+        if (isBlue) {
+            if (isSkystone(false) && !isSkystone(true)) {
                 return ToboSigma.SkystoneLocation.CENTER;
-            }
-            else if (!isSkystone(false)&&isSkystone(true))
-            {
+            } else if (!isSkystone(false) && isSkystone(true)) {
                 return ToboSigma.SkystoneLocation.RIGHT;
-            }
-            else if (!isSkystone(false)&&!isSkystone(true))
-            {
+            } else if (!isSkystone(false) && !isSkystone(true)) {
                 return ToboSigma.SkystoneLocation.LEFT;
             }
-        }
-        else
-        {
-            if(isSkystone(false)&&!isSkystone(true))
-            {
+        } else {
+            if (isSkystone(false) && !isSkystone(true)) {
                 return ToboSigma.SkystoneLocation.LEFT;
-            }
-            else if (!isSkystone(false)&&isSkystone(true))
-            {
+            } else if (!isSkystone(false) && isSkystone(true)) {
                 return ToboSigma.SkystoneLocation.CENTER;
-            }
-            else if (!isSkystone(false)&&!isSkystone(true))
-            {
+            } else if (!isSkystone(false) && !isSkystone(true)) {
                 return ToboSigma.SkystoneLocation.RIGHT;
             }
         }
@@ -536,6 +521,277 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         driveMode = DriveMode.STOP;
     }
 
+    public void driveStraightAutoNew(double power, double cm, double heading, int timeout, Telemetry tl) throws InterruptedException {
+        if (Thread.currentThread().isInterrupted()) return;
+        debug("driveStraight(pwr: %.3f, head: %.1f)", power, heading);
+        if (power < 0 || power > 1) {
+            throw new IllegalArgumentException("Power must be between 0 and 1");
+        }
+        if (heading < -90 || heading > 90) {
+            throw new IllegalArgumentException("Heading must be between -90 and 90");
+        }
+
+        double distance = TICKS_PER_CM * cm;
+
+        if (power == 0) {
+            driveMode = DriveMode.STOP;
+            targetHeading = 0;
+            headingDeviation = 0;
+            servoCorrection = 0;
+            for (WheelAssembly wheel : wheels) wheel.motor.setPower(0);
+            orientationSensor.enableCorrections(false);
+            return;
+        }
+
+        if (distance < 0) {
+            power = -power;
+            distance = -distance;
+        }
+
+        //motor settings
+        driveMode = DriveMode.STRAIGHT;
+        int[] startingCount = new int[4];
+        for (int i = 0; i < 4; i++) {
+            wheels[i].motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            wheels[i].motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            startingCount[i] = wheels[i].motor.getCurrentPosition();
+        }
+
+        //servo settings
+        double[] newServoPositions = new double[4];
+        Arrays.fill(newServoPositions, heading);
+        changeServoPositions(newServoPositions);
+
+        //imu initialization
+        orientationSensor.enableCorrections(true);
+        targetHeading = orientationSensor.getHeading();
+
+        //start powering wheels
+        for (WheelAssembly wheel : wheels) wheel.motor.setPower(power);
+
+        //record time
+        long iniTime = System.currentTimeMillis();
+
+        int loop=0;
+        int iniEncoder= wheels[0].motor.getCurrentPosition();
+
+        //waiting loop
+        while (true) {
+            loop++;
+            //for (WheelAssembly wheel : wheels) wheel.motor.setPower(power);///
+            // check and correct heading as needed
+            double sensorHeading = orientationSensor.getHeading();
+            headingDeviation = targetHeading - sensorHeading;
+            debug("driveStraight(): target=%+.2f, sensor=%+.2f, adjustment=%+.2f)",
+                    targetHeading, sensorHeading, headingDeviation);
+            if (Math.abs(headingDeviation) > 0.5) {
+                servoCorrection = headingDeviation / 2;
+                if (power < 0) {
+                    backLeft.servo.adjustPosition(servoCorrection);
+                    backRight.servo.adjustPosition(servoCorrection);
+                } else {
+                    frontLeft.servo.adjustPosition(servoCorrection);
+                    frontRight.servo.adjustPosition(servoCorrection);
+                }
+            } else {
+                servoCorrection = 0;
+//                if (power < 0) {
+//                    backLeft.servo.setPosition(frontLeft.servo.getPosition());
+//                    backRight.servo.setPosition(frontRight.servo.getPosition());
+//                } else {
+//                    frontLeft.servo.setPosition(backLeft.servo.getPosition());
+//                    frontRight.servo.setPosition(backRight.servo.getPosition());
+//                }
+            }
+            //determine if target distance is reached
+            int maxTraveled = Integer.MIN_VALUE;
+            for (int i = 0; i < 4; i++) {
+                maxTraveled = Math.abs(Math.max(maxTraveled, wheels[i].motor.getCurrentPosition() - startingCount[i]));
+            }
+            if ((power > 0 && distance - maxTraveled < 20) || (power < 0 && maxTraveled - distance < 20))
+                break;
+
+            if (maxTraveled / distance > .8) {
+                double traveledPercent = maxTraveled / distance;
+                if (traveledPercent >= 1.0)
+                    break;
+                double pow = (power - minPower) * Math.pow(1 - Math.pow((traveledPercent - cutoffPercent) / (1 - cutoffPercent), 2), 2) + minPower;
+                //(power - minPower)*(1-(traveledPercent - cutoffPercent)/(1-cutoffPercent) * (traveledPercent - cutoffPercent)/(1-cutoffPercent))* (1-(traveledPercent - cutoffPercent)/(1-cutoffPercent) * (traveledPercent - .8)/(1-.8)) + minPower;
+                for (WheelAssembly wheel : wheels) wheel.motor.setPower(pow);
+                //tl.addLine("in the last 20%");
+                //tl.addData("power output %f", pow);
+            } else {
+                //tl.addLine("in the first 80%");
+            }
+            //tl.update();
+
+
+            //determine if time limit is reached
+            if (System.currentTimeMillis() - iniTime > timeout)
+                break;
+            if (Thread.currentThread().isInterrupted())
+                break;
+
+            // yield handler
+            //this.core.yield();
+        }
+
+        long finalTime=System.currentTimeMillis();
+
+        int finalEncoder= wheels[0].motor.getCurrentPosition();
+        for (WheelAssembly wheel : wheels) {
+            wheel.motor.setPower(0);
+            wheel.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            wheel.motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
+
+        tl.addData("number of loops %d",loop);
+        tl.addData("ini encoder %d",iniEncoder);
+        tl.addData("final encoder of loops %d",finalEncoder);
+        tl.addData("total loop time %d",finalTime-iniTime);
+        tl.update();
+        sleep(5000);
+        driveMode = DriveMode.STOP;
+    }
+
+    public void driveStraightAutoRunToPosition(double power, double cm, double heading, int timeout, Telemetry tl) throws InterruptedException {
+        if (Thread.currentThread().isInterrupted()) return;
+        debug("driveStraight(pwr: %.3f, head: %.1f)", power, heading);
+        if (power < 0 || power > 1) {
+            throw new IllegalArgumentException("Power must be between 0 and 1");
+        }
+        if (heading < -90 || heading > 90) {
+            throw new IllegalArgumentException("Heading must be between -90 and 90");
+        }
+
+        double distance = TICKS_PER_CM * cm;
+
+        if (power == 0) {
+            driveMode = DriveMode.STOP;
+            targetHeading = 0;
+            headingDeviation = 0;
+            servoCorrection = 0;
+            for (WheelAssembly wheel : wheels) wheel.motor.setPower(0);
+            orientationSensor.enableCorrections(false);
+            return;
+        }
+
+        if (distance < 0) {
+            power = -power;
+            distance = -distance;
+        }
+
+        //motor settings
+        driveMode = DriveMode.STRAIGHT;
+        int[] startingCount = new int[4];
+        for (int i = 0; i < 4; i++) {
+            wheels[i].motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            wheels[i].motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            wheels[i].motor.setTargetPosition(wheels[i].motor.getCurrentPosition()+(int)distance);
+            startingCount[i] = wheels[i].motor.getCurrentPosition();
+        }
+
+        for (int i = 0; i < 4; i++) {
+            wheels[i].motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        }
+
+        //servo settings
+        double[] newServoPositions = new double[4];
+        Arrays.fill(newServoPositions, heading);
+        changeServoPositions(newServoPositions);
+
+        //imu initialization
+        orientationSensor.enableCorrections(true);
+        targetHeading = orientationSensor.getHeading();
+
+        //start powering wheels
+        for (WheelAssembly wheel : wheels) wheel.motor.setPower(power);
+
+        //record time
+        long iniTime = System.currentTimeMillis();
+
+        int loop=0;
+        int iniEncoder= wheels[0].motor.getCurrentPosition();
+
+        //waiting loop
+        while (wheels[0].motor.isBusy()||wheels[1].motor.isBusy()||wheels[2].motor.isBusy()||wheels[3].motor.isBusy()) {
+            loop++;
+            //for (WheelAssembly wheel : wheels) wheel.motor.setPower(power);///
+            // check and correct heading as needed
+            double sensorHeading = orientationSensor.getHeading();
+            headingDeviation = targetHeading - sensorHeading;
+            debug("driveStraight(): target=%+.2f, sensor=%+.2f, adjustment=%+.2f)",
+                    targetHeading, sensorHeading, headingDeviation);
+            if (Math.abs(headingDeviation) > 0.5) {
+                servoCorrection = headingDeviation / 2;
+                if (power < 0) {
+                    backLeft.servo.adjustPosition(servoCorrection);
+                    backRight.servo.adjustPosition(servoCorrection);
+                } else {
+                    frontLeft.servo.adjustPosition(servoCorrection);
+                    frontRight.servo.adjustPosition(servoCorrection);
+                }
+            } else {
+                servoCorrection = 0;
+                if (power < 0) {
+                    backLeft.servo.setPosition(frontLeft.servo.getPosition());
+                    backRight.servo.setPosition(frontRight.servo.getPosition());
+                } else {
+                    frontLeft.servo.setPosition(backLeft.servo.getPosition());
+                    frontRight.servo.setPosition(backRight.servo.getPosition());
+                }
+            }
+            //determine if target distance is reached
+            int maxTraveled = Integer.MIN_VALUE;
+            for (int i = 0; i < 4; i++) {
+                maxTraveled = Math.abs(Math.max(maxTraveled, wheels[i].motor.getCurrentPosition() - startingCount[i]));
+            }
+//            if ((power > 0 && distance - maxTraveled < 20) || (power < 0 && maxTraveled - distance < 20))
+//                break;
+
+            if (maxTraveled / distance > .8) {
+                double traveledPercent = maxTraveled / distance;
+                if (traveledPercent >= 1.0)
+                    break;
+                double pow = (power - minPower) * Math.pow(1 - Math.pow((traveledPercent - cutoffPercent) / (1 - cutoffPercent), 2), 2) + minPower;
+                //(power - minPower)*(1-(traveledPercent - cutoffPercent)/(1-cutoffPercent) * (traveledPercent - cutoffPercent)/(1-cutoffPercent))* (1-(traveledPercent - cutoffPercent)/(1-cutoffPercent) * (traveledPercent - .8)/(1-.8)) + minPower;
+                for (WheelAssembly wheel : wheels) wheel.motor.setPower(pow);
+                //tl.addLine("in the last 20%");
+                //tl.addData("power output %f", pow);
+            } else {
+                //tl.addLine("in the first 80%");
+            }
+            //tl.update();
+
+
+            //determine if time limit is reached
+            if (System.currentTimeMillis() - iniTime > timeout)
+                break;
+            if (Thread.currentThread().isInterrupted())
+                break;
+
+            // yield handler
+            //this.core.yield();
+        }
+
+        long finalTime=System.currentTimeMillis();
+
+        int finalEncoder= wheels[0].motor.getCurrentPosition();
+        for (WheelAssembly wheel : wheels) {
+            wheel.motor.setPower(0.0);
+            wheel.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            wheel.motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
+
+        tl.addData("number of loops %d",loop);
+        tl.addData("ini encoder %d",iniEncoder);
+        tl.addData("final encoder of loops %d",finalEncoder);
+        tl.addData("total loop time %d",finalTime-iniTime);
+        tl.update();
+        sleep(5000);
+        driveMode = DriveMode.STOP;
+    }
+
     public enum Direction {
         FRONT, LEFT, RIGHT, BACK, FRONT_LEFT, FRONT_RIGHT;
     }
@@ -630,8 +886,8 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         double rightPower = power;
         double radius = 6.5; // should be changed according to curvature
 
-        double thetaF = (Math.atan(radius / (0.5 * track))) * (180/ Math.PI);
-        double thetaB = (Math.atan((radius+wheelBase) / (0.5 * track))) * (180/ Math.PI);
+        double thetaF = (Math.atan(radius / (0.5 * track))) * (180 / Math.PI);
+        double thetaB = (Math.atan((radius + wheelBase) / (0.5 * track))) * (180 / Math.PI);
         double SERVO_FL_ORBIT_POSITION = 0 - (thetaF / 180.0);
         double SERVO_FR_ORBIT_POSITION = 0 + (thetaF / 180.0);
         double SERVO_BL_ORBIT_POSITION = 0 - (thetaB / 180.0);
@@ -677,14 +933,14 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         }
         long startTime = System.currentTimeMillis();
         driveAndSteer(power, 0, true);
-        sleep((long) (sec*1000.0));
+        sleep((long) (sec * 1000.0));
         driveAndSteer(0, 0, true);
         double ave = 0;
         for (int i = 0; i < 4; i++) {
-            startingCount[i] = (wheels[i].motor.getCurrentPosition()-startingCount[i])/sec;
+            startingCount[i] = (wheels[i].motor.getCurrentPosition() - startingCount[i]) / sec;
             ave += startingCount[i];
         }
-        return (ave/4.0); // return average count per second
+        return (ave / 4.0); // return average count per second
     }
 
     @Deprecated
@@ -764,6 +1020,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         backLeft.motor.setPower(0);
         backRight.motor.setPower(0);
     }
+
     @Deprecated
     public void rotateDegree(double power, double deltaD) throws InterruptedException {
         double iniHeading = orientationSensor.getHeading();
@@ -778,7 +1035,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     public void rotateTo(double power, double finalHeading) throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) return;
         rawRotateTo(power, finalHeading, true);//!!! A very bold move
-        if (power>0.25) {
+        if (power > 0.25) {
             sleep(100);
             rawRotateTo(0.25, finalHeading, false);
         }
@@ -823,7 +1080,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             }
             debug("currentHeading: %.1f, finalHeading: %.1f)", currentHeading, finalHeading);
             //if within acceptable range, terminate
-            if (Math.abs(finalHeading - currentHeading) < (stopEarly ? power*10.0 : 0.5)) break;
+            if (Math.abs(finalHeading - currentHeading) < (stopEarly ? power * 10.0 : 0.5)) break;
             //if overshoot, terminate
             if (deltaD > 0 && currentHeading - finalHeading > 0) break;
             if (deltaD < 0 && currentHeading - finalHeading < 0) break;
@@ -983,7 +1240,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
 //                }
 //            });
 //        }
-        if (FLColor !=null) {
+        if (FLColor != null) {
             line.addData("Skystone-FL = ", "%s", new Func<String>() {
                 @Override
                 public String value() {
@@ -999,7 +1256,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                 }
             });
         }
-        if (FRColor !=null) {
+        if (FRColor != null) {
             line.addData("Skystone-FR = ", "%s", new Func<String>() {
                 @Override
                 public String value() {
@@ -1015,7 +1272,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                 }
             });
         }
-        if (FLColor !=null && FRColor !=null) {
+        if (FLColor != null && FRColor != null) {
             line.addData("SkystoneLOC(Blue) = ", "%s", new Func<String>() {
                 @Override
                 public String value() {
