@@ -73,11 +73,14 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
         foundationHook = new FoundationHook(this.core).configureLogging("FoundationHook", logLevel);
         foundationHook.configure(configuration, (autoColor != AutoTeamColor.NOT_AUTO));
+        if (autoColor==AutoTeamColor.DIAGNOSIS) {
+            foundationHook.hookUp();
+        }
 
         stoneGrabber = new StoneGrabber(this.core).configureLogging("StoneGrabber", logLevel);
         stoneGrabber.configure(configuration, (autoColor != AutoTeamColor.NOT_AUTO));
-        // intake = new Intake(this.core).configureLogging("Intake", logLevel);
-        // intake.configure(configuration, (autoColor!=AutoTeamColor.NOT_AUTO));
+        //intake = new Intake(this.core).configureLogging("Intake", logLevel);
+        //intake.configure(configuration, (autoColor!=AutoTeamColor.NOT_AUTO));
 
     }
 
@@ -201,7 +204,10 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         em.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) {
-                if (source.isPressed(Button.BACK)) { // default scale back to 0.5
+                if (source.isPressed(Button.Y) && source.isPressed(Button.BACK)) {
+                    // intake drop In/out
+                    if (intake!=null) intake.intakeDropAuto();
+                } else if (source.isPressed(Button.BACK)) { // default scale back to 0.5
                     chassis.setDefaultScale(0.7);
                 }
             }
@@ -316,13 +322,13 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                     auto_chassis_power += 0.1;
                     if (auto_chassis_power > 1) auto_chassis_power = 1;
                 } else {
-                    chassis.driveStraightAuto(auto_chassis_power, 65, 0, 10000);
-                    chassis.driveStraightAuto(auto_chassis_power, -7, 0, 10000);
-                    chassis.driveStraightAuto(auto_chassis_power, 220, -90, 15000);
-                    chassis.driveStraightAuto(auto_chassis_power, 260, 90, 15000);
-                    chassis.driveStraightAuto(auto_chassis_power, 20, 0, 10000);
-                    chassis.driveStraightAuto(auto_chassis_power, -5, 0, 10000);
-                    chassis.driveStraightAuto(auto_chassis_power, 243, -90, 15000);//245?
+                    chassis.driveStraightAuto(auto_chassis_power, 100, 0, 10000);
+                    //chassis.driveStraightAuto(auto_chassis_power, -7, 0, 10000);
+                    //chassis.driveStraightAuto(auto_chassis_power, 220, -90, 15000);
+                    //chassis.driveStraightAuto(auto_chassis_power, 260, 90, 15000);
+                    //chassis.driveStraightAuto(auto_chassis_power, 20, 0, 10000);
+                    //chassis.driveStraightAuto(auto_chassis_power, -5, 0, 10000);
+                    //chassis.driveStraightAuto(auto_chassis_power, 243, -90, 15000);//245?
                 }
             }
         }, new Button[]{Button.Y});

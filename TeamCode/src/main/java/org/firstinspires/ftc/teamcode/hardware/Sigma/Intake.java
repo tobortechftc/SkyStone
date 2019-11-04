@@ -32,8 +32,8 @@ public class Intake extends Logger<Intake> implements Configurable {
     private final double LEFT_INTAKE_DROP_INIT = 0.5;
     private final double LEFT_INTAKE_DROP_DOWN = 0.5;
 
-    private final double RIGHT_INTAKE_DROP_INIT = 0.5;
-    private final double RIGHT_INTAKE_DROP_DOWN = 0.5;
+    private final double RIGHT_INTAKE_DROP_INIT = 0.95;
+    private final double RIGHT_INTAKE_DROP_DOWN = 0.01;
 
     private boolean intakeDropDown = false;
 
@@ -94,6 +94,13 @@ public class Intake extends Logger<Intake> implements Configurable {
         leftIntakeDrop.setPosition(LEFT_INTAKE_DROP_DOWN);
         rightIntakeDrop.setPosition(RIGHT_INTAKE_DROP_DOWN);
         intakeDropDown = true;
+    }
+
+    public void intakeDropAuto(){
+        if (intakeDropDown)
+            intakeDropInit();
+        else
+            intakeDropDown();
     }
 
     public void intakeStop(){
