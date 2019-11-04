@@ -133,6 +133,7 @@ public class AdjustableServo extends Logger<AdjustableServo> implements Configur
      * Resets servo position back to center
      */
     public void reset() {
+        if (servo==null) return;
         position = (rangeMin + rangeMax) / 2;
         servo.setPosition(center);
     }

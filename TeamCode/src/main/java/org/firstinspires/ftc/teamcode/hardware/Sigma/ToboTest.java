@@ -86,7 +86,7 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
                 return String.format("%2.0f", motor_count);
             }
         });
-        chassis.setupTelemetry(telemetry);
+        if (chassis!=null) chassis.setupTelemetry(telemetry);
 
         em.updateTelemetry(telemetry, 100);
 //        if (!hanging.latchIsBusy()) {
@@ -152,7 +152,7 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
                     debug("sticksOnly(): left / steer, pwr: %.2f, head: %.2f", power, heading);
                     chassis.driveAndSteer(power * powerAdjustment(source), heading, false);
                 }
-                else {
+                else if (chassis!=null){
                     chassis.stop();
                 }
             }

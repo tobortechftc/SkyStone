@@ -88,7 +88,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     private double defaultScale = 0.8;
     private double curHeading = 0;
     private boolean useScalePower = true;//
-    private boolean setImuTelemetry = true;//unless debugging, don't set telemetry for imu
+    private boolean setImuTelemetry = false;//unless debugging, don't set telemetry for imu
     private boolean setRangeSensorTelemetry = false;//unless debugging, don't set telemetry for range sensor
 
     final double TICKS_PER_CM = 537.6 / (4.0 * 2.54 * Math.PI); // 16.86; //number of encoder ticks per cm of driving
@@ -164,14 +164,6 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
      */
     public SwerveChassis(CoreSystem core) {
         this.core = core;
-    }
-
-    /**
-     * Used only for ToboRuckus, old code
-     */
-    @Deprecated
-    public SwerveChassis() {
-        this.core = new CoreSystem(); // Prevents null pointer exception
     }
 
     @Override
@@ -515,7 +507,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
 
             sleep(0);
             // yield handler
-            this.core.yield();
+            // this.core.yield();
         }
         for (WheelAssembly wheel : wheels) wheel.motor.setPower(0);
         driveMode = DriveMode.STOP;
@@ -633,7 +625,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                 break;
 
             // yield handler
-            //this.core.yield();
+            this.core.yield();
         }
 
         long finalTime=System.currentTimeMillis();
@@ -771,7 +763,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                 break;
 
             // yield handler
-            //this.core.yield();
+            this.core.yield();
         }
 
         long finalTime=System.currentTimeMillis();
@@ -943,41 +935,6 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         return (ave / 4.0); // return average count per second
     }
 
-    @Deprecated
-    public void driveAndSteerAuto(double power, double distance, double angle) throws InterruptedException {
-        int[] startingCount = new int[4];
-        for (int i = 0; i < 4; i++) {
-            startingCount[i] = wheels[i].motor.getCurrentPosition();
-            wheels[i].motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        }
-        //tl.addLine(String.format("DriveAndSteer/pwr: %.3f, currentHeading: %.1f)", power, orientationSensor.getHeading()));
-        //tl.update();
-        long startTime = System.currentTimeMillis();
-        driveAndSteer(power, angle, true);
-        while (true) {
-//            debug("DriveAndSteer/pwr: %.3f, currentHeading: %.1f)", power, orientationSensor.getHeading());
-            if (System.currentTimeMillis() - startTime > 7000)
-                throw new RuntimeException("Time Out");
-            //tl.addLine(String.format("DriveAndSteer/pwr: %.3f, currentHeading: %.1f)", power, orientationSensor.getHeading()));
-            //tl.update();
-            int maxTraveled = Integer.MIN_VALUE;
-            for (int i = 0; i < 4; i++) {
-                maxTraveled = Math.max(maxTraveled, wheels[i].motor.getCurrentPosition() - startingCount[i]);
-            }
-            if (distance - maxTraveled < 10)
-                break;
-
-            // yield handler
-            this.core.yield();
-        }
-        driveAndSteer(0, angle, true);
-    }
-
-    @Deprecated
-    public void driveAlongWall(double power, double distance, double wallDistance) {
-
-    }
-
     /**
      * Rotate in place using currently specified power
      */
@@ -1015,10 +972,14 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     }
 
     public void stop() {
-        frontLeft.motor.setPower(0);
-        frontRight.motor.setPower(0);
-        backLeft.motor.setPower(0);
-        backRight.motor.setPower(0);
+        if (frontLeft!=null && frontLeft.motor!=null)
+            frontLeft.motor.setPower(0);
+        if (frontRight!=null && frontRight.motor!=null)
+            frontRight.motor.setPower(0);
+        if (backLeft!=null && backLeft.motor!=null)
+            backLeft.motor.setPower(0);
+        if (backRight!=null && backRight.motor!=null)
+            backRight.motor.setPower(0);
     }
 
     @Deprecated
@@ -1358,6 +1319,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         }
 
         void reset(boolean resetServo) {
+            if (motor==null) return;
             motor.setPower(0.0d);
             motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);

@@ -43,7 +43,6 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     public double auto_chassis_power = .6;
     public double auto_chassis_power_slow = .3;
 
-
     @Override
     public String getName() {
         return getClass().getSimpleName();
@@ -64,13 +63,12 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
         chassis.configure(configuration, (autoColor != AutoTeamColor.NOT_AUTO), true);
         info("RoboSigma configure() after init Chassis (run time = %.2f sec)", (runtime.seconds() - ini_time));
-        if (autoColor != AutoTeamColor.NOT_AUTO) {
+        if (autoColor != AutoTeamColor.NOT_AUTO && autoColor != AutoTeamColor.DIAGNOSIS) {
             cameraStoneDetector = new CameraStoneDetector().configureLogging("CameraStoneDetector", logLevel);
             // cameraStoneDetector.configure(configuration, CameraSource.INTERNAL);
             cameraStoneDetector.configure(configuration, (autoColor == AutoTeamColor.AUTO_RED ? CameraSource.WEBCAM_RIGHT : CameraSource.WEBCAM_LEFT));
+            info("RoboSigma configure() after init cameraStoneDetector (run time = %.2f sec)", (runtime.seconds() - ini_time));
         }
-        info("RoboSigma configure() after init cameraStoneDetector (run time = %.2f sec)", (runtime.seconds() - ini_time));
-
         foundationHook = new FoundationHook(this.core).configureLogging("FoundationHook", logLevel);
         foundationHook.configure(configuration, (autoColor != AutoTeamColor.NOT_AUTO));
         if (autoColor==AutoTeamColor.DIAGNOSIS) {
@@ -169,7 +167,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                     double power = source.getStick(Events.Side.RIGHT, Events.Axis.Y_ONLY);
                     debug("sticksOnly(): left / steer, pwr: %.2f, head: %.2f", power, heading);
                     chassis.driveAndSteer(power * powerAdjustment(source), heading, false);
-                } else {
+                } else if (chassis!=null){
                     chassis.stop();
                 }
             }
@@ -493,7 +491,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         chassis.driveStraightAuto(.3,  dist, 0,1000);
         chassis.rotateTo(.2, 0);
         core.yield_for(0.2);
-        skyStonePosition = chassis.skyStoneLocation(isBlue); // using color sensors need to be close enough to the stones
+        if (skyStonePosition==SkystoneLocation.UNKNOWN)
+           skyStonePosition = chassis.skyStoneLocation(isBlue); // using color sensors need to be close enough to the stones
 
         chassis.driveStraightAuto(auto_chassis_power_slow,  -2, 0,1000);
         if(isLeft){
@@ -515,6 +514,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         }
 
         //grab stone
+        if (Thread.currentThread().isInterrupted()) return;
 
         stoneGrabber.grabStoneComboAuto();
         //chassis.driveStraightAuto(.3, -8, 0, 1000);
@@ -549,11 +549,12 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
         chassis.driveStraightAuto(auto_chassis_power, dist - 40, -90 * side, 15000);
 
+        if (Thread.currentThread().isInterrupted()) return;
+
         //place stone
         stoneGrabber.armOutComboAuto();
         stoneGrabber.wristPerpendicular();
         chassis.driveStraightAuto(auto_chassis_power, 13, 0, 1000);
-
     }
 
 
@@ -629,6 +630,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     }
 
     public void grabAndPark(boolean isBlue) throws InterruptedException{
+        if (Thread.currentThread().isInterrupted()) return;
         int side = 1;
         if(!isBlue){
             side = -1;

@@ -299,6 +299,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     }
 
     public void armOutComboAuto() {
+        if (Thread.currentThread().isInterrupted()) return;
         armOutCombo();
         while (!TaskManager.isComplete("Arm Out Combo")) {
             TaskManager.processTasks();
@@ -353,6 +354,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         }
     }
     public void armInComboAuto(final boolean wristParallel) {
+        if (Thread.currentThread().isInterrupted()) return;
         armInCombo(wristParallel, true);
         while (!TaskManager.isComplete("Arm In Combo")) {
             TaskManager.processTasks();
@@ -434,6 +436,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     }
 
     public void grabStoneComboAuto() {
+        if (Thread.currentThread().isInterrupted()) return;
         grabStoneCombo();
         while (!TaskManager.isComplete("Grab Stone Combo")) {
             TaskManager.processTasks();
@@ -486,6 +489,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
 
     }
     public void deliverStoneComboAuto() {
+        if (Thread.currentThread().isInterrupted()) return;
         deliverStoneCombo();
         while (!TaskManager.isComplete("Deliver Stone Combo")) {
             TaskManager.processTasks();
