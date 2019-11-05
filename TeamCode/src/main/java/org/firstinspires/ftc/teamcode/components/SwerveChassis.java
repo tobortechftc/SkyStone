@@ -220,6 +220,8 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
      */
     public double getDistance(Direction direction) {
         double dist = 0;
+        if (Thread.currentThread().isInterrupted()) return dist;
+
         int count = 0;
         DistanceSensor rangeSensor;
 
@@ -268,8 +270,9 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         double satSensitivity = 0.7;        //How sensitive line detection is (Higher values less sensitive, 0.8 is highest)
         float[] hsvValues = new float[3];
         //final float values[] = hsvValues;
-        NormalizedRGBA colors = FRColor.getNormalizedColors();
-        Color.colorToHSV(colors.toColor(), hsvValues);
+        NormalizedRGBA colors = (FRColor!=null?FRColor.getNormalizedColors():null);
+        if (colors!=null)
+            Color.colorToHSV(colors.toColor(), hsvValues);
         if (hsvValues[1] >= satSensitivity) {
             if ((hsvValues[0] <= hueTolerance && hsvValues[0] >= 0) || (hsvValues[0] >= 360 - hueTolerance && hsvValues[0] <= 360)) {
                 // detect red
@@ -283,6 +286,9 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     }
 
     public boolean isSkystone(boolean isRight) {
+        if (FRColor==null || FLColor==null)
+            return false;
+
         double distB;
         double addedColors;
         double threshold;
@@ -1092,6 +1098,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
      * and servo position for each wheel
      */
     public void setupTelemetry(Telemetry telemetry) {
+        if (Thread.currentThread().isInterrupted()) return;
         Telemetry.Line line = telemetry.addLine();
         line.addData("Pwr/Scale", new Func<String>() {
             @Override

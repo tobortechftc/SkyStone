@@ -84,10 +84,12 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
     @Override
     public void reset(boolean auto) {
+        if (Thread.currentThread().isInterrupted()) return;
         if (chassis != null) {
             chassis.reset();
             if (auto) {
-                chassis.setupTelemetry(telemetry);
+                // Display all sensors in auto only for debugging
+                // chassis.setupTelemetry(telemetry);
             }
         }
     }
