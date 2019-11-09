@@ -77,8 +77,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
         stoneGrabber = new StoneGrabber(this.core).configureLogging("StoneGrabber", logLevel);
         stoneGrabber.configure(configuration, (autoColor != AutoTeamColor.NOT_AUTO));
-        //intake = new Intake(this.core).configureLogging("Intake", logLevel);
-        //intake.configure(configuration, (autoColor!=AutoTeamColor.NOT_AUTO));
+        intake = new Intake(this.core).configureLogging("Intake", logLevel);
+        intake.configure(configuration, (autoColor!=AutoTeamColor.NOT_AUTO));
 
     }
 
@@ -196,19 +196,14 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
         em.onButtonDown(new Events.Listener() {
             @Override
-            public void buttonDown(EventManager source, Button button) throws InterruptedException {
-                foundationHook.hookAuto();
-            }
-        }, Button.LEFT_BUMPER);
-
-        em.onButtonDown(new Events.Listener() {
-            @Override
             public void buttonDown(EventManager source, Button button) {
                 if (source.isPressed(Button.Y) && source.isPressed(Button.BACK)) {
                     // intake drop In/out
                     if (intake!=null) intake.intakeDropAuto();
                 } else if (source.isPressed(Button.BACK)) { // default scale back to 0.5
                     chassis.setDefaultScale(0.7);
+                } else if(!source.isPressed(button.START)){
+                    foundationHook.hookAuto();
                 }
             }
         }, Button.A);
@@ -216,16 +211,16 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         em.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
-                if (intake != null) intake.intakeIn(source.isPressed(Button.BACK));
+                if (intake != null) intake.intakeIn(!source.isPressed(Button.BACK));
             }
-        }, Button.RIGHT_BUMPER);
+        }, Button.LEFT_BUMPER);
 
         em.onButtonUp(new Events.Listener() {
             @Override
             public void buttonUp(EventManager source, Button button) throws InterruptedException {
                 if (intake != null) intake.intakeStop();
             }
-        }, Button.RIGHT_BUMPER);
+        }, Button.LEFT_BUMPER);
 
         em.onTrigger(new Events.Listener() {
             @Override
@@ -233,12 +228,12 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 // 0.2 is a dead zone threshold for the trigger
 
                 if (current > 0.2) {
-                    if (intake != null) intake.intakeOut(source.isPressed(Button.BACK));
+                    if (intake != null) intake.intakeOut(!source.isPressed(Button.BACK));
                 } else {
                     if (intake != null) intake.intakeStop();
                 }
             }
-        }, Events.Side.RIGHT);
+        }, Events.Side.LEFT);
 
         //The following are all events for Driver 2
 

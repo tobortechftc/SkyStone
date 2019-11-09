@@ -23,17 +23,13 @@ public class Intake extends Logger<Intake> implements Configurable {
     final private CoreSystem core;
 
     private DcMotor intakeMotor;
-    private AdjustableServo leftIntakeDrop;
     private AdjustableServo rightIntakeDrop;
 
-    private final double INTAKE_FAST = 0.8555556895;
-    private final double INTAKE_SPEED = 0.5;
+    private final double INTAKE_FAST = 1.0;
+    private final double INTAKE_SPEED = 0.858155736545;
 
-    private final double LEFT_INTAKE_DROP_INIT = 0.5;
-    private final double LEFT_INTAKE_DROP_DOWN = 0.5;
-
-    private final double RIGHT_INTAKE_DROP_INIT = 0.95;
-    private final double RIGHT_INTAKE_DROP_DOWN = 0.01;
+    private final double RIGHT_INTAKE_DROP_INIT = 0.99;
+    private final double RIGHT_INTAKE_DROP_DOWN = 0.05;
 
     private boolean intakeDropDown = false;
 
@@ -58,18 +54,13 @@ public class Intake extends Logger<Intake> implements Configurable {
     }
 
     public void reset(boolean Auto) {
-        if (leftIntakeDrop != null)
+        if (rightIntakeDrop != null)
             intakeDropInit();
         if (intakeMotor != null)
             intakeStop();
     }
 
     public void configure(Configuration configuration, boolean auto) {
-        leftIntakeDrop = new AdjustableServo(0,1).configureLogging(
-                logTag + ":leftIntakeDrop", logLevel
-        );
-        leftIntakeDrop.configure(configuration.getHardwareMap(), "leftIntakeDrop");
-        configuration.register(leftIntakeDrop);
 
         rightIntakeDrop = new AdjustableServo(0,1).configureLogging(
                 logTag + ":rightIntakeDrop", logLevel
@@ -80,18 +71,16 @@ public class Intake extends Logger<Intake> implements Configurable {
         intakeDropInit();
 
         intakeMotor = configuration.getHardwareMap().tryGet(DcMotor.class, "intakeMotor");
-        if (intakeMotor != null) intakeMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+        if (intakeMotor != null) intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         intakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     public void intakeDropInit() {
-        leftIntakeDrop.setPosition(LEFT_INTAKE_DROP_INIT);
         rightIntakeDrop.setPosition(RIGHT_INTAKE_DROP_INIT);
         intakeDropDown = false;
     }
 
     public void intakeDropDown(){
-        leftIntakeDrop.setPosition(LEFT_INTAKE_DROP_DOWN);
         rightIntakeDrop.setPosition(RIGHT_INTAKE_DROP_DOWN);
         intakeDropDown = true;
     }
@@ -136,14 +125,6 @@ public class Intake extends Logger<Intake> implements Configurable {
                 @Override
                 public Double value() {
                     return intakeMotor.getPower();
-                }
-            });
-        }
-        if (leftIntakeDrop != null) {
-            line.addData("leftIntakeDrop", "pos=%.2f", new Func<Double>() {
-                @Override
-                public Double value() {
-                    return leftIntakeDrop.getPosition();
                 }
             });
         }
