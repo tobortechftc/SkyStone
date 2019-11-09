@@ -351,7 +351,10 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     public void testStraightNewSkyStone(EventManager em) {
 
         try {
-            chassis.driveStraightAutoRunToPosition(.8, 200, 0, 10000, telemetry);
+            //chassis.driveStraightAutoRunToPosition(.4, 200, 0, 10000, telemetry);
+            chassis.driveStraightAutoRunToPosition(.4, 100, 0, 10000);
+            Thread.sleep(500);
+            chassis.driveStraightAutoRunToPosition(.4, -100, 0, 10000);
         }catch (InterruptedException e){
 
         }
@@ -488,33 +491,33 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         // go to stones
         foundationHook.hookUp();
 
-        chassis.driveStraightAuto(.4, 46, 0, 10000);
+        chassis.driveStraightAutoRunToPosition(.4, 46, 0, 10000);
         chassis.rotateTo(.2, 0);
         double dist = chassis.getDistance(SwerveChassis.Direction.FRONT) - 11;
 
         if (dist>20) dist=20;
-        chassis.driveStraightAuto(.3,  dist, 0,1000);
+        chassis.driveStraightAutoRunToPosition(.3,  dist, 0,1000);
         chassis.rotateTo(.2, 0);
         core.yield_for(0.2);
         if (skyStonePosition==SkystoneLocation.UNKNOWN)
            skyStonePosition = chassis.skyStoneLocation(isBlue); // using color sensors need to be close enough to the stones
 
-        chassis.driveStraightAuto(auto_chassis_power_slow,  -2, 0,1000);
+        chassis.driveStraightAutoRunToPosition(auto_chassis_power_slow,  -2, 0,1000);
         if(isLeft){
             if((skyStonePosition == SkystoneLocation.LEFT && !isBlue)||(skyStonePosition == ToboSigma.SkystoneLocation.RIGHT && isBlue)|| skyStonePosition == SkystoneLocation.UNKNOWN){
-                chassis.driveStraightAuto(auto_chassis_power_slow, 15, 90 * side, 3000);  // test to get exact numbers
+                chassis.driveStraightAutoRunToPosition(auto_chassis_power_slow, 15, 90 * side, 3000);  // test to get exact numbers
             } else if(skyStonePosition == ToboSigma.SkystoneLocation.CENTER){
-                chassis.driveStraightAuto(auto_chassis_power_slow, 5, -90 * side, 3000);  // test to get exact numbers
+                chassis.driveStraightAutoRunToPosition(auto_chassis_power_slow, 5, -90 * side, 3000);  // test to get exact numbers
             } else if((skyStonePosition == ToboSigma.SkystoneLocation.LEFT && isBlue)||(skyStonePosition == ToboSigma.SkystoneLocation.RIGHT && !isBlue)) {
-                chassis.driveStraightAuto(auto_chassis_power_slow, 25, -90 * side, 3000);  // test to get exact numbers
+                chassis.driveStraightAutoRunToPosition(auto_chassis_power_slow, 25, -90 * side, 3000);  // test to get exact numbers
             }
         } else { // Right position
             if (skyStonePosition == SkystoneLocation.LEFT && !isBlue || (skyStonePosition == ToboSigma.SkystoneLocation.RIGHT && isBlue) || skyStonePosition == SkystoneLocation.UNKNOWN) {
-                chassis.driveStraightAuto(auto_chassis_power_slow, 5, 90 * side, 10000);  // test to get exact numbers
+                chassis.driveStraightAutoRunToPosition(auto_chassis_power_slow, 5, 90 * side, 10000);  // test to get exact numbers
             } else if (skyStonePosition == ToboSigma.SkystoneLocation.CENTER) {
-                chassis.driveStraightAuto(auto_chassis_power_slow, 15, -90 * side, 10000);  // test to get exact numbers
+                chassis.driveStraightAutoRunToPosition(auto_chassis_power_slow, 15, -90 * side, 10000);  // test to get exact numbers
             } else if (skyStonePosition == ToboSigma.SkystoneLocation.LEFT && isBlue || skyStonePosition == ToboSigma.SkystoneLocation.LEFT && !isBlue) {
-                chassis.driveStraightAuto(auto_chassis_power_slow, 35, -90 * side, 10000);  // test to get exact numbers
+                chassis.driveStraightAutoRunToPosition(auto_chassis_power_slow, 35, -90 * side, 10000);  // test to get exact numbers
             }
         }
 
@@ -522,8 +525,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         if (Thread.currentThread().isInterrupted()) return;
 
         stoneGrabber.grabStoneComboAuto();
-        //chassis.driveStraightAuto(.3, -8, 0, 1000);
-        chassis.driveStraightAuto(.3, -13, 0, 1000);
+        //chassis.driveStraightAutoRunToPosition(.3, -8, 0, 1000);
+        chassis.driveStraightAutoRunToPosition(.3, -13, 0, 1000);
         chassis.rotateTo(.2, 0);
         stoneGrabber.armInComboAuto(true);
 
@@ -543,7 +546,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         }
 
         chassis.rotateTo(.2, 0);
-        chassis.driveStraightAuto(auto_chassis_power, 150 + 20 * ss_pos, -90 * side, 15000);
+        chassis.driveStraightAutoRunToPosition(auto_chassis_power, 150 + 20 * ss_pos, -90 * side, 15000);
 
         //align
 
@@ -552,14 +555,14 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         dist = chassis.getDistance(isBlue ? SwerveChassis.Direction.LEFT : SwerveChassis.Direction.RIGHT);
         dist = dist > 128 ? 40 : dist;
 
-        chassis.driveStraightAuto(auto_chassis_power, dist - 40, -90 * side, 15000);
+        chassis.driveStraightAutoRunToPosition(auto_chassis_power, dist - 40, -90 * side, 15000);
 
         if (Thread.currentThread().isInterrupted()) return;
 
         //place stone
         stoneGrabber.armOutComboAuto();
         stoneGrabber.wristPerpendicular();
-        chassis.driveStraightAuto(auto_chassis_power, 13, 0, 1000);
+        chassis.driveStraightAutoRunToPosition(auto_chassis_power, 13, 0, 1000);
     }
 
 
@@ -588,7 +591,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
 
          double dist;
-        chassis.driveStraightAuto(auto_chassis_power, 180 + 20 * stoneNum, 90* side, 15000);
+        chassis.driveStraightAutoRunToPosition(auto_chassis_power, 180 + 20 * stoneNum, 90* side, 15000);
         chassis.rotateTo(.2, 0);
         if (isBlue) {
             dist = chassis.getDistance(SwerveChassis.Direction.RIGHT);
@@ -605,18 +608,18 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
         // get close to stones
 
-        chassis.driveStraightAuto(auto_chassis_power, dist +15 -20 * stoneNum, 90* side, 15000);
+        chassis.driveStraightAutoRunToPosition(auto_chassis_power, dist +15 -20 * stoneNum, 90* side, 15000);
         dist = chassis.getDistance(SwerveChassis.Direction.FRONT);
-        chassis.driveStraightAuto(auto_chassis_power, (dist - 20), 0, 10000);
+        chassis.driveStraightAutoRunToPosition(auto_chassis_power, (dist - 20), 0, 10000);
 
         //grab stone
         stoneGrabber.grabStoneComboAuto();
 
         //go back
-        chassis.driveStraightAuto(auto_chassis_power, -30, 0, 10000);
+        chassis.driveStraightAutoRunToPosition(auto_chassis_power, -30, 0, 10000);
 
          chassis.rotateTo(.2, 0);
-        chassis.driveStraightAuto(auto_chassis_power, 175 + 20 * stoneNum, -90 * side, 15000);
+        chassis.driveStraightAutoRunToPosition(auto_chassis_power, 175 + 20 * stoneNum, -90 * side, 15000);
         chassis.rotateTo(.2, 0);
         if (isBlue) {
             dist = chassis.getDistance(SwerveChassis.Direction.LEFT);
@@ -626,10 +629,10 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         if (dist > 128) {
             dist = 20;
         }
-        chassis.driveStraightAuto(auto_chassis_power, dist - 40, -90 * side, 15000);
+        chassis.driveStraightAutoRunToPosition(auto_chassis_power, dist - 40, -90 * side, 15000);
 
         stoneGrabber.deliverStoneComboAuto();
-        chassis.driveStraightAuto(auto_chassis_power, -20, 0, 10000);
+        chassis.driveStraightAutoRunToPosition(auto_chassis_power, -20, 0, 10000);
         stoneGrabber.armInComboAuto(false);
 
     }
@@ -643,7 +646,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         double dist;
         //= chassis.getDistance(SwerveChassis.Direction.FRONT);
 
-        chassis.driveStraightAuto(auto_chassis_power_slow, 5, 0, 10000);
+        chassis.driveStraightAutoRunToPosition(auto_chassis_power_slow, 5, 0, 10000);
         foundationHook.hookDown();
         Thread.sleep(500);
         dist = chassis.getDistance(SwerveChassis.Direction.BACK);
@@ -652,8 +655,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             dist = max_dist;
         }
 
-        //chassis.driveStraightAuto(auto_chassis_power/2, -dist - 10*(1- auto_chassis_power) , 7* side, 10000);
-        chassis.driveStraightAuto(auto_chassis_power/1.5, -dist - 10*(1- auto_chassis_power) , 7* side, 4000);
+        //chassis.driveStraightAutoRunToPosition(auto_chassis_power/2, -dist - 10*(1- auto_chassis_power) , 7* side, 10000);
+        chassis.driveStraightAutoRunToPosition(auto_chassis_power/1.5, -dist - 10*(1- auto_chassis_power) , 7* side, 4000);
         foundationHook.hookUp();
         stoneGrabber.deliverStoneComboAuto();
         chassis.rotateTo(.3, 0);
@@ -667,16 +670,16 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             dist = 20;
         }
 
-        chassis.driveStraightAuto(auto_chassis_power, 90-dist, 90* side, 1500);
+        chassis.driveStraightAutoRunToPosition(auto_chassis_power, 90-dist, 90* side, 1500);
         stoneGrabber.armInComboAuto(false);
 
         if ((isBlue && chassis.getDistance(SwerveChassis.Direction.RIGHT) > 40) || (!isBlue && chassis.getDistance(SwerveChassis.Direction.LEFT) > 40)){
-               //chassis.driveStraightAuto(.4, 40, 90* side, 1500);
-               chassis.driveStraightAuto(.4, (isBlue?50:40), 90* side, 1500);
+               //chassis.driveStraightAutoRunToPosition(.4, 40, 90* side, 1500);
+               chassis.driveStraightAutoRunToPosition(.4, (isBlue?50:40), 90* side, 1500);
         } else {
-             chassis.driveStraightAuto(.5, 45, 0, 1500);
-             //chassis.driveStraightAuto(.4, 40, 90* side, 1500);
-             chassis.driveStraightAuto(.4, (isBlue?50:40), 90* side, 1500);
+             chassis.driveStraightAutoRunToPosition(.5, 45, 0, 1500);
+             //chassis.driveStraightAutoRunToPosition(.4, 40, 90* side, 1500);
+             chassis.driveStraightAutoRunToPosition(.4, (isBlue?50:40), 90* side, 1500);
         }
 
     }
