@@ -31,6 +31,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double ARM_UP = 0.1;
     private final double ARM_DOWN = 0.9;
     private final double ARM_INITIAL = 0.9;
+    private final double ARM_IN = 0.7;
     private final double ARM_LOW = 0.6;
     private final double ARM_OUT = 0.45;
     private final double ARM_DELIVER = 0.3;
@@ -61,6 +62,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
 
 
     private boolean armIsDown = false;
+    private boolean armIsIn = true;
     private boolean isGrabberOpened = false;
     private boolean isWristParallel = false;
     private ElapsedTime runtime = new ElapsedTime();
@@ -127,11 +129,13 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     public void armInit() {
         arm.setPosition(ARM_INITIAL);
         armIsDown = false;
+        armIsIn = true;
     }
 
     public void armOut() {
         arm.setPosition(ARM_OUT);
         armIsDown = false;
+        armIsIn = false;
     }
 
     public void armDownInc() {
@@ -140,6 +144,8 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         if (cur_pos>1) cur_pos=1;
         arm.setPosition(cur_pos);
         armIsDown = false;
+        if (cur_pos>ARM_IN)
+            armIsIn = true;
     }
 
     public void armUpInc() {
@@ -148,20 +154,26 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         if (cur_pos<0) cur_pos=0;
         arm.setPosition(cur_pos);
         armIsDown = false;
+        if (cur_pos<ARM_DOWN)
+            armIsIn = false;
     }
 
     public void armUp() {
         arm.setPosition(ARM_UP);
         armIsDown = false;
+        armIsIn = false;
     }
 
     public void armDown() {
         arm.setPosition(ARM_DOWN);
         armIsDown = true;
+        armIsIn = true;
     }
 
     public void armDeliver() {
         arm.setPosition(ARM_DELIVER);
+        armIsDown = false;
+        armIsIn = false;
     }
 
     public void armAuto() {
@@ -218,7 +230,10 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
 
     public void grabberOpen () {
         if (grabber==null) return;
-        grabber.setPosition(GRABBER_OPEN);
+        if (armIsIn)
+            grabber.setPosition(GRABBER_OPEN_IN);
+        else
+            grabber.setPosition(GRABBER_OPEN);
         isGrabberOpened = true;
     }
 
