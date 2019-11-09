@@ -35,8 +35,8 @@
     "right": 0.9
   },
   "chassis": {
-    "track": 14.0,
-    "wheelBase": 12.0,
+    "track": 13.75,
+    "wheelBase": 11.25,
     "wheelRadius": 2.0,
     "maxPower": 0.99,
     "minPower": 0.15

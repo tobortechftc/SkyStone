@@ -52,9 +52,9 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
 
     public static final double cutoffPercent = .8;
     // distance between the centers of left and right wheels, inches
-    private double track = 11.5;
+    private double track = 13.75;
     // distance between the centers of front and back wheels, inches
-    private double wheelBase = 10.7;
+    private double wheelBase = 11.25;
     // wheel radius, inches
     private double wheelRadius = 2.0;
     // minimum power that should be applied to the wheel motors for robot to start moving
