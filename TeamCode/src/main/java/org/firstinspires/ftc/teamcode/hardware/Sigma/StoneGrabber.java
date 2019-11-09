@@ -30,7 +30,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
 
     private final double ARM_UP = 0.1;
     private final double ARM_DOWN = 0.9;
-    private final double ARM_INITIAL = 0.9;
+    private final double ARM_INITIAL = 0.96;
     private final double ARM_IN = 0.7;
     private final double ARM_LOW = 0.6;
     private final double ARM_OUT = 0.45;
@@ -52,9 +52,8 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final int LIFT_GRAB = 400;
     private final int LIFT_GRAB_AUTO = 640;
     private final int LIFT_MAX = 3640;
-    //private final int LIFT_SAFE_SWING_AUTO = 850;
-    private final int LIFT_SAFE_SWING_AUTO = 950;
-    //private final int LIFT_SAFE_SWING = 790;
+    private final int LIFT_SAFE_SWING_AUTO = 1000;
+    private final int LIFT_SAFE_SWING_IN = LIFT_SAFE_SWING_AUTO+400;
     private final int LIFT_SAFE_SWING = LIFT_SAFE_SWING_AUTO;
     //private final double LIFT_POWER = 0.5;   // V5.2
     private final double LIFT_POWER = 1.0;  // V5.3
@@ -503,6 +502,65 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         }, taskName);
 
     }
+
+    public void grabStoneInsideCombo() {
+        final String taskName = "Grab Stone Inside Combo";
+        if (!TaskManager.isComplete(taskName)) return;
+
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                liftToPosition(LIFT_SAFE_SWING_IN);
+                return new Progress() {
+                    @Override
+                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 50;
+                    }
+                };
+            }
+        }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                return moveArm(ARM_DOWN);
+            }
+        }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                grabberOpen();
+                final Progress wristProgress = moveWrist(true);
+                return new Progress() {
+                    @Override
+                    public boolean isDone() { return wristProgress.isDone();}
+                };
+            }
+        }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                liftToPosition(LIFT_DOWN);
+                return new Progress() {
+                    @Override
+                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < LIFT_RUN_TO_POSITION_OFFSET;
+                    }
+                };
+            }
+        }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                grabberClose();
+                return new Progress() {
+                    @Override
+                    public boolean isDone() {
+                        return true;
+                    }
+                };
+            }
+        }, taskName);
+
+    }
+
     public void deliverStoneComboAuto() {
         if (Thread.currentThread().isInterrupted()) return;
         deliverStoneCombo();

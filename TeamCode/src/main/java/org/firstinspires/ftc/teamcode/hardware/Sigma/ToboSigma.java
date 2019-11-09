@@ -237,14 +237,14 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
         //The following are all events for Driver 2
 
-        em2.onButtonDown(new Events.Listener() {
+    /*    em2.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (source.isPressed(Button.LEFT_BUMPER))
                     stoneGrabber.deliverStoneCombo();
             }
         }, new Button[]{Button.Y});
-
+*/
         em2.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
@@ -252,6 +252,14 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                     stoneGrabber.grabStoneCombo();
             }
         }, new Button[]{Button.A});
+
+        em2.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.LEFT_BUMPER))
+                    stoneGrabber.grabStoneInsideCombo();
+            }
+        }, new Button[]{Button.Y});
 
         em2.onButtonDown(new Events.Listener() {
             @Override
