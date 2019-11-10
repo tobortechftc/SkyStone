@@ -126,6 +126,9 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
         em.updateTelemetry(telemetry, 100);
 
+        // -----------------------------------
+        // Teleop driver-1 control:
+        // ------------------------------------
         em.onStick(new Events.Listener() {
             @Override
             public void stickMoved(EventManager source, Events.Side side, float currentX, float changeX,
@@ -190,42 +193,13 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             }
         }, Events.Axis.X_ONLY, Events.Side.LEFT);
 
-
-        // em: [RB] + [Y] for mineral dump combo (move slider to dump, intake box up, open box gate)
         em.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
-                if (source.isPressed(Button.START) && source.isPressed(Button.BACK)) { // testing chassis speed
-                    motor_count = chassis.driveStraightSec(1.0, 10);
-                    return;
-                } else if (source.isPressed(Button.LEFT_BUMPER) && source.isPressed(Button.RIGHT_BUMPER)) { // testing chassis speed
-                    motor_count = chassis.driveStraightSec(1.0, 2);
-                    return;
-                } else if (source.isPressed(Button.BACK)) { // default scale up
-                    chassis.setDefaultScale(1.0);
+                if (source.isPressed(Button.A)||source.isPressed(Button.B)||source.isPressed(Button.Y)||source.isPressed(Button.X)) {
+                    if (intake != null) intake.intakeStop();
                     return;
                 }
-
-            }
-        }, Button.Y);
-
-        em.onButtonDown(new Events.Listener() {
-            @Override
-            public void buttonDown(EventManager source, Button button) {
-                if (source.isPressed(Button.Y) && source.isPressed(Button.BACK)) {
-                    // intake drop In/out
-                    if (intake!=null) intake.intakeDropAuto();
-                } else if (source.isPressed(Button.BACK)) { // default scale back to 0.5
-                    chassis.setDefaultScale(0.7);
-                } else if(!source.isPressed(button.START)){
-                    foundationHook.hookAuto();
-                }
-            }
-        }, Button.A);
-
-        em.onButtonDown(new Events.Listener() {
-            @Override
-            public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (intake != null) intake.intakeIn(!source.isPressed(Button.BACK));
             }
         }, Button.LEFT_BUMPER);
@@ -250,8 +224,60 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             }
         }, Events.Side.LEFT);
 
-        //The following are all events for Driver 2
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.BACK)) { // default scale up
+                    chassis.setDefaultScale(1.0);
+                } else if (source.isPressed(Button.LEFT_BUMPER)) {
+                    stoneGrabber.armInReadyGrabCombo();
+                }
+            }
+        }, Button.Y);
 
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) {
+                if (source.isPressed(Button.Y) && source.isPressed(Button.BACK)) {
+                    // intake drop In/out
+                    if (intake!=null) intake.intakeDropAuto();
+                } else if (source.isPressed(Button.BACK)) { // default scale back to 0.5
+                    chassis.setDefaultScale(0.7);
+                } else if (source.isPressed(Button.LEFT_BUMPER)) { // same for driver-2 grab stone combos
+                    if (stoneGrabber.isArmInside())
+                        stoneGrabber.grabStoneInsideCombo();
+                    else
+                        stoneGrabber.grabStoneCombo();
+                } else if(!source.isPressed(button.START)){
+                    foundationHook.hookAuto();
+                }
+            }
+        }, Button.A);
+
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.LEFT_BUMPER))
+                    stoneGrabber.armInCombo(source.isPressed(Button.BACK), false);
+                else
+                    stoneGrabber.grabberAuto();
+            }
+        }, new Button[]{Button.X});
+
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.LEFT_BUMPER))
+                    stoneGrabber.armOutCombo();
+                else if (!source.isPressed(Button.START))
+                    stoneGrabber.wristAuto();
+            }
+        }, new Button[]{Button.B});
+
+
+        // ---------------------------------
+        // Teleop Driver-2 control:
+        // ---------------------------------
     /*    em2.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
@@ -263,8 +289,12 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         em2.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
-                if (source.isPressed(Button.LEFT_BUMPER))
-                    stoneGrabber.grabStoneCombo();
+                if (source.isPressed(Button.LEFT_BUMPER)) {
+                    if (stoneGrabber.isArmInside())
+                        stoneGrabber.grabStoneInsideCombo();
+                    else
+                        stoneGrabber.grabStoneCombo();
+                }
             }
         }, new Button[]{Button.A});
 
@@ -272,7 +302,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (source.isPressed(Button.LEFT_BUMPER))
-                    stoneGrabber.grabStoneInsideCombo();
+                    stoneGrabber.armInReadyGrabCombo();
             }
         }, new Button[]{Button.Y});
 
