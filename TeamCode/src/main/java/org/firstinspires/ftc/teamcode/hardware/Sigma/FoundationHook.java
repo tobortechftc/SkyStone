@@ -33,13 +33,13 @@ public class FoundationHook extends Logger<FoundationHook> implements Configurab
     public DistanceSensor rangetouch;
 
 
-    private final double LEFT_HOOK_INIT = 0.05;
-    private final double LEFT_HOOK_UP = 0.27;
+    private final double LEFT_HOOK_INIT = 0.15;
+    private final double LEFT_HOOK_UP = 0.3;
     private final double LEFT_HOOK_DOWN = 0.8;
 
     private final double RIGHT_HOOK_INIT = 0.87;
-    private final double RIGHT_HOOK_UP = 0.67;
-    private final double RIGHT_HOOK_DOWN = .12;
+    private final double RIGHT_HOOK_UP = 0.72;
+    private final double RIGHT_HOOK_DOWN = .2;
 
     private boolean hookIsDown = false;
     private ElapsedTime runtime = new ElapsedTime();
@@ -64,7 +64,7 @@ public class FoundationHook extends Logger<FoundationHook> implements Configurab
 
     public void reset(boolean Auto) {
         if (leftHook != null)
-            hookUp();
+            hookInit();
     }
 
     public void configure(Configuration configuration, boolean auto) {

@@ -30,7 +30,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
 
     private final double ARM_UP = 0.1;
     private final double ARM_DOWN = 0.9;
-    private final double ARM_INITIAL = 0.96;
+    private final double ARM_INITIAL = 0.9;
     private final double ARM_IN = 0.7;
     private final double ARM_LOW = 0.6;
     private final double ARM_OUT = 0.45;
@@ -613,7 +613,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             line.addData("/armIn", "=%s", new Func<String>() {
                 @Override
                 public String value() {
-                    return (armIsIn?"T":"F");
+                    return ((armIsIn?"T":"F"));
                 }
             });
         }

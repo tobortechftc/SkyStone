@@ -92,6 +92,12 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 // chassis.setupTelemetry(telemetry);
             }
         }
+        if (foundationHook!=null) {
+            foundationHook.reset(auto);
+        }
+        if (stoneGrabber!=null)
+            stoneGrabber.reset(auto);
+
         if (intake!=null) {
             intake.reset(auto);
         }
