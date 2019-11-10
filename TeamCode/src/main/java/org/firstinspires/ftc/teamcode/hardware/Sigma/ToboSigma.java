@@ -66,7 +66,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         if (autoColor != AutoTeamColor.NOT_AUTO && autoColor != AutoTeamColor.DIAGNOSIS) {
             cameraStoneDetector = new CameraStoneDetector().configureLogging("CameraStoneDetector", logLevel);
             // cameraStoneDetector.configure(configuration, CameraSource.INTERNAL);
-            cameraStoneDetector.configure(configuration, (autoColor == AutoTeamColor.AUTO_RED ? CameraSource.WEBCAM_RIGHT : CameraSource.WEBCAM_LEFT));
+            cameraStoneDetector.configure(configuration, (autoColor == AutoTeamColor.AUTO_RED ? CameraSource.WEBCAM_LEFT : CameraSource.WEBCAM_RIGHT));
             info("RoboSigma configure() after init cameraStoneDetector (run time = %.2f sec)", (runtime.seconds() - ini_time));
         }
         foundationHook = new FoundationHook(this.core).configureLogging("FoundationHook", logLevel);
