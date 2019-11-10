@@ -34,6 +34,11 @@
     "left": 0.01,
     "right": 0.9
   },
+  "rightIntakeDrop": {
+    "center": 0.5,
+    "left": 0.01,
+    "right": 0.99
+  },
   "chassis": {
     "track": 13.75,
     "wheelBase": 11.25,
