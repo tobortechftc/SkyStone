@@ -352,9 +352,14 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
         try {
             //chassis.driveStraightAutoRunToPosition(.4, 200, 0, 10000, telemetry);
-            chassis.driveStraightAutoRunToPosition(.4, 100, 0, 10000);
+            chassis.tl=telemetry;
+            chassis.driveStraightAutoRunToPosition(.6, 150, -90, 10000);
             Thread.sleep(500);
-            chassis.driveStraightAutoRunToPosition(.4, -100, 0, 10000);
+            chassis.driveStraightAutoRunToPosition(.6, 150, 90, 10000);
+            Thread.sleep(500);
+            chassis.driveStraightAutoRunToPosition(.6, 150, 0, 10000);
+            Thread.sleep(500);
+            chassis.driveStraightAutoRunToPosition(.6, -150, 0, 10000);
         }catch (InterruptedException e){
 
         }

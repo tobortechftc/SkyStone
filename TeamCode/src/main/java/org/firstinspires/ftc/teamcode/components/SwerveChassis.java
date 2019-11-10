@@ -61,6 +61,9 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     private double minPower = 0.15;
     // maximum power that should be applied to the wheel motors
     private double maxPower = 0.99;
+    // the ratio of the distance that should be drove with desired power
+    private double bufferPercentage = 0.8;
+
     private double maxRange = 127; // max range sensor detectable
 
     private WheelAssembly frontLeft;
@@ -80,6 +83,8 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
 
     public NormalizedColorSensor FRColor;
     public NormalizedColorSensor FLColor;
+
+    public Telemetry tl;
 
     private DriveMode driveMode = DriveMode.STOP;      // current drive mode
     private double targetHeading;     // intended heading for DriveMode.STRAIGHT as reported by orientation sensor
@@ -250,13 +255,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             return 0;
         dist = rangeSensor.getDistance(DistanceUnit.CM);
         while (dist > maxRange && (++count) < 5) {
-//            try {
-//                sleep(10);
-//            } catch (InterruptedException e) {
-//                e.printStackTrace();
-//            }
             dist = rangeSensor.getDistance(DistanceUnit.CM);
-
             // yield handler
             this.core.yield();
         }
@@ -270,9 +269,11 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         double satSensitivity = 0.7;        //How sensitive line detection is (Higher values less sensitive, 0.8 is highest)
         float[] hsvValues = new float[3];
         //final float values[] = hsvValues;
+
         NormalizedRGBA colors = (FRColor!=null?FRColor.getNormalizedColors():null);
         if (colors!=null)
             Color.colorToHSV(colors.toColor(), hsvValues);
+
         if (hsvValues[1] >= satSensitivity) {
             if ((hsvValues[0] <= hueTolerance && hsvValues[0] >= 0) || (hsvValues[0] >= 360 - hueTolerance && hsvValues[0] <= 360)) {
                 // detect red
@@ -443,6 +444,32 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             return;
         }
 
+        //octant will determine which wheels to use to adjust heading deviation
+        int octant = 0;
+        if (0 < distance) {
+            if (67.5 <= heading)
+                octant = 0;
+            if (22.5 <= heading && heading < 67.5)
+                octant = 1;
+            if (-22.5 <= heading && heading < 22.5)
+                octant = 2;
+            if (-67.5 <= heading && heading < 22.5)
+                octant = 3;
+            if (heading < -67.5)
+                octant = 4;
+        } else {
+            if (67.5 <= heading)
+                octant = 4;
+            if (22.5 <= heading && heading < 67.5)
+                octant = 5;
+            if (-22.5 <= heading && heading < 22.5)
+                octant = 6;
+            if (-67.5 <= heading && heading < 22.5)
+                octant = 7;
+            if (heading <= -67.5)
+                octant = 0;
+        }
+
         if (distance < 0) {
             power = -power;
             distance = -distance;
@@ -481,13 +508,32 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                     targetHeading, sensorHeading, headingDeviation);
             if (Math.abs(headingDeviation) > 0.5) {
                 servoCorrection = headingDeviation / 2;
-                if (power < 0) {
-                    backLeft.servo.adjustPosition(servoCorrection);
+                if (octant==0){
+                    frontRight.servo.adjustPosition(servoCorrection);
                     backRight.servo.adjustPosition(servoCorrection);
-                } else {
+                }else if (octant==1){
+                    frontLeft.servo.adjustPosition(servoCorrection);
+                    backRight.servo.adjustPosition(servoCorrection);
+                }else if (octant==2){
                     frontLeft.servo.adjustPosition(servoCorrection);
                     frontRight.servo.adjustPosition(servoCorrection);
+                }else if (octant==3){
+                    frontRight.servo.adjustPosition(servoCorrection);
+                    backLeft.servo.adjustPosition(servoCorrection);
+                }else if (octant==4){
+                    frontLeft.servo.adjustPosition(servoCorrection);
+                    backLeft.servo.adjustPosition(servoCorrection);
+                }else if (octant==5){
+                    frontLeft.servo.adjustPosition(servoCorrection);
+                    backRight.servo.adjustPosition(servoCorrection);
+                }else if (octant==6){
+                    backLeft.servo.adjustPosition(servoCorrection);
+                    backRight.servo.adjustPosition(servoCorrection);
+                }else{
+                    frontRight.servo.adjustPosition(servoCorrection);
+                    backLeft.servo.adjustPosition(servoCorrection);
                 }
+
             } else {
                 servoCorrection = 0;
                 if (power < 0) {
@@ -511,14 +557,13 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             if (Thread.currentThread().isInterrupted())
                 break;
 
-            sleep(0);
+
             // yield handler
             // this.core.yield();
         }
         for (WheelAssembly wheel : wheels) wheel.motor.setPower(0);
         driveMode = DriveMode.STOP;
     }
-
 
 
     public void driveStraightAutoRunToPosition(double power, double cm, double heading, int timeout) throws InterruptedException {
@@ -543,10 +588,35 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             return;
         }
 
-//        if (distance < 0) {
-//            power = -power;
-//            distance = -distance;
-//        }
+        //octant will determine which wheels to use to adjust heading deviation
+        int octant = 0;
+        if (0 < distance) {
+            if (67.5 <= heading)
+                octant = 0;
+            else if (22.5 <= heading && heading < 67.5)
+                octant = 1;
+            else if (-22.5 <= heading && heading < 22.5)
+                octant = 2;
+            else if (-67.5 <= heading && heading < -22.5)
+                octant = 3;
+            else if (heading < -67.5)
+                octant = 4;
+        } else {
+            if (67.5 <= heading)
+                octant = 4;
+            if (22.5 <= heading && heading < 67.5)
+                octant = 5;
+            if (-22.5 <= heading && heading < 22.5)
+                octant = 6;
+            if (-67.5 <= heading && heading < -22.5)
+                octant = 7;
+            if (heading <= -67.5)
+                octant = 0;
+        }
+
+//        tl.addData("octant",octant);
+//        tl.update();
+//        sleep(3000);
 
         //motor settings
         driveMode = DriveMode.STRAIGHT;
@@ -577,47 +647,58 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         //record time
         long iniTime = System.currentTimeMillis();
 
-        int loop=0;
-        int iniEncoder= wheels[0].motor.getCurrentPosition();
-
         //waiting loop
         while (wheels[0].motor.isBusy()&&wheels[1].motor.isBusy()&&wheels[2].motor.isBusy()&&wheels[3].motor.isBusy()) {
-            loop++;
-            //for (WheelAssembly wheel : wheels) wheel.motor.setPower(power);///
             // check and correct heading as needed
             double sensorHeading = orientationSensor.getHeading();
             headingDeviation = targetHeading - sensorHeading;
             debug("driveStraight(): target=%+.2f, sensor=%+.2f, adjustment=%+.2f)",
                     targetHeading, sensorHeading, headingDeviation);
             if (Math.abs(headingDeviation) > 0.5) {
-                servoCorrection = headingDeviation / 2;
-                if (distance < 0) {
-                    backLeft.servo.adjustPosition(servoCorrection);
+                servoCorrection = headingDeviation / 3.0;
+                if (octant==0){
+                    frontRight.servo.adjustPosition(servoCorrection);
                     backRight.servo.adjustPosition(servoCorrection);
-                } else {
+                }else if (octant==1){
+                    frontLeft.servo.adjustPosition(servoCorrection);
+                    backRight.servo.adjustPosition(servoCorrection);
+                }else if (octant==2){
                     frontLeft.servo.adjustPosition(servoCorrection);
                     frontRight.servo.adjustPosition(servoCorrection);
+                }else if (octant==3){
+                    frontRight.servo.adjustPosition(servoCorrection);
+                    backLeft.servo.adjustPosition(servoCorrection);
+                }else if (octant==4){
+                    frontLeft.servo.adjustPosition(servoCorrection);
+                    backLeft.servo.adjustPosition(servoCorrection);
+                }else if (octant==5){
+                    frontLeft.servo.adjustPosition(servoCorrection);
+                    backRight.servo.adjustPosition(servoCorrection);
+                }else if (octant==6){
+                    backLeft.servo.adjustPosition(servoCorrection);
+                    backRight.servo.adjustPosition(servoCorrection);
+                }else{
+                    frontRight.servo.adjustPosition(servoCorrection);
+                    backLeft.servo.adjustPosition(servoCorrection);
                 }
             } else {
                 servoCorrection = 0;
-                if (distance < 0) {
-                    backLeft.servo.setPosition(frontLeft.servo.getPosition());
-                    backRight.servo.setPosition(frontRight.servo.getPosition());
-                } else {
-                    frontLeft.servo.setPosition(backLeft.servo.getPosition());
-                    frontRight.servo.setPosition(backRight.servo.getPosition());
-                }
+//                if (distance < 0) {
+//                    backLeft.servo.setPosition(frontLeft.servo.getPosition());
+//                    backRight.servo.setPosition(frontRight.servo.getPosition());
+//                } else {
+//                    frontLeft.servo.setPosition(backLeft.servo.getPosition());
+//                    frontRight.servo.setPosition(backRight.servo.getPosition());
+//                }
             }
             //determine if target distance is reached
             int maxTraveled = Integer.MIN_VALUE;
             for (int i = 0; i < 4; i++) {
-                maxTraveled = Math.abs(Math.max(maxTraveled, wheels[i].motor.getCurrentPosition() - startingCount[i]));
+                maxTraveled = Math.max(maxTraveled, Math.abs(wheels[i].motor.getCurrentPosition() - startingCount[i]));
             }
-//            if ((power > 0 && distance - maxTraveled < 20) || (power < 0 && maxTraveled - distance < 20))
-//                break;
 
-            if (maxTraveled / distance > .8) {
-                double traveledPercent = maxTraveled / distance;
+            if (maxTraveled / Math.abs(distance) > bufferPercentage) {
+                double traveledPercent = maxTraveled / Math.abs(distance);
                 if (traveledPercent >= 1.0)
                     break;
                 double pow = (power - minPower) * Math.pow(1 - Math.pow((traveledPercent - cutoffPercent) / (1 - cutoffPercent), 2), 2) + minPower;
@@ -629,8 +710,6 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                 //tl.addLine("in the first 80%");
             }
             //tl.update();
-
-
             //determine if time limit is reached
             if (System.currentTimeMillis() - iniTime > timeout)
                 break;
@@ -638,12 +717,9 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                 break;
 
             // yield handler
-            this.core.yield();
+//            this.core.yield();
         }
 
-        long finalTime=System.currentTimeMillis();
-
-        int finalEncoder= wheels[0].motor.getCurrentPosition();
         for (WheelAssembly wheel : wheels) {
             wheel.motor.setPower(0.0);
             wheel.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -661,10 +737,6 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
 
     public enum Direction {
         FRONT, LEFT, RIGHT, BACK, FRONT_LEFT, FRONT_RIGHT;
-    }
-
-    public enum Wall {
-        LEFT, RIGHT;
     }
 
     public double getCurHeading() {
@@ -809,6 +881,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         }
         return (ave / 4.0); // return average count per second
     }
+
 
     /**
      * Rotate in place using currently specified power
