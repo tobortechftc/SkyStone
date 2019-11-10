@@ -145,6 +145,8 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         armIsDown = false;
         if (cur_pos>ARM_IN)
             armIsIn = true;
+        else
+            armIsIn = false;
     }
 
     public void armUpInc() {
@@ -153,8 +155,10 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         if (cur_pos<0) cur_pos=0;
         arm.setPosition(cur_pos);
         armIsDown = false;
-        if (cur_pos<ARM_DOWN)
+        if (cur_pos<ARM_LOW)
             armIsIn = false;
+        else
+            armIsIn = true;
     }
 
     public void armUp() {
@@ -250,7 +254,13 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     }
 
     public Progress moveGrabber(boolean closed) {
-        double target = closed ? GRABBER_CLOSE : GRABBER_OPEN;
+        double target = GRABBER_CLOSE;
+        if (!closed) {
+           if (armIsIn)
+               target = GRABBER_OPEN_IN;
+           else
+               target = GRABBER_OPEN;
+        }
         isGrabberOpened = !closed;
         double adjustment = Math.abs(grabber.getPosition() - target);
         debug("moveGrabber(): target=%.2f, adjustment=%.2f", target, adjustment);
@@ -598,6 +608,12 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 @Override
                 public Double value() {
                     return arm.getPosition();
+                }
+            });
+            line.addData("/armIn", "=%s", new Func<String>() {
+                @Override
+                public String value() {
+                    return (armIsIn?"T":"F");
                 }
             });
         }
