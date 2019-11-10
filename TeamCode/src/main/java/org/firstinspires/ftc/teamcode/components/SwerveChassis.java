@@ -91,6 +91,8 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     private boolean setImuTelemetry = false;//unless debugging, don't set telemetry for imu
     private boolean setRangeSensorTelemetry = false;//unless debugging, don't set telemetry for range sensor
 
+    public Telemetry tl;
+
     final double TICKS_PER_CM = 537.6 / (4.0 * 2.54 * Math.PI); // 16.86; //number of encoder ticks per cm of driving
 
     public void enableRangeSensorTelemetry() { // must be call before reset() or setupTelemetry()
@@ -590,7 +592,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             debug("driveStraight(): target=%+.2f, sensor=%+.2f, adjustment=%+.2f)",
                     targetHeading, sensorHeading, headingDeviation);
             if (Math.abs(headingDeviation) > 0.5) {
-                servoCorrection = headingDeviation / 2;
+                servoCorrection = headingDeviation / 3.0;
                 if (distance < 0) {
                     backLeft.servo.adjustPosition(servoCorrection);
                     backRight.servo.adjustPosition(servoCorrection);
@@ -600,13 +602,13 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                 }
             } else {
                 servoCorrection = 0;
-                if (distance < 0) {
-                    backLeft.servo.setPosition(frontLeft.servo.getPosition());
-                    backRight.servo.setPosition(frontRight.servo.getPosition());
-                } else {
-                    frontLeft.servo.setPosition(backLeft.servo.getPosition());
-                    frontRight.servo.setPosition(backRight.servo.getPosition());
-                }
+//                if (distance < 0) {
+//                    backLeft.servo.setPosition(frontLeft.servo.getPosition());
+//                    backRight.servo.setPosition(frontRight.servo.getPosition());
+//                } else {
+//                    frontLeft.servo.setPosition(backLeft.servo.getPosition());
+//                    frontRight.servo.setPosition(backRight.servo.getPosition());
+//                }
             }
             //determine if target distance is reached
             int maxTraveled = Integer.MIN_VALUE;
@@ -638,7 +640,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                 break;
 
             // yield handler
-            this.core.yield();
+//            this.core.yield();
         }
 
         long finalTime=System.currentTimeMillis();
@@ -650,12 +652,11 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             wheel.motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
 
-       // tl.addData("number of loops %d",loop);
+        tl.addData("number of loops %d",loop);
         //tl.addData("ini encoder %d",iniEncoder);
         //tl.addData("final encoder of loops %d",finalEncoder);
         //tl.addData("total loop time %d",finalTime-iniTime);
-        //tl.update();
-        //sleep(5000);
+        tl.update();
         driveMode = DriveMode.STOP;
     }
 
@@ -968,6 +969,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
      */
     public void setupTelemetry(Telemetry telemetry) {
         if (Thread.currentThread().isInterrupted()) return;
+        tl=telemetry;
         Telemetry.Line line = telemetry.addLine();
         line.addData("Pwr/Scale", new Func<String>() {
             @Override

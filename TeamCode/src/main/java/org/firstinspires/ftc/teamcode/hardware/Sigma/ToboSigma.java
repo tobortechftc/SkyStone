@@ -360,10 +360,15 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     public void testStraightNewSkyStone(EventManager em) {
 
         try {
+            chassis.tl=telemetry;
             //chassis.driveStraightAutoRunToPosition(.4, 200, 0, 10000, telemetry);
-            chassis.driveStraightAutoRunToPosition(.4, 100, 0, 10000);
+            chassis.driveStraightAutoRunToPosition(.4, 150, 0, 10000);
             Thread.sleep(500);
-            chassis.driveStraightAutoRunToPosition(.4, -100, 0, 10000);
+            chassis.driveStraightAutoRunToPosition(.4, -150, 0, 10000);
+            Thread.sleep(500);
+            chassis.driveStraightAutoRunToPosition(.8, 150, 0, 10000);
+            Thread.sleep(500);
+            chassis.driveStraightAutoRunToPosition(.8, -150, 0, 10000);
         }catch (InterruptedException e){
 
         }
