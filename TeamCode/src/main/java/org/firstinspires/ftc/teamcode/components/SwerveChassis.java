@@ -729,7 +729,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         //tl.addData("ini encoder %d",iniEncoder);
         //tl.addData("final encoder of loops %d",finalEncoder);
         //tl.addData("total loop time %d",finalTime-iniTime);
-        tl.update();
+        //tl.update();
         driveMode = DriveMode.STOP;
     }
 
