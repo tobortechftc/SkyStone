@@ -30,7 +30,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
 
     private final double ARM_UP = 0.1;
     private final double ARM_DOWN = 0.9;
-    private final double ARM_INITIAL = 0.9;
+    private final double ARM_INITIAL = 0.84;
     private final double ARM_IN = 0.7;
     private final double ARM_LOW = 0.6;
     private final double ARM_OUT = 0.45;
@@ -52,7 +52,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final int LIFT_GRAB = 400;
     private final int LIFT_GRAB_AUTO = 640;
     private final int LIFT_MAX = 3640;
-    private final int LIFT_SAFE_SWING_AUTO = 1000;
+    private final int LIFT_SAFE_SWING_AUTO = 1100;
     private final int LIFT_SAFE_SWING_IN = LIFT_SAFE_SWING_AUTO+400;
     private final int LIFT_SAFE_SWING = LIFT_SAFE_SWING_AUTO;
     //private final double LIFT_POWER = 0.5;   // V5.2
@@ -312,6 +312,10 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private Progress moveArm(double position) {
         double adjustment = Math.abs(position - arm.getPosition());
         arm.setPosition(position);
+        if (position>ARM_IN)
+            armIsIn=true;
+        else
+            armIsIn=false;
         // 3.3ms per degree of rotation
         final long doneBy = System.currentTimeMillis() + Math.round(adjustment * 900);
         return new Progress() {
@@ -433,7 +437,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
-                return moveArm(ARM_INITIAL);
+                return moveArm(ARM_DOWN);
             }
         }, taskName);
         TaskManager.add(new Task() {
