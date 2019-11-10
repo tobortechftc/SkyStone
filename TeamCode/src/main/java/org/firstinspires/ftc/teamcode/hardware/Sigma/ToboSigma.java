@@ -92,6 +92,9 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 // chassis.setupTelemetry(telemetry);
             }
         }
+        if (intake!=null) {
+            intake.reset(auto);
+        }
     }
 
     @MenuEntry(label = "TeleOp", group = "Competition")
@@ -106,8 +109,14 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 return String.format("%2.0f", motor_count);
             }
         });
-        chassis.setupTelemetry(telemetry);
-        stoneGrabber.setupTelemetry(telemetry);
+        if (chassis!=null)
+            chassis.setupTelemetry(telemetry);
+        if (stoneGrabber!=null)
+            stoneGrabber.setupTelemetry(telemetry);
+        if (intake!=null)
+            intake.setupTelemetry(telemetry);
+        if (foundationHook!=null)
+            foundationHook.setupTelemetry(telemetry);
 
         em.updateTelemetry(telemetry, 100);
 

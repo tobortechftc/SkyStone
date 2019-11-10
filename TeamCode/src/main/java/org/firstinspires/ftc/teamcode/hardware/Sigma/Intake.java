@@ -28,8 +28,8 @@ public class Intake extends Logger<Intake> implements Configurable {
     private final double INTAKE_FAST = 1.0;
     private final double INTAKE_SPEED = 0.858155736545;
 
-    private final double RIGHT_INTAKE_DROP_INIT = 0.99;
-    private final double RIGHT_INTAKE_DROP_DOWN = 0.05;
+    private final double RIGHT_INTAKE_DROP_INIT = 0.995;
+    private final double RIGHT_INTAKE_DROP_DOWN = 0.090;
 
     private boolean intakeDropDown = false;
 
@@ -67,9 +67,6 @@ public class Intake extends Logger<Intake> implements Configurable {
         );
         rightIntakeDrop.configure(configuration.getHardwareMap(), "rightIntakeDrop");
         configuration.register(rightIntakeDrop);
-
-        intakeDropInit();
-
         intakeMotor = configuration.getHardwareMap().tryGet(DcMotor.class, "intakeMotor");
         if (intakeMotor != null) intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         intakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
