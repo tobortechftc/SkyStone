@@ -68,7 +68,7 @@ public class SigmaAutoRedLeft extends LinearOpMode {
                 // put autonomous steps here
                 // step-1: detect skystone location
                 // StoneLoc = robot.chassis.skyStoneLocation(isBlue);
-                // robot.cameraStoneDetector.getSkystonePositionTF(robot_pos);
+                StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF(true);
                 // telemetry.addLine(StoneLoc.toString());
                 // telemetry.update();
                 // sleep(10000); // 10 sec

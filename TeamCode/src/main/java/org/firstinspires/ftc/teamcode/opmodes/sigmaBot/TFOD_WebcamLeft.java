@@ -164,7 +164,7 @@ public class TFOD_WebcamLeft extends LinearOpMode {
                 }
                 double pos = (recognition.getRight() + recognition.getLeft()) / 2;
                 double skystone_width = recognition.getRight() - recognition.getLeft();
-                if (skystone_width>250) { // stone detected is twice as regular, assume the skystone is on the right half
+                if (skystone_width>320) { // stone detected is twice as regular, assume the skystone is on the right half
                     pos = (pos+recognition.getRight())/2;
                 }
                 if (redSide) {
