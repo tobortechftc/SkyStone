@@ -56,7 +56,8 @@ public class SigmaAutoRedLeft extends LinearOpMode {
 //            updatedRecognitions = robot.cameraStoneDetector.getTfod().getUpdatedRecognitions();
 //        }
         int robot_pos = 1;
-
+        if (robot.intake!=null)
+            robot.intake.intakeDropInit();
         waitForStart();
         robot.runtime.reset();
         // run until the end of the match (driver presses STOP or timeout)

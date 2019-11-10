@@ -95,7 +95,6 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     private boolean useScalePower = true;//
     private boolean setImuTelemetry = false;//unless debugging, don't set telemetry for imu
     private boolean setRangeSensorTelemetry = false;//unless debugging, don't set telemetry for range sensor
-
     final double TICKS_PER_CM = 537.6 / (4.0 * 2.54 * Math.PI); // 16.86; //number of encoder ticks per cm of driving
 
     public void enableRangeSensorTelemetry() { // must be call before reset() or setupTelemetry()
@@ -656,28 +655,28 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                     targetHeading, sensorHeading, headingDeviation);
             if (Math.abs(headingDeviation) > 0.5) {
                 servoCorrection = headingDeviation / 3.0;
-                if (octant==0){
+                if (octant==0){  // right
                     frontRight.servo.adjustPosition(servoCorrection);
                     backRight.servo.adjustPosition(servoCorrection);
-                }else if (octant==1){
+                }else if (octant==1){ // front right around 45
                     frontLeft.servo.adjustPosition(servoCorrection);
                     backRight.servo.adjustPosition(servoCorrection);
-                }else if (octant==2){
+                }else if (octant==2){ // forward
                     frontLeft.servo.adjustPosition(servoCorrection);
                     frontRight.servo.adjustPosition(servoCorrection);
-                }else if (octant==3){
+                }else if (octant==3){ // front left around 45
                     frontRight.servo.adjustPosition(servoCorrection);
                     backLeft.servo.adjustPosition(servoCorrection);
-                }else if (octant==4){
+                }else if (octant==4){ // left
                     frontLeft.servo.adjustPosition(servoCorrection);
                     backLeft.servo.adjustPosition(servoCorrection);
-                }else if (octant==5){
+                }else if (octant==5){ // back left around 45
                     frontLeft.servo.adjustPosition(servoCorrection);
                     backRight.servo.adjustPosition(servoCorrection);
-                }else if (octant==6){
+                }else if (octant==6){ // backward
                     backLeft.servo.adjustPosition(servoCorrection);
                     backRight.servo.adjustPosition(servoCorrection);
-                }else{
+                }else{ // back right around 45
                     frontRight.servo.adjustPosition(servoCorrection);
                     backLeft.servo.adjustPosition(servoCorrection);
                 }
@@ -726,12 +725,11 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             wheel.motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
 
-       // tl.addData("number of loops %d",loop);
+        //tl.addData("number of loops %d",loop);
         //tl.addData("ini encoder %d",iniEncoder);
         //tl.addData("final encoder of loops %d",finalEncoder);
         //tl.addData("total loop time %d",finalTime-iniTime);
-        //tl.update();
-        //sleep(5000);
+        tl.update();
         driveMode = DriveMode.STOP;
     }
 
@@ -1041,6 +1039,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
      */
     public void setupTelemetry(Telemetry telemetry) {
         if (Thread.currentThread().isInterrupted()) return;
+        tl=telemetry;
         Telemetry.Line line = telemetry.addLine();
         line.addData("Pwr/Scale", new Func<String>() {
             @Override
