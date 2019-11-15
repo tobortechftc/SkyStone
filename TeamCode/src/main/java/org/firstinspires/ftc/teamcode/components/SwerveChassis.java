@@ -3,9 +3,11 @@ package org.firstinspires.ftc.teamcode.components;
 import android.graphics.Color;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
+import com.qualcomm.robotcore.hardware.SwitchableLight;
 
 import org.firstinspires.ftc.robotcore.external.Func;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -93,6 +95,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     private double defaultScale = 0.8;
     private double curHeading = 0;
     private boolean useScalePower = true;//
+    private boolean swerveReverseDirection = false; // chassis front/back is reversed during Teleop
     private boolean setImuTelemetry = false;//unless debugging, don't set telemetry for imu
     private boolean setRangeSensorTelemetry = false;//unless debugging, don't set telemetry for range sensor
     final double TICKS_PER_CM = 537.6 / (4.0 * 2.54 * Math.PI); // 16.86; //number of encoder ticks per cm of driving
@@ -207,10 +210,9 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             leftRangeSensor = configuration.getHardwareMap().get(DistanceSensor.class, "leftRange");
             rightRangeSensor = configuration.getHardwareMap().get(DistanceSensor.class, "rightRange");
 
-            FRColor = configuration.getHardwareMap().get(NormalizedColorSensor.class, "FRColor");
-            FLColor = configuration.getHardwareMap().get(NormalizedColorSensor.class, "FLColor");
-
         }
+        FRColor = configuration.getHardwareMap().get(NormalizedColorSensor.class, "FRColor");
+        FLColor = configuration.getHardwareMap().get(NormalizedColorSensor.class, "FLColor");
 
         // register chassis as configurable component
         configuration.register(this);
@@ -263,6 +265,39 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         return dist;
     }
 
+    public boolean isReversed() {
+        return swerveReverseDirection;
+    }
+
+    public void changeChassisDrivingDirection() {
+        swerveReverseDirection = ! swerveReverseDirection;
+        // switchLights();
+        /*if (!swerveReverseDirection) {
+            wheels[0] = frontLeft ;
+            wheels[0].setDirection(DcMotor.Direction.REVERSE);
+
+            wheels[1] = frontRight ;
+            wheels[1].setDirection(DcMotor.Direction.FORWARD);
+
+            wheels[2] = backLeft ;
+            wheels[2].setDirection(DcMotor.Direction.REVERSE);
+
+            wheels[3] = backRight ;
+            wheels[3].setDirection(DcMotor.Direction.FORWARD);
+        } else {
+            wheels[3] = frontLeft ;
+            wheels[3].setDirection(DcMotor.Direction.FORWARD);
+
+            wheels[2] = frontRight ;
+            wheels[2].setDirection(DcMotor.Direction.REVERSE);
+
+            wheels[1] = backLeft ;
+            wheels[1].setDirection(DcMotor.Direction.FORWARD);
+
+            wheels[0] = backRight ;
+            wheels[0].setDirection(DcMotor.Direction.REVERSE);
+        } */
+    }
     public boolean lineDetected(LineColor color) {
         int hueTolerance = 15;              //Tolerance of hues (15 is best)
         double satSensitivity = 0.7;        //How sensitive line detection is (Higher values less sensitive, 0.8 is highest)
@@ -283,6 +318,18 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             }
         }
         return false;
+    }
+
+    public void switchLights() {
+        if (FRColor==null || FLColor==null)
+            return;
+        if (isReversed()) {
+            ((SwitchableLight)FLColor).enableLight(false);
+            ((SwitchableLight)FRColor).enableLight(false);
+        } else {
+            ((SwitchableLight)FLColor).enableLight(true);
+            ((SwitchableLight)FRColor).enableLight(true);
+        }
     }
 
     public boolean isSkystone(boolean isRight) {
@@ -1044,7 +1091,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         line.addData("Pwr/Scale", new Func<String>() {
             @Override
             public String value() {
-                return String.format("%.2f / %.1f", frontLeft.motor.getPower(), getDefaultScale());
+                return String.format("%.2f / %.1f %s", frontLeft.motor.getPower(), getDefaultScale(),(isReversed()?"(R)":"(F)"));
             }
         });
         if (frontLeft.motor != null) {
@@ -1272,6 +1319,10 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             if (resetServo) servo.reset();
+        }
+
+        void setDirection(DcMotor.Direction direction) {
+            if (motor != null) motor.setDirection(direction);
         }
     }
 }

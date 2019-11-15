@@ -138,6 +138,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                     double power = Math.abs(source.getStick(Events.Side.RIGHT, Events.Axis.BOTH));
                     power *= power; // square power to stick
                     double heading = toDegrees(currentX, currentY);
+                    if (chassis.isReversed()) power *= -1;
                     double cur_heading = chassis.getCurHeading();
                     // invert headings less than -90 / more than 90
                     if ((Math.abs(cur_heading - heading) < 10) || (Math.abs(currentX) + Math.abs(currentY) < 0.1)) { // keep original heading
@@ -162,11 +163,13 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                     double power = Math.abs(source.getStick(Events.Side.RIGHT, Events.Axis.X_ONLY));
                     double curvature = Math.abs(source.getStick(Events.Side.LEFT, Events.Axis.Y_ONLY));
                     power *= power * source.getStick(Events.Side.RIGHT, Events.Axis.X_ONLY); // square power to stick
-                    chassis.orbit(power * powerAdjustment(source), curvature);
+                    if (chassis.isReversed()) power *= -1;
+                    // chassis.orbit(power * powerAdjustment(source), curvature);
                 } else {
                     // right stick with left stick operates robot in "car" mode
                     double heading = source.getStick(Events.Side.LEFT, Events.Axis.X_ONLY) * 90;
                     double power = currentY * Math.abs(currentY);
+                    if (chassis.isReversed()) power *= -1;
                     debug("sticksOnly(): right / steer, pwr: %.2f, head: %.2f", power, heading);
                     chassis.driveAndSteer(power * powerAdjustment(source), heading, false);
                 }
@@ -185,6 +188,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                     // right stick with left stick operates robot in "car" mode
                     double heading = currentX * 90;
                     double power = source.getStick(Events.Side.RIGHT, Events.Axis.Y_ONLY);
+                    if (chassis.isReversed()) power *= -1;
                     debug("sticksOnly(): left / steer, pwr: %.2f, head: %.2f", power, heading);
                     chassis.driveAndSteer(power * powerAdjustment(source), heading, false);
                 } else if (chassis!=null){
@@ -257,7 +261,9 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         em.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
-                if (source.isPressed(Button.LEFT_BUMPER))
+                if (source.isPressed(Button.BACK)) { // back-X swap driving direction
+                    chassis.changeChassisDrivingDirection();
+                } else if (source.isPressed(Button.LEFT_BUMPER))
                     stoneGrabber.armInCombo(source.isPressed(Button.BACK), false);
                 else
                     stoneGrabber.grabberAuto();
@@ -289,7 +295,10 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         em2.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
-                if (source.isPressed(Button.LEFT_BUMPER)) {
+                if (source.isPressed(Button.Y) && source.isPressed(Button.BACK)) {
+                    // intake drop In/out
+                    if (intake!=null) intake.intakeDropAuto();
+                } else if (source.isPressed(Button.LEFT_BUMPER)) {
                     if (stoneGrabber.isArmInside())
                         stoneGrabber.grabStoneInsideCombo();
                     else
