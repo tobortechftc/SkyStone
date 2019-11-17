@@ -201,7 +201,38 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         em.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
-                if (source.isPressed(Button.A) || source.isPressed(Button.B) || source.isPressed(Button.Y) || source.isPressed(Button.X)) {
+                double power = (source.isPressed(Button.RIGHT_BUMPER)?-auto_chassis_power_slow:-auto_chassis_power);
+                double curvature = Math.abs(source.getStick(Events.Side.LEFT, Events.Axis.Y_ONLY));
+                if (chassis.isReversed()) power *= -1;
+                chassis.orbit(power , curvature);
+            }
+        }, Button.DPAD_LEFT);
+        em.onButtonUp(new Events.Listener() {
+            @Override
+            public void buttonUp(EventManager source, Button button) throws InterruptedException {
+                chassis.stop();
+            }
+        }, Button.DPAD_LEFT);
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                double power = (source.isPressed(Button.RIGHT_BUMPER)?auto_chassis_power_slow:auto_chassis_power);
+                double curvature = Math.abs(source.getStick(Events.Side.LEFT, Events.Axis.Y_ONLY));
+                if (chassis.isReversed()) power *= -1;
+                chassis.orbit(power , curvature);
+            }
+        }, Button.DPAD_RIGHT);
+        em.onButtonUp(new Events.Listener() {
+            @Override
+            public void buttonUp(EventManager source, Button button) throws InterruptedException {
+                chassis.stop();
+            }
+        }, Button.DPAD_RIGHT);
+
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.A)||source.isPressed(Button.B)||source.isPressed(Button.Y)||source.isPressed(Button.X)) {
                     if (intake != null) intake.intakeStop();
                     return;
                 }
@@ -357,9 +388,9 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 if (Math.abs(source.getStick(Events.Side.RIGHT, Events.Axis.Y_ONLY)) > 0.2) {
                     // left stick with idle right stick rotates robot in place
                     if (source.getStick(Events.Side.RIGHT, Events.Axis.Y_ONLY) > 0)
-                        stoneGrabber.liftUp();
+                        stoneGrabber.liftUp(source.isPressed(Button.BACK));
                     else
-                        stoneGrabber.liftDown();
+                        stoneGrabber.liftDown(source.isPressed(Button.BACK));
                 } else
                     stoneGrabber.liftStop();
             }
