@@ -17,8 +17,8 @@ import java.util.List;
  * Created by 28761 on 6/29/2019.
  */
 
-@Autonomous(name="Sigma-Red-Left", group="Sigma")
-public class SigmaAutoRedLeft extends LinearOpMode{
+@Autonomous(name="Sigma-Red-Left-SingleStone", group="Sigma")
+public class SigmaAutoRedLeftSingle extends LinearOpMode{
     private ToboSigma.SkystoneLocation StoneLoc;
 
     protected static int LOG_LEVEL = Log.INFO;
@@ -75,16 +75,15 @@ public class SigmaAutoRedLeft extends LinearOpMode{
                 // sleep(10000); // 10 sec
 
                 // step-2: go to grab the first skystone and deliver
-                int ss_pos=robot.getFirstSkyStone(StoneLoc, isBlue, isLeft);
+                robot.getFirstSkyStone(StoneLoc, isBlue, isLeft);
                 int count = 1;
-                robot.repositioning(isBlue);
-                robot.getAnotherSkyStone(ss);
+
                 // step-3: grab and deliver the next skystone/stone
                /* if (getRuntime() < 25000){
                     count++;
                     robot.getAnotherSkyStone(StoneLoc, count, isBlue);
                 }*/
-               robot.grabAndPark(isBlue);
+                robot.grabAndPark(isBlue);
                 // move foundation
                 // park
 
