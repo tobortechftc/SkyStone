@@ -80,7 +80,7 @@ public class SigmaAutoBlueLeft extends LinearOpMode {
                 // step-3: grab and deliver the next skystone/stone
                 if (getRuntime() < 25000){
                     count++;
-                    robot.getAnotherSkyStone(StoneLoc, count, isBlue);
+                    //robot.getAnotherSkyStone(StoneLoc, count, isBlue);
                 }
                 // move foundation
                 // park

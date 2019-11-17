@@ -75,15 +75,21 @@ public class SigmaAutoRedLeft extends LinearOpMode implements YieldHandler {
                 // sleep(10000); // 10 sec
 
                 // step-2: go to grab the first skystone and deliver
-                robot.getFirstSkyStone(StoneLoc, isBlue, isLeft);
-                int count = 1;
+
+
+
+                int ss_pos = robot.getFirstSkyStone(StoneLoc, isBlue, isLeft);
+                robot.repositioning(isBlue);
+                robot.getAnotherSkyStone(ss_pos, 2, isBlue);
+
+
 
                 // step-3: grab and deliver the next skystone/stone
                /* if (getRuntime() < 25000){
                     count++;
                     robot.getAnotherSkyStone(StoneLoc, count, isBlue);
                 }*/
-               robot.grabAndPark(isBlue);
+               //robot.grabAndPark(isBlue);
                 // move foundation
                 // park
 
