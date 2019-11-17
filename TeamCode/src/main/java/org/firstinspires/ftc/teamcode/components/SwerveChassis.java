@@ -877,13 +877,20 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         double rightPower;
         double radius = 6.5 * (2.0-Math.abs(curvature));
 
+
         double thetaF = (Math.atan(radius / (0.5 * track))) * (180 / Math.PI);
         double thetaB = (Math.atan((radius + wheelBase) / (0.5 * track))) * (180 / Math.PI);
-        double SERVO_FL_ORBIT_POSITION = 90 - (thetaF );
-        double SERVO_FR_ORBIT_POSITION = -90 + (thetaF );
-        double SERVO_BL_ORBIT_POSITION = 90 - (thetaB );
-        double SERVO_BR_ORBIT_POSITION = -90 + (thetaB );
-
+        double SERVO_FL_ORBIT_POSITION = (-thetaF );
+        double SERVO_FR_ORBIT_POSITION = (thetaF );
+        double SERVO_BL_ORBIT_POSITION = (-thetaB );
+        double SERVO_BR_ORBIT_POSITION = (thetaB );
+        if (isReversed()) {
+            power *= -1;
+            SERVO_FL_ORBIT_POSITION = thetaB;
+            SERVO_FR_ORBIT_POSITION = -thetaB;
+            SERVO_BL_ORBIT_POSITION = thetaF;
+            SERVO_BR_ORBIT_POSITION = -thetaF;
+        }
 
         debug("orbit(pwr: %.3f, theta(F/B): %.1f/%.1f)", power, thetaF, thetaB);
         if (power < -1 || power > 1) {
