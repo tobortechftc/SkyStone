@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.hardware.Sigma.ToboSigma;
 import org.firstinspires.ftc.teamcode.support.Logger;
+import org.firstinspires.ftc.teamcode.support.YieldHandler;
 import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
 
 import java.util.List;
@@ -17,7 +18,7 @@ import java.util.List;
  */
 
 @Autonomous(name="Sigma-Red-Left", group="Sigma")
-public class SigmaAutoRedLeft extends LinearOpMode {
+public class SigmaAutoRedLeft extends LinearOpMode implements YieldHandler {
     private ToboSigma.SkystoneLocation StoneLoc;
 
     protected static int LOG_LEVEL = Log.INFO;
@@ -68,7 +69,7 @@ public class SigmaAutoRedLeft extends LinearOpMode {
                 // put autonomous steps here
                 // step-1: detect skystone location
                 // StoneLoc = robot.chassis.skyStoneLocation(isBlue);
-                // robot.cameraStoneDetector.getSkystonePositionTF(robot_pos);
+                StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF(true);
                 // telemetry.addLine(StoneLoc.toString());
                 // telemetry.update();
                 // sleep(10000); // 10 sec
@@ -102,5 +103,10 @@ public class SigmaAutoRedLeft extends LinearOpMode {
             if (--linesToShow == 0) break;
         }
         telemetry.update();
+    }
+
+    @Override
+    public void on_yield() {
+
     }
 }

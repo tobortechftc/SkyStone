@@ -30,7 +30,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
 
     private final double ARM_UP = 0.1;
     private final double ARM_DOWN = 0.9;
-    private final double ARM_INITIAL = 0.96;
+    private final double ARM_INITIAL = 0.84;
     private final double ARM_IN = 0.7;
     private final double ARM_LOW = 0.6;
     private final double ARM_OUT = 0.45;
@@ -52,7 +52,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final int LIFT_GRAB = 400;
     private final int LIFT_GRAB_AUTO = 640;
     private final int LIFT_MAX = 3640;
-    private final int LIFT_SAFE_SWING_AUTO = 1000;
+    private final int LIFT_SAFE_SWING_AUTO = 1100;
     private final int LIFT_SAFE_SWING_IN = LIFT_SAFE_SWING_AUTO+400;
     private final int LIFT_SAFE_SWING = LIFT_SAFE_SWING_AUTO;
     //private final double LIFT_POWER = 0.5;   // V5.2
@@ -125,6 +125,14 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         // configuration.register(this);
     }
 
+    public boolean isArmInside() {
+        return armIsIn;
+    }
+
+    public boolean isArmDown() {
+        return armIsDown;
+    }
+
     public void armInit() {
         arm.setPosition(ARM_INITIAL);
         armIsDown = false;
@@ -147,6 +155,8 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             armIsIn = true;
         else
             armIsIn = false;
+        if (Math.abs(cur_pos-ARM_DOWN)<0.2)
+            armIsDown = true;
     }
 
     public void armUpInc() {
@@ -159,6 +169,8 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             armIsIn = false;
         else
             armIsIn = true;
+        if (Math.abs(cur_pos-ARM_DOWN)<0.2)
+            armIsDown = true;
     }
 
     public void armUp() {
@@ -312,6 +324,14 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private Progress moveArm(double position) {
         double adjustment = Math.abs(position - arm.getPosition());
         arm.setPosition(position);
+        if (position>ARM_IN)
+            armIsIn=true;
+        else
+            armIsIn=false;
+        if (Math.abs(position-ARM_DOWN)<0.2)
+            armIsDown = true;
+        else
+            armIsDown = false;
         // 3.3ms per degree of rotation
         final long doneBy = System.currentTimeMillis() + Math.round(adjustment * 900);
         return new Progress() {
@@ -433,7 +453,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
-                return moveArm(ARM_INITIAL);
+                return moveArm(ARM_DOWN);
             }
         }, taskName);
         TaskManager.add(new Task() {
@@ -517,34 +537,8 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         final String taskName = "Grab Stone Inside Combo";
         if (!TaskManager.isComplete(taskName)) return;
 
-        TaskManager.add(new Task() {
-            @Override
-            public Progress start() {
-                liftToPosition(LIFT_SAFE_SWING_IN);
-                return new Progress() {
-                    @Override
-                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 50;
-                    }
-                };
-            }
-        }, taskName);
-        TaskManager.add(new Task() {
-            @Override
-            public Progress start() {
-                return moveArm(ARM_DOWN);
-            }
-        }, taskName);
-        TaskManager.add(new Task() {
-            @Override
-            public Progress start() {
-                grabberOpen();
-                final Progress wristProgress = moveWrist(true);
-                return new Progress() {
-                    @Override
-                    public boolean isDone() { return wristProgress.isDone();}
-                };
-            }
-        }, taskName);
+        armInReadyGrabCombo();
+
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
@@ -569,6 +563,43 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             }
         }, taskName);
 
+    }
+
+    public void armInReadyGrabCombo() {
+        final String taskName = "Arm In Ready Grab Combo";
+        if (!TaskManager.isComplete(taskName)) return;
+
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                int position = LIFT_SAFE_SWING_IN;
+                if (armIsIn)
+                    position = LIFT_SAFE_SWING;
+                liftToPosition(position);
+                return new Progress() {
+                    @Override
+                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 50;
+                    }
+                };
+            }
+        }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                return moveArm(ARM_DOWN);
+            }
+        }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                grabberOpen();
+                final Progress wristProgress = moveWrist(true);
+                return new Progress() {
+                    @Override
+                    public boolean isDone() { return wristProgress.isDone();}
+                };
+            }
+        }, taskName);
     }
 
     public void deliverStoneComboAuto() {
@@ -613,7 +644,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             line.addData("/armIn", "=%s", new Func<String>() {
                 @Override
                 public String value() {
-                    return (armIsIn?"T":"F");
+                    return ((armIsIn?"T":"F"));
                 }
             });
         }
