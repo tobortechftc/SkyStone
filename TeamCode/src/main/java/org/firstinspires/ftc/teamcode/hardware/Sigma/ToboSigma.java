@@ -102,6 +102,9 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         if (intake != null) {
             intake.reset(auto);
         }
+        if (!auto) {
+            chassis.changeChassisDrivingDirection();
+        }
     }
 
     @MenuEntry(label = "TeleOp", group = "Competition")

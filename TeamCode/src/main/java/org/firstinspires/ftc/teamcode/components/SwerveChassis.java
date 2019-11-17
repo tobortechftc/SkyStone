@@ -110,6 +110,9 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     public void enableImuTelemetry() {
         setImuTelemetry = true;
     }
+    public void enableShowColors() {
+        showColor = true;
+    }
 
     public double getDefaultScale() {
         return defaultScale;
@@ -876,10 +879,10 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
 
         double thetaF = (Math.atan(radius / (0.5 * track))) * (180 / Math.PI);
         double thetaB = (Math.atan((radius + wheelBase) / (0.5 * track))) * (180 / Math.PI);
-        double SERVO_FL_ORBIT_POSITION = 0 - (thetaF / 180.0);
-        double SERVO_FR_ORBIT_POSITION = 0 + (thetaF / 180.0);
-        double SERVO_BL_ORBIT_POSITION = 0 - (thetaB / 180.0);
-        double SERVO_BR_ORBIT_POSITION = 0 + (thetaB / 180.0);
+        double SERVO_FL_ORBIT_POSITION = 90 - (thetaF );
+        double SERVO_FR_ORBIT_POSITION = -90 + (thetaF );
+        double SERVO_BL_ORBIT_POSITION = 90 - (thetaB );
+        double SERVO_BR_ORBIT_POSITION = -90 + (thetaB );
 
 
         debug("orbit(pwr: %.3f, theta(F/B): %.1f/%.1f)", power, thetaF, thetaB);
