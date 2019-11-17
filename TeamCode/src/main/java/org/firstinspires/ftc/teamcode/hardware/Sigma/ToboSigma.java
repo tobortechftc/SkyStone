@@ -102,6 +102,9 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         if (intake != null) {
             intake.reset(auto);
         }
+//        if (!auto) {
+//            chassis.changeChassisDrivingDirection();
+//        }
     }
 
     @MenuEntry(label = "TeleOp", group = "Competition")
@@ -203,7 +206,6 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 double power = (source.isPressed(Button.RIGHT_BUMPER) ? -auto_chassis_power_slow : -auto_chassis_power);
                 double curvature = Math.abs(source.getStick(Events.Side.LEFT, Events.Axis.Y_ONLY));
-                if (chassis.isReversed()) power *= -1;
                 chassis.orbit(power, curvature);
             }
         }, Button.DPAD_LEFT);
@@ -218,7 +220,6 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 double power = (source.isPressed(Button.RIGHT_BUMPER) ? auto_chassis_power_slow : auto_chassis_power);
                 double curvature = Math.abs(source.getStick(Events.Side.LEFT, Events.Axis.Y_ONLY));
-                if (chassis.isReversed()) power *= -1;
                 chassis.orbit(power, curvature);
             }
         }, Button.DPAD_RIGHT);
