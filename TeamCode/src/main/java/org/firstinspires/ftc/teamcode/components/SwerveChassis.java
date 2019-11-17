@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.components;
 
 import android.graphics.Color;
 
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
@@ -83,8 +84,8 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     public DistanceSensor leftRangeSensor;
     public DistanceSensor rightRangeSensor;
 
-    public NormalizedColorSensor FRColor;
-    public NormalizedColorSensor FLColor;
+    public ColorSensor FRColor;
+    public ColorSensor FLColor;
 
     public Telemetry tl;
 
@@ -98,6 +99,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     private boolean swerveReverseDirection = false; // chassis front/back is reversed during Teleop
     private boolean setImuTelemetry = false;//unless debugging, don't set telemetry for imu
     private boolean setRangeSensorTelemetry = false;//unless debugging, don't set telemetry for range sensor
+    private boolean showColor = false;
     final double TICKS_PER_CM = 537.6 / (4.0 * 2.54 * Math.PI); // 16.86; //number of encoder ticks per cm of driving
 
     public void enableRangeSensorTelemetry() { // must be call before reset() or setupTelemetry()
@@ -211,8 +213,8 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             rightRangeSensor = configuration.getHardwareMap().get(DistanceSensor.class, "rightRange");
 
 
-            FRColor = configuration.getHardwareMap().get(NormalizedColorSensor.class, "FRColor");
-            FLColor = configuration.getHardwareMap().get(NormalizedColorSensor.class, "FLColor");
+            FRColor = configuration.getHardwareMap().get(ColorSensor.class, "FRColor");
+            FLColor = configuration.getHardwareMap().get(ColorSensor.class, "FLColor");
         }
         // register chassis as configurable component
         configuration.register(this);
@@ -302,13 +304,15 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         int hueTolerance = 15;              //Tolerance of hues (15 is best)
         double satSensitivity = 0.7;        //How sensitive line detection is (Higher values less sensitive, 0.8 is highest)
         float[] hsvValues = new float[3];
+        final double SCALE_FACTOR = 255;
+
         //final float values[] = hsvValues;
+        Color.RGBToHSV((int) (FRColor.red() * SCALE_FACTOR),
+                            (int) (FRColor.green() * SCALE_FACTOR),
+                            (int) (FRColor.blue() * SCALE_FACTOR),
+                            hsvValues);
 
-        NormalizedRGBA colors = (FRColor!=null?FRColor.getNormalizedColors():null);
-        if (colors!=null)
-            Color.colorToHSV(colors.toColor(), hsvValues);
-
-        if (hsvValues[1] >= satSensitivity) {
+          if (hsvValues[1] >= satSensitivity) {
             if ((hsvValues[0] <= hueTolerance && hsvValues[0] >= 0) || (hsvValues[0] >= 360 - hueTolerance && hsvValues[0] <= 360)) {
                 // detect red
                 if (color == LineColor.RED) return true;
@@ -324,12 +328,11 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         if (FRColor==null || FLColor==null)
             return;
         if (isReversed()) {
-            ((SwitchableLight)FLColor).enableLight(false);
-            ((SwitchableLight)FRColor).enableLight(false);
+            FLColor.enableLed(false);
+            FRColor.enableLed(false);
         } else {
-            ((SwitchableLight)FLColor).enableLight(true);
-            ((SwitchableLight)FRColor).enableLight(true);
-        }
+            FLColor.enableLed(true);
+        }   FRColor.enableLed(true);
     }
 
     public boolean isSkystone(boolean isRight) {
@@ -339,11 +342,9 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         double distB;
         double addedColors;
         double threshold;
-        NormalizedRGBA colors;
         if (isRight) {
             distB = getDistance(Direction.FRONT_RIGHT);
-            colors = FRColor.getNormalizedColors();
-            addedColors = colors.alpha + colors.red + colors.green + colors.blue;
+            addedColors = FRColor.alpha() + FRColor.red() + FRColor.green() + FRColor.blue();
             if (distB <= 7) {
                 threshold = -0.206456225 + (1.52138259 / distB);//.221 changed to .206 to keep threshold above skystone argb sum
             } else {
@@ -356,8 +357,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             }
         } else {
             distB = getDistance(Direction.FRONT_RIGHT); // DISABLE FRONT_LEFT
-            colors = FLColor.getNormalizedColors();
-            addedColors = colors.alpha + colors.red + colors.green + colors.blue;
+            addedColors = FLColor.alpha() + FLColor.red() + FLColor.green() + FLColor.blue();
             if (distB <= 7) {
                 threshold = -0.206456225 + (1.52138259 / distB);//.221
             } else {
@@ -396,6 +396,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         for (WheelAssembly wheel : wheels) wheel.reset(true);
         driveMode = DriveMode.STOP;
         targetHeading = 0;
+        switchLights(); // turn on the lights if front direction
     }
 
     /**
@@ -1196,55 +1197,54 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
 //                }
 //            });
 //        }
-        if (FLColor != null) {
-            line.addData("Skystone-FL = ", "%s", new Func<String>() {
-                @Override
-                public String value() {
-                    return (isSkystone(true) ? "T" : "F");
-                }
-            });
-            line.addData("FLColor-Sum = ", "%.3f", new Func<Double>() {
-                @Override
-                public Double value() {
-                    NormalizedRGBA colors = FLColor.getNormalizedColors();
-                    double addedColors = colors.alpha + colors.red + colors.green + colors.blue;
-                    return addedColors;
-                }
-            });
+        if (showColor) {
+            if (FLColor != null) {
+                line.addData("Skystone-FL = ", "%s", new Func<String>() {
+                    @Override
+                    public String value() {
+                        return (isSkystone(true) ? "T" : "F");
+                    }
+                });
+                line.addData("FLColor-Sum = ", "%.3f", new Func<Double>() {
+                    @Override
+                    public Double value() {
+                        double addedColors = FLColor.alpha() + FLColor.red() + FLColor.green() + FLColor.blue();
+                        return addedColors;
+                    }
+                });
+            }
+            if (FRColor != null) {
+                line.addData("Skystone-FR = ", "%s", new Func<String>() {
+                    @Override
+                    public String value() {
+                        return (isSkystone(false) ? "T" : "F");
+                    }
+                });
+                line.addData("FRColor-Sum = ", "%.3f", new Func<Double>() {
+                    @Override
+                    public Double value() {
+                        double addedColors = FRColor.alpha() + FRColor.red() + FRColor.green() + FRColor.blue();
+                        return addedColors;
+                    }
+                });
+            }
+            if (FLColor != null && FRColor != null) {
+                line.addData("SkystoneLOC(Blue) = ", "%s", new Func<String>() {
+                    @Override
+                    public String value() {
+                        ToboSigma.SkystoneLocation loc = skyStoneLocation(true);
+                        return loc.toString();
+                    }
+                });
+                line.addData("SkystoneLOC(Red) = ", "%s", new Func<String>() {
+                    @Override
+                    public String value() {
+                        ToboSigma.SkystoneLocation loc = skyStoneLocation(false);
+                        return loc.toString();
+                    }
+                });
+            }
         }
-        if (FRColor != null) {
-            line.addData("Skystone-FR = ", "%s", new Func<String>() {
-                @Override
-                public String value() {
-                    return (isSkystone(false) ? "T" : "F");
-                }
-            });
-            line.addData("FRColor-Sum = ", "%.3f", new Func<Double>() {
-                @Override
-                public Double value() {
-                    NormalizedRGBA colors = FRColor.getNormalizedColors();
-                    double addedColors = colors.alpha + colors.red + colors.green + colors.blue;
-                    return addedColors;
-                }
-            });
-        }
-        if (FLColor != null && FRColor != null) {
-            line.addData("SkystoneLOC(Blue) = ", "%s", new Func<String>() {
-                @Override
-                public String value() {
-                    ToboSigma.SkystoneLocation loc = skyStoneLocation(true);
-                    return loc.toString();
-                }
-            });
-            line.addData("SkystoneLOC(Red) = ", "%s", new Func<String>() {
-                @Override
-                public String value() {
-                    ToboSigma.SkystoneLocation loc = skyStoneLocation(false);
-                    return loc.toString();
-                }
-            });
-        }
-
         telemetry.addLine().addData("M", new Func<String>() {
             @Override
             public String value() {
