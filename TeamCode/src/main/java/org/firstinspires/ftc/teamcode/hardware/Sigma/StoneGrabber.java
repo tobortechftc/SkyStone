@@ -57,6 +57,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final int LIFT_SAFE_SWING = LIFT_SAFE_SWING_AUTO;
     //private final double LIFT_POWER = 0.5;   // V5.2
     private final double LIFT_POWER = 1.0;  // V5.3
+    private final double LIFT_POWER_SLOW = 0.5;
     private final int LIFT_DELIVER = 1000;
 
 
@@ -287,16 +288,23 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         };
     }
 
-    public void liftUp () {
+    public void liftUp (boolean slow) {
         if (lifter==null) return;
         lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        lifter.setPower(LIFT_POWER);
+        if (slow)
+            lifter.setPower(LIFT_POWER_SLOW);
+        else
+            lifter.setPower(LIFT_POWER);
+
     }
 
-    public void liftDown() {
+    public void liftDown(boolean slow) {
         if (lifter==null) return;
         lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        lifter.setPower(-LIFT_POWER);
+        if (slow)
+            lifter.setPower(-LIFT_POWER_SLOW);
+        else
+            lifter.setPower(-LIFT_POWER);
     }
 
     public void liftStop() {

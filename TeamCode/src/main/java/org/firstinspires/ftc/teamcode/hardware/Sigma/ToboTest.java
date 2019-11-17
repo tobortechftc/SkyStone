@@ -262,7 +262,7 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (!source.isPressed(Button.LEFT_BUMPER))
-                    stoneGrabber.liftUp();
+                    stoneGrabber.liftUp(source.isPressed(Button.BACK));
             }
         }, new Button[]{Button.Y});
         em.onButtonUp(new Events.Listener() {
@@ -276,7 +276,7 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (!source.isPressed(Button.LEFT_BUMPER))
-                    stoneGrabber.liftDown();
+                    stoneGrabber.liftDown(source.isPressed(Button.BACK));
             }
         }, new Button[]{Button.A});
         em.onButtonUp(new Events.Listener() {

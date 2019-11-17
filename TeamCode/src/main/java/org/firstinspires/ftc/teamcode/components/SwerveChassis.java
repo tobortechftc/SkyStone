@@ -210,10 +210,10 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             leftRangeSensor = configuration.getHardwareMap().get(DistanceSensor.class, "leftRange");
             rightRangeSensor = configuration.getHardwareMap().get(DistanceSensor.class, "rightRange");
 
-        }
-        FRColor = configuration.getHardwareMap().get(NormalizedColorSensor.class, "FRColor");
-        FLColor = configuration.getHardwareMap().get(NormalizedColorSensor.class, "FLColor");
 
+            FRColor = configuration.getHardwareMap().get(NormalizedColorSensor.class, "FRColor");
+            FLColor = configuration.getHardwareMap().get(NormalizedColorSensor.class, "FLColor");
+        }
         // register chassis as configurable component
         configuration.register(this);
     }
@@ -866,9 +866,9 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     }
 
     public void orbit(double power, double curvature) throws InterruptedException {
-        double leftPower = power;
-        double rightPower = power;
-        double radius = 6.5; // should be changed according to curvature
+        double leftPower;
+        double rightPower;
+        double radius = 6.5 * (2.0-Math.abs(curvature));
 
         double thetaF = (Math.atan(radius / (0.5 * track))) * (180 / Math.PI);
         double thetaB = (Math.atan((radius + wheelBase) / (0.5 * track))) * (180 / Math.PI);
