@@ -91,6 +91,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             if (auto) {
                 // Display all sensors in auto only for debugging
                 // chassis.setupTelemetry(telemetry);
+            } else {
+                chassis.changeChassisDrivingDirection();
             }
         }
         if (foundationHook != null) {
@@ -102,9 +104,6 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         if (intake != null) {
             intake.reset(auto);
         }
-//        if (!auto) {
-//            chassis.changeChassisDrivingDirection();
-//        }
     }
 
     @MenuEntry(label = "TeleOp", group = "Competition")
@@ -206,7 +205,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 double power = (source.isPressed(Button.RIGHT_BUMPER) ? -auto_chassis_power_slow : -auto_chassis_power);
                 double curvature = Math.abs(source.getStick(Events.Side.LEFT, Events.Axis.Y_ONLY));
-                chassis.orbit(power, curvature);
+                chassis.orbit(power, curvature,source.isPressed(Button.START));
             }
         }, Button.DPAD_LEFT);
         em.onButtonUp(new Events.Listener() {
@@ -220,7 +219,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 double power = (source.isPressed(Button.RIGHT_BUMPER) ? auto_chassis_power_slow : auto_chassis_power);
                 double curvature = Math.abs(source.getStick(Events.Side.LEFT, Events.Axis.Y_ONLY));
-                chassis.orbit(power, curvature);
+                chassis.orbit(power, curvature,source.isPressed(Button.START));
             }
         }, Button.DPAD_RIGHT);
         em.onButtonUp(new Events.Listener() {
