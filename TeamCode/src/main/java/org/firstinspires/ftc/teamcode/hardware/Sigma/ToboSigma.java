@@ -737,11 +737,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         stoneGrabber.deliverStoneComboAuto();
         stoneGrabber.armInComboAuto(true);
         chassis.driveStraightAutoRunToPosition(auto_chassis_power, 30, 90 * side, 15000);
+
     }
-
-
-
-
     public void repositioning(boolean isBlue) throws  InterruptedException{
         if (Thread.currentThread().isInterrupted()) return;
         int side = isBlue ? 1 : -1;
@@ -763,10 +760,12 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         foundationHook.hookUp();
 
         chassis.rotateTo(.2, 0);
+
         dist = chassis.getDistance(SwerveChassis.Direction.BACK);
         if(dist > 1){
             chassis.driveStraightAutoRunToPosition(auto_chassis_power, -Math.min(dist, 10), 0, 300);
         }
+
         dist = isBlue ? chassis.getDistance(SwerveChassis.Direction.LEFT) : chassis.getDistance(SwerveChassis.Direction.RIGHT);
 
         if (dist > 128) {
