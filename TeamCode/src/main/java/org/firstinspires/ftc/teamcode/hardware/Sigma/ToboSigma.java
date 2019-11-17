@@ -201,10 +201,10 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         em.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
-                double power = (source.isPressed(Button.RIGHT_BUMPER)?-auto_chassis_power_slow:-auto_chassis_power);
+                double power = (source.isPressed(Button.RIGHT_BUMPER) ? -auto_chassis_power_slow : -auto_chassis_power);
                 double curvature = Math.abs(source.getStick(Events.Side.LEFT, Events.Axis.Y_ONLY));
                 if (chassis.isReversed()) power *= -1;
-                chassis.orbit(power , curvature);
+                chassis.orbit(power, curvature);
             }
         }, Button.DPAD_LEFT);
         em.onButtonUp(new Events.Listener() {
@@ -216,10 +216,10 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         em.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
-                double power = (source.isPressed(Button.RIGHT_BUMPER)?auto_chassis_power_slow:auto_chassis_power);
+                double power = (source.isPressed(Button.RIGHT_BUMPER) ? auto_chassis_power_slow : auto_chassis_power);
                 double curvature = Math.abs(source.getStick(Events.Side.LEFT, Events.Axis.Y_ONLY));
                 if (chassis.isReversed()) power *= -1;
-                chassis.orbit(power , curvature);
+                chassis.orbit(power, curvature);
             }
         }, Button.DPAD_RIGHT);
         em.onButtonUp(new Events.Listener() {
@@ -232,7 +232,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         em.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
-                if (source.isPressed(Button.A)||source.isPressed(Button.B)||source.isPressed(Button.Y)||source.isPressed(Button.X)) {
+                if (source.isPressed(Button.A) || source.isPressed(Button.B) || source.isPressed(Button.Y) || source.isPressed(Button.X)) {
                     if (intake != null) intake.intakeStop();
                     return;
                 }
@@ -755,6 +755,38 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
     }
 
+    public void repositioning(boolean isBlue) throws  InterruptedException{
+        if (Thread.currentThread().isInterrupted()) return;
+        int side = isBlue ? 1 : -1;
+
+        // chassis.driveStraightAutoRunToPosition(auto_chassis_power_slow, 15, 0, 10000);
+        foundationHook.hookDown();
+        Thread.sleep(400);
+        double dist = Math.min(chassis.getDistance(SwerveChassis.Direction.BACK), 100);
+
+        //chassis.driveStraightAutoRunToPosition(auto_chassis_power/2, -dist - 10*(1- auto_chassis_power) , 7* side, 10000);
+        //=================================Parallelized region=======================================
+//        stoneGrabber.deliverStoneComboAuto();
+        stoneGrabber.deliverStoneCombo();
+        chassis.driveStraightAutoRunToPosition(auto_chassis_power / 1.5, -dist - 10 * (1 - auto_chassis_power), 7 * side, 4000);
+        while (!TaskManager.isComplete("Deliver Stone Combo")) {
+            TaskManager.processTasks();
+        }
+        //===========================================================================================
+        foundationHook.hookUp();
+
+        chassis.rotateTo(.2, 0);
+
+        dist = isBlue ? chassis.getDistance(SwerveChassis.Direction.LEFT) : chassis.getDistance(SwerveChassis.Direction.RIGHT);
+
+        if (dist > 128) {
+            dist = 20;
+        }
+
+        chassis.driveStraightAutoRunToPosition(auto_chassis_power, 90 - dist, 90 * side, 1500);
+        stoneGrabber.armInComboAuto(false);
+    }
+    @Deprecated
     public void grabAndPark(boolean isBlue) throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) return;
 
@@ -765,24 +797,25 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
         // chassis.driveStraightAutoRunToPosition(auto_chassis_power_slow, 15, 0, 10000);
         foundationHook.hookDown();
-        Thread.sleep(500);
-        dist = chassis.getDistance(SwerveChassis.Direction.BACK);
-        int max_dist = 100;
-        if (dist > max_dist) {
-            dist = max_dist;
-        }
+        Thread.sleep(400);
+        dist = Math.min(chassis.getDistance(SwerveChassis.Direction.BACK), 100);
+
 
         //chassis.driveStraightAutoRunToPosition(auto_chassis_power/2, -dist - 10*(1- auto_chassis_power) , 7* side, 10000);
+        //=================================Parallelized region=======================================
+//        stoneGrabber.deliverStoneComboAuto();
+        stoneGrabber.deliverStoneCombo();
         chassis.driveStraightAutoRunToPosition(auto_chassis_power / 1.5, -dist - 10 * (1 - auto_chassis_power), 7 * side, 4000);
-        foundationHook.hookUp();
-        stoneGrabber.deliverStoneComboAuto();
-        chassis.rotateTo(.3, 0);
-
-        if (isBlue) {
-            dist = chassis.getDistance(SwerveChassis.Direction.LEFT);
-        } else {
-            dist = chassis.getDistance(SwerveChassis.Direction.RIGHT);
+        while (!TaskManager.isComplete("Deliver Stone Combo")) {
+            TaskManager.processTasks();
         }
+        //===========================================================================================
+        foundationHook.hookUp();
+
+        chassis.rotateTo(.2, 0);
+
+        dist = isBlue ? chassis.getDistance(SwerveChassis.Direction.LEFT) : chassis.getDistance(SwerveChassis.Direction.RIGHT);
+
         if (dist > 128) {
             dist = 20;
         }
