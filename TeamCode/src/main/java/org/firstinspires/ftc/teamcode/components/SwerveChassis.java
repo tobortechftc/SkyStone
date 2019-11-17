@@ -1121,11 +1121,16 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         wheels[3].motor.setPower(scalePower(rightPower));
     }
 
-    public void orbit(double power, double curvature) throws InterruptedException {
+    public void orbit(double power, double curvature, boolean orbitBack) throws InterruptedException {
         double leftPower;
         double rightPower;
         double radius = 6.5 * (2.0-Math.abs(curvature));
+        boolean shouldReverse = orbitBack;
 
+        if (isReversed()) {
+            shouldReverse = !shouldReverse;
+            power *= -1;
+        }
 
         double thetaF = (Math.atan(radius / (0.5 * track))) * (180 / Math.PI);
         double thetaB = (Math.atan((radius + wheelBase) / (0.5 * track))) * (180 / Math.PI);
@@ -1133,8 +1138,8 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         double SERVO_FR_ORBIT_POSITION = (thetaF );
         double SERVO_BL_ORBIT_POSITION = (-thetaB );
         double SERVO_BR_ORBIT_POSITION = (thetaB );
-        if (isReversed()) {
-            power *= -1;
+
+        if (shouldReverse) {
             SERVO_FL_ORBIT_POSITION = thetaB;
             SERVO_FR_ORBIT_POSITION = -thetaB;
             SERVO_BL_ORBIT_POSITION = thetaF;

@@ -126,7 +126,7 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
                     double power = Math.abs(source.getStick(Events.Side.RIGHT, Events.Axis.X_ONLY));
                     double curvature = Math.abs(source.getStick(Events.Side.LEFT, Events.Axis.Y_ONLY));
                     power *= power * source.getStick(Events.Side.RIGHT, Events.Axis.X_ONLY); // square power to stick
-                    chassis.orbit(power*powerAdjustment(source),curvature);
+                    chassis.orbit(power*powerAdjustment(source),curvature, source.isPressed(Button.START));
                 } else {
                     // right stick with left stick operates robot in "car" mode
                     double heading = source.getStick(Events.Side.LEFT, Events.Axis.X_ONLY) * 90;
