@@ -53,6 +53,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final int LIFT_GRAB_AUTO = 640;
     private final int LIFT_MAX = 3640;
     private final int LIFT_SAFE_SWING_AUTO = 1100;
+    private final int LIFT_SAFE_BRIDGE = 1000;
     private final int LIFT_SAFE_SWING_IN = LIFT_SAFE_SWING_AUTO+400;
     private final int LIFT_SAFE_SWING = LIFT_SAFE_SWING_AUTO;
     //private final double LIFT_POWER = 0.5;   // V5.2
@@ -589,7 +590,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             public Progress start() {
                 int position = LIFT_SAFE_SWING_IN;
                 if (armIsIn)
-                    position = LIFT_SAFE_SWING;
+                    position = LIFT_SAFE_BRIDGE;
                 liftToPosition(position);
                 return new Progress() {
                     @Override
