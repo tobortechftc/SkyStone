@@ -70,7 +70,7 @@ public class Intake extends Logger<Intake> implements Configurable {
         intakeDropInit();
 
         intakeMotor = configuration.getHardwareMap().tryGet(DcMotor.class, "intakeMotor");
-        if (intakeMotor != null) intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        if (intakeMotor != null) intakeMotor.setDirection(DcMotorSimple.Direction.FORWARD);
         intakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
