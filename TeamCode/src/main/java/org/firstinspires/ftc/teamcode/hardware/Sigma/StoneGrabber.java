@@ -31,7 +31,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double ARM_UP = 0.1;
     private final double ARM_DOWN = 0.9;
     private final double ARM_INITIAL = 0.84;
-    private final double ARM_IN = 0.7;
+    private final double ARM_IN = 0.67;
     private final double ARM_LOW = 0.6;
     private final double ARM_OUT = 0.45;
     private final double ARM_DELIVER = 0.3;
@@ -625,6 +625,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             TaskManager.processTasks();
         }
     }
+
     public void deliverStoneCombo() {
         final String taskName = "Deliver Stone Combo";
         if (!TaskManager.isComplete(taskName)) return;

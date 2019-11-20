@@ -35,7 +35,7 @@ public class FoundationHook extends Logger<FoundationHook> implements Configurab
 
     private final double LEFT_HOOK_INIT = 0.15;
     private final double LEFT_HOOK_UP = 0.244;
-    private final double LEFT_HOOK_DOWN = 0.57;
+    private final double LEFT_HOOK_DOWN = 0.6;
 
     private final double RIGHT_HOOK_INIT = 0.87;
     private final double RIGHT_HOOK_UP = 0.637;

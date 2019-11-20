@@ -18,7 +18,7 @@ import java.util.List;
  * Created by 28761 on 6/29/2019.
  */
 
-@Autonomous(name="Sigma-Blue-Right-SingleStone", group="Sigma")
+@Autonomous(name = "Sigma-Blue-Right-SingleStone", group = "Sigma")
 public class SigmaAutoBlueRightSingle extends LinearOpMode {
     private ToboSigma.SkystoneLocation StoneLoc;
 
@@ -36,7 +36,7 @@ public class SigmaAutoBlueRightSingle extends LinearOpMode {
         telemetry.update();
 
         ToboSigma robot = new ToboSigma();
-        robot.configureLogging("ToboSigma",LOG_LEVEL);
+        robot.configureLogging("ToboSigma", LOG_LEVEL);
         configuration = new Configuration(hardwareMap, robot.getName()).configureLogging("Config", LOG_LEVEL);
         log.info("RoboSigma Autonomous finished log configuration (CPU_time = %.2f sec)", getRuntime());
 
@@ -58,46 +58,48 @@ public class SigmaAutoBlueRightSingle extends LinearOpMode {
 //            updatedRecognitions = robot.cameraStoneDetector.getTfod().getUpdatedRecognitions();
 //        }
         int robot_pos = 1;
-        if (robot.intake!=null)
+        if (robot.intake != null)
             robot.intake.intakeDropInit();
         waitForStart();
         robot.runtime.reset();
         // run until the end of the match (driver presses STOP or timeout)
-        if (opModeIsActive()) {
-            try {
-                boolean isBlue = true;
-                boolean isLeft = false;
-                // put autonomous steps here
-                // step-1: detect skystone location
-                StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF(false);
-                // telemetry.addLine(StoneLoc.toString());
-                // telemetry.update();
-                // sleep(10000); // 10 sec
-                // step-2: go to grab the first skystone and deliver
-                robot.getFirstSkyStone(StoneLoc, isBlue, isLeft);
-
-                // step-3: grab and deliver the next skystone/stone
-                int count = 1;
-                // if (getRuntime() < 25000){
-                //robot.getAnotherSkyStone(StoneLoc, count, isBlue);
-                //count++;
-                // }
-                robot.grabAndPark(true);
-                // move foundation
-                // park
-
-            } catch (Exception E) {
-                telemetry.addData("Error in event handler", E.getMessage());
-                handleException(E);
-                Thread.sleep(5000);
-            }
+        if (!opModeIsActive()) {
+            return;
         }
+        try {
+            boolean isBlue = true;
+            boolean isLeft = false;
+            // put autonomous steps here
+            // step-1: detect skystone location
+            StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF(false);
+            // telemetry.addLine(StoneLoc.toString());
+            // telemetry.update();
+            // sleep(10000); // 10 sec
+            // step-2: go to grab the first skystone and deliver
+            robot.getFirstSkyStone(StoneLoc, isBlue, isLeft);
+
+            // step-3: grab and deliver the next skystone/stone
+            int count = 1;
+            // if (getRuntime() < 25000){
+            //robot.getAnotherSkyStone(StoneLoc, count, isBlue);
+            //count++;
+            // }
+            robot.grabAndPark(true);
+            // move foundation
+            // park
+
+        } catch (Exception E) {
+            telemetry.addData("Error in event handler", E.getMessage());
+            handleException(E);
+            Thread.sleep(5000);
+        }
+
     }
 
     protected void handleException(Throwable T) {
         log.error(T.getMessage(), T);
         int linesToShow = 5;
-        for(StackTraceElement line : T.getStackTrace()) {
+        for (StackTraceElement line : T.getStackTrace()) {
             telemetry.log().add("%s.%s():%d", line.getClassName(), line.getMethodName(), line.getLineNumber());
             if (--linesToShow == 0) break;
         }
