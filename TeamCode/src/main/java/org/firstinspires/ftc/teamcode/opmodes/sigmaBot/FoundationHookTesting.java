@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmodes.sigmaBot;
 import android.util.Log;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
@@ -11,7 +12,7 @@ import org.firstinspires.ftc.teamcode.support.Logger;
 import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
 
 import java.util.List;
-
+@Disabled
 @Autonomous(name = "Sigma-foundation testing", group = "Sigma")
 public class FoundationHookTesting extends LinearOpMode {
     private ToboSigma.SkystoneLocation StoneLoc;

@@ -318,14 +318,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         // ---------------------------------
         // Teleop Driver-2 control:
         // ---------------------------------
-    /*    em2.onButtonDown(new Events.Listener() {
-            @Override
-            public void buttonDown(EventManager source, Button button) throws InterruptedException {
-                if (source.isPressed(Button.LEFT_BUMPER))
-                    stoneGrabber.deliverStoneCombo();
-            }
-        }, new Button[]{Button.Y});
-*/
+
         em2.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
@@ -760,7 +753,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         //chassis.driveStraightAutoRunToPosition(auto_chassis_power/2, -dist - 10*(1- auto_chassis_power) , 7* side, 10000);
         //=================================Parallelized region=======================================
 //        stoneGrabber.deliverStoneComboAuto();
-        stoneGrabber.deliverStoneCombo();
+        stoneGrabber.deliverStoneCombo(true);
         chassis.driveStraightAutoRunToPosition(auto_chassis_power, -dist, 7 * side, 4000);//        dist = chassis.getDistance(SwerveChassis.Direction.BACK);
         while (!TaskManager.isComplete("Deliver Stone Combo")) {
             TaskManager.processTasks();
@@ -797,7 +790,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         //chassis.driveStraightAutoRunToPosition(auto_chassis_power/2, -dist - 10*(1- auto_chassis_power) , 7* side, 10000);
         //=================================Parallelized region=======================================
 //        stoneGrabber.deliverStoneComboAuto();
-        stoneGrabber.deliverStoneCombo();
+        stoneGrabber.deliverStoneCombo(true);
 //        chassis.driveStraightAutoRunToPosition(0.7, -1.05*dist/Math.cos(Math.PI*7.0/180.0), 7 * side, 5000);
         chassis.driveStraightAutoRunToPositionNoIMU(.4, -dist, 5 * side, 5000);//        dist = chassis.getDistance(SwerveChassis.Direction.BACK);
 //        chassis.driveStraightAutoRunToPosition(0.6, -dist, 0, 5000);

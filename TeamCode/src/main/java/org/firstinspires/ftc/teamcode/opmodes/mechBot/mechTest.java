@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmodes.mechBot;
 import android.util.Log;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.components.MechChassis;
@@ -15,7 +16,7 @@ import static org.firstinspires.ftc.teamcode.opmodes.mechBot.MecTeleOp.LOG_LEVEL
 /**
  * Created by 28761 on 6/14/2019.
  */
-
+@Disabled
 @Autonomous(name = "TEST-MECH", group = "MechBot")
 public class mechTest  extends LinearOpMode {
     @Override
