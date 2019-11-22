@@ -584,12 +584,12 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     public void armInReadyGrabCombo() {
         final String taskName = "Arm In Ready Grab Combo";
         if (!TaskManager.isComplete(taskName)) return;
-
+        final boolean armWasIn = armIsIn;
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
                 int position = LIFT_SAFE_SWING_IN;
-                if (armIsIn)
+                if (armWasIn)
                     position = LIFT_SAFE_BRIDGE;
                 liftToPosition(position);
                 return new Progress() {
@@ -616,6 +616,20 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 };
             }
         }, taskName);
+        if (!armWasIn) {
+            TaskManager.add(new Task() {
+                @Override
+                public Progress start() {
+                    int position = LIFT_SAFE_BRIDGE;
+                    liftToPosition(position);
+                    return new Progress() {
+                        @Override
+                        public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 50;
+                        }
+                    };
+                }
+            }, taskName);
+        }
     }
 
     public void deliverStoneComboAuto() {
