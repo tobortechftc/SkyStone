@@ -32,6 +32,7 @@ public class Intake extends Logger<Intake> implements Configurable {
     private final double RIGHT_INTAKE_DROP_DOWN = 0.085;
 
     private boolean intakeDropDown = false;
+    private boolean intakeOn = false;
 
     private ElapsedTime runtime = new ElapsedTime();
 
@@ -93,16 +94,27 @@ public class Intake extends Logger<Intake> implements Configurable {
 
     public void intakeStop(){
         intakeMotor.setPower(0.0);
+        intakeOn = false;
+    }
+
+    public void intakeAuto(boolean fast) {
+       if (intakeOn)
+           intakeStop();
+       else
+           intakeIn(fast);
     }
 
     public void intakeIn(boolean fast){
+        intakeOn = true;
         if(fast)
             intakeMotor.setPower(INTAKE_FAST);
         else
             intakeMotor.setPower(INTAKE_SPEED);
     }
 
+
     public void intakeOut(boolean fast){
+        intakeOn = false;
         if(fast)
             intakeMotor.setPower(-INTAKE_FAST);
         else
