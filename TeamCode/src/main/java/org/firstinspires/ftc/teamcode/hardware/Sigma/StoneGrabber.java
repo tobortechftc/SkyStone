@@ -37,7 +37,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double ARM_DELIVER = 0.3;
     private final double ARM_INC_UNIT = 0.02;
 
-    private final double WRIST_PARALLEL = 0.18;
+    private final double WRIST_PARALLEL = 0.16; // 0.18;
     private final double WRIST_PERPENDICULAR = 0.72;
     private final double WRIST_INIT = WRIST_PERPENDICULAR;
 
@@ -52,7 +52,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final int LIFT_GRAB = 400;
     private final int LIFT_GRAB_AUTO = 640;
     private final int LIFT_MAX = 3640;
-    private final int LIFT_SAFE_SWING_AUTO = 1100;
+    private final int LIFT_SAFE_SWING_AUTO = 1150;
     private final int LIFT_SAFE_BRIDGE = 1000;
     private final int LIFT_SAFE_SWING_IN = LIFT_SAFE_SWING_AUTO+400;
     private final int LIFT_SAFE_SWING = LIFT_SAFE_SWING_AUTO;
