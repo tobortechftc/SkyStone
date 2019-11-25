@@ -1177,16 +1177,25 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         wheels[3].motor.setPower(scalePower(rightPower));
     }
 
-    public double driveStraightSec(double power, double sec) throws InterruptedException {
+    public void changeStopBehavior(boolean isBreak){
+        for (int i = 0; i < 4; i++) {
+            wheels[i].motor.setZeroPowerBehavior(isBreak ? DcMotor.ZeroPowerBehavior.BRAKE : DcMotor.ZeroPowerBehavior.FLOAT);
+        }
+
+    }
+
+    public double driveStraightSec(double power, double sec, boolean noStop) throws InterruptedException {
         double[] startingCount = new double[4];
         for (int i = 0; i < 4; i++) {
             startingCount[i] = wheels[i].motor.getCurrentPosition();
-            wheels[i].motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        //    wheels[i].motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         }
         long startTime = System.currentTimeMillis();
         driveAndSteer(power, 0, true);
         sleep((long) (sec * 1000.0));
-        driveAndSteer(0, 0, true);
+        if (!noStop){
+            driveAndSteer(0, 0, true);
+        }
         double ave = 0;
         for (int i = 0; i < 4; i++) {
             startingCount[i] = (wheels[i].motor.getCurrentPosition() - startingCount[i]) / sec;
@@ -1264,7 +1273,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     }
 
     //final heading needs to be with in range(-180,180]
-    private void rawRotateTo(double power, double finalHeading, boolean stopEarly) throws InterruptedException {
+    public void rawRotateTo(double power, double finalHeading, boolean stopEarly) throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) return;
         debug("rotateT0(pwr: %.3f, finalHeading: %.1f)", power, finalHeading);
         double iniHeading = orientationSensor.getHeading();

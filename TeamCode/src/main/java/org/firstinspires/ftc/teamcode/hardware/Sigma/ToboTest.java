@@ -165,10 +165,10 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (source.isPressed(Button.START) && source.isPressed(Button.BACK)) { // testing chassis speed
-                    motor_count = chassis.driveStraightSec(1.0, 10);
+                    motor_count = chassis.driveStraightSec(1.0, 10, false);
                     return;
                 } else if (source.isPressed(Button.LEFT_BUMPER) && source.isPressed(Button.RIGHT_BUMPER)) { // testing chassis speed
-                    motor_count = chassis.driveStraightSec(1.0, 2);
+                    motor_count = chassis.driveStraightSec(1.0, 2, false);
                     return;
                 }
                 else if (source.isPressed(Button.BACK)) { // default scale up

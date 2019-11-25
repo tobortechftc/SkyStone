@@ -11,7 +11,6 @@ import org.firstinspires.ftc.teamcode.support.diagnostics.DiagnosticsTeleOp;
  * Diagnostic TeleOp for Ruckus
  * @see DiagnosticsTeleOp
  */
-@Disabled
 @TeleOp(name="Test::Diagnostics", group="Test")
 public class TestDiagnostics extends DiagnosticsTeleOp {
 

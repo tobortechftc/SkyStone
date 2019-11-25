@@ -30,6 +30,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
 
     private final double ARM_UP = 0.1;
     private final double ARM_DOWN = 0.9;
+    private final double ARM_DOWN_SAFE = 0.8;
     private final double ARM_INITIAL = 0.84;
     private final double ARM_IN = 0.67;
     private final double ARM_LOW = 0.6;
@@ -340,7 +341,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private Progress moveArm(double position) {
         double adjustment = Math.abs(position - arm.getPosition());
         arm.setPosition(position);
-        if (position>ARM_IN)
+        if (position>=ARM_IN)
             armIsIn=true;
         else
             armIsIn=false;
@@ -371,6 +372,12 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         final String taskName = "Arm Out Combo";
         if (!TaskManager.isComplete(taskName)) return;
         boolean grabIsOpened = isGrabberOpened;
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                return moveArm(ARM_DOWN_SAFE);
+            }
+        }, taskName);
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
@@ -469,7 +476,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
-                return moveArm(ARM_DOWN);
+                return moveArm(ARM_DOWN_SAFE);
             }
         }, taskName);
         TaskManager.add(new Task() {
@@ -493,6 +500,14 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 }
             }, taskName);
         }
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                return moveArm(ARM_DOWN);
+            }
+        }, taskName);
+
+
     }
 
     public void grabStoneComboAuto() {

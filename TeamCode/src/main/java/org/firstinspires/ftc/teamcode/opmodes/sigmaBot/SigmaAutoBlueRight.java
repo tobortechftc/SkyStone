@@ -18,7 +18,7 @@ import java.util.List;
 /**
  * Created by 28761 on 6/29/2019.
  */
-@Disabled
+
 @Autonomous(name="Sigma-Blue-Right", group="Sigma")
 public class SigmaAutoBlueRight extends LinearOpMode {
     private ToboSigma.SkystoneLocation StoneLoc;
@@ -68,24 +68,15 @@ public class SigmaAutoBlueRight extends LinearOpMode {
             try {
                 boolean isBlue = true;
                 boolean isLeft = false;
-                // put autonomous steps here
-                // step-1: detect skystone location
                 StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF(false);
-                // telemetry.addLine(StoneLoc.toString());
-                // telemetry.update();
-                // sleep(10000); // 10 sec
-                // step-2: go to grab the first skystone and deliver
-                robot.getFirstSkyStone(StoneLoc, isBlue, isLeft);
-
-                // step-3: grab and deliver the next skystone/stone
+                int ss_pos = robot.getFirstSkyStone(StoneLoc, isBlue, isLeft);
+                robot.rotateFoundation(isBlue);
                 int count = 1;
-               // if (getRuntime() < 25000){
-                   //robot.getAnotherSkyStone(StoneLoc, count, isBlue);
-                   //count++;
-               // }
-                robot.grabAndPark(true);
-                // move foundation
-                // park
+                if (getRuntime() < 29000){
+                    count++;
+                   robot.getAnotherSkyStone(ss_pos, count, isBlue);
+
+               }
 
             } catch (Exception E) {
                 telemetry.addData("Error in event handler", E.getMessage());

@@ -119,10 +119,14 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
         ToboSigma.SkystoneLocation skystoneLocation = ToboSigma.SkystoneLocation.UNKNOWN;
         //int goldXCoord = -1;
         //int silverXCoord = -1;
+        if(tfod==null){
+            return ToboSigma.SkystoneLocation.UNKNOWN;
+        }
+
         while (elapsedTime.seconds() < 2 && skystoneLocation == ToboSigma.SkystoneLocation.UNKNOWN) {
             List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
 
-            if (updatedRecognitions.size() < 1) {
+            if (updatedRecognitions== null ||updatedRecognitions.size() < 1) {
                 continue;
             }
             //logger.verbose("Starting recognitions");
