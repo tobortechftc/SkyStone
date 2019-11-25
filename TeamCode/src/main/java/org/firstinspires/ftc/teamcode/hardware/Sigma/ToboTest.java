@@ -20,6 +20,7 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
     public CameraStoneDetector cameraStoneDetector;
     public FoundationHook foundationHook;
     public StoneGrabber stoneGrabber;
+    public IntakeV2 intakeV2;
 
     public enum SkystoneLocation {
         LEFT, CENTER, RIGHT, UNKNOWN
@@ -62,6 +63,9 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
 
         stoneGrabber = new StoneGrabber(this.core).configureLogging("StoneGrabber", logLevel);
         stoneGrabber.configure(configuration, false);
+
+        intakeV2 = new IntakeV2(this.core).configureLogging("intakeV2", logLevel);
+        intakeV2.configure(configuration, false);
 
     }
 
@@ -182,9 +186,29 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
         em.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
-                foundationHook.hookAuto();
+                intakeV2.intakeIn(!source.isPressed(Button.BACK));
             }
         }, Button.LEFT_BUMPER);
+
+        em.onButtonUp(new Events.Listener() {
+            @Override
+            public void buttonUp(EventManager source, Button button) throws InterruptedException {
+                if (intakeV2 != null) intakeV2.intakeStop();
+            }
+        }, Button.LEFT_BUMPER);
+
+        em.onTrigger(new Events.Listener() {
+            @Override
+            public void triggerMoved(EventManager source, Events.Side side, float current, float change) throws InterruptedException {
+                // 0.2 is a dead zone threshold for the trigger
+
+                if (current > 0.2) {
+                    if (intakeV2 != null) intakeV2.intakeOut(!source.isPressed(Button.BACK));
+                } else {
+                    if (intakeV2 != null) intakeV2.intakeStop();
+                }
+            }
+        }, Events.Side.LEFT);
 
         em.onButtonDown(new Events.Listener() {
             @Override
