@@ -64,8 +64,8 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
         stoneGrabber = new StoneGrabber(this.core).configureLogging("StoneGrabber", logLevel);
         stoneGrabber.configure(configuration, false);
 
-        intakeV2 = new IntakeV2(this.core).configureLogging("intakeV2", logLevel);
-        intakeV2.configure(configuration, false);
+        // intakeV2 = new IntakeV2(this.core).configureLogging("intakeV2", logLevel);
+        // intakeV2.configure(configuration, false);
 
     }
 
@@ -186,7 +186,8 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
         em.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
-                intakeV2.intakeIn(!source.isPressed(Button.BACK));
+                if (intakeV2!=null)
+                    intakeV2.intakeIn(!source.isPressed(Button.BACK));
             }
         }, Button.LEFT_BUMPER);
 
