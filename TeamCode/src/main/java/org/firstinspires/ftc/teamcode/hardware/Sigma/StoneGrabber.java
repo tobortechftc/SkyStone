@@ -431,11 +431,11 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         final String taskName = "Arm In Combo";
         if (!TaskManager.isComplete(taskName)) return;
         boolean grabIsOpened = isGrabberOpened;
-        if (wristParallel && !isWristParallel) {
+        if (wristParallel!=isWristParallel) {
             TaskManager.add(new Task() {
                 @Override
                 public Progress start() {
-                    moveWrist(true);
+                    moveWrist(wristParallel);
                     grabberClose();
                     return new Progress() {
                         @Override
