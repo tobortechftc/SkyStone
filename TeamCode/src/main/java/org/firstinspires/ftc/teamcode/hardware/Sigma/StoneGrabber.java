@@ -446,32 +446,34 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 }
             }, taskName);
         }
-        if (isAuto) {
-            TaskManager.add(new Task() {
-                @Override
-                public Progress start() {
-                    liftToPosition(LIFT_SAFE_SWING_AUTO);
-                    return new Progress() {
-                        @Override
-                        public boolean isDone() {
-                            return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < LIFT_RUN_TO_POSITION_OFFSET;
-                        }
-                    };
-                }
-            }, taskName);
-        } else {
-            TaskManager.add(new Task() {
-                @Override
-                public Progress start() {
-                    liftToPosition(LIFT_SAFE_SWING);
-                    return new Progress() {
-                        @Override
-                        public boolean isDone() {
-                            return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 100;
-                        }
-                    };
-                }
-            }, taskName);
+        if (lifter.getCurrentPosition()<LIFT_SAFE_SWING) {
+            if (isAuto) {
+                TaskManager.add(new Task() {
+                    @Override
+                    public Progress start() {
+                        liftToPosition(LIFT_SAFE_SWING_AUTO);
+                        return new Progress() {
+                            @Override
+                            public boolean isDone() {
+                                return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < LIFT_RUN_TO_POSITION_OFFSET;
+                            }
+                        };
+                    }
+                }, taskName);
+            } else {
+                TaskManager.add(new Task() {
+                    @Override
+                    public Progress start() {
+                        liftToPosition(LIFT_SAFE_SWING);
+                        return new Progress() {
+                            @Override
+                            public boolean isDone() {
+                                return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 100;
+                            }
+                        };
+                    }
+                }, taskName);
+            }
         }
         TaskManager.add(new Task() {
             @Override
