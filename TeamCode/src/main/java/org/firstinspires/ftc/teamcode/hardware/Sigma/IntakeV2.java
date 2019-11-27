@@ -70,11 +70,11 @@ public class IntakeV2 extends Logger<IntakeV2> implements Configurable {
 
         rightIntakeMotor = configuration.getHardwareMap().tryGet(DcMotor.class, "rightIntakeMotor");
         if (rightIntakeMotor != null) rightIntakeMotor.setDirection(DcMotorSimple.Direction.FORWARD);
-        rightIntakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightIntakeMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         leftIntakeMotor = configuration.getHardwareMap().tryGet(DcMotor.class, "leftIntakeMotor");
         if (leftIntakeMotor != null) leftIntakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        leftIntakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        leftIntakeMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     public void intakeDropInit() {

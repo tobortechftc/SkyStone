@@ -48,10 +48,10 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
 
         this.core = new CoreSystem();
         info("RoboSigma configure() after new CoreSystem()(run time = %.2f sec)", (runtime.seconds() - ini_time));
-        chassis = new SwerveChassis(this.core).configureLogging("Swerve", logLevel); // Log.DEBUG
-        chassis.enableRangeSensorTelemetry();
-        chassis.configure(configuration, ((autoColor != ToboSigma.AutoTeamColor.NOT_AUTO)), true);
-        info("RoboSigma configure() after init Chassis (run time = %.2f sec)", (runtime.seconds() - ini_time));
+//        chassis = new SwerveChassis(this.core).configureLogging("Swerve", logLevel); // Log.DEBUG
+//        chassis.enableRangeSensorTelemetry();
+//        chassis.configure(configuration, ((autoColor != ToboSigma.AutoTeamColor.NOT_AUTO)), true);
+//        info("RoboSigma configure() after init Chassis (run time = %.2f sec)", (runtime.seconds() - ini_time));
 //        if (auto) {
 //            cameraStoneDetector = new CameraStoneDetector().configureLogging("CameraStoneDetector", logLevel);
 //            cameraStoneDetector.configure(configuration, true);
@@ -61,11 +61,11 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
         // foundationHook = new FoundationHook(this.core).configureLogging("FoundationHook", logLevel);
         // foundationHook.configure(configuration, false);
 
-        stoneGrabber = new StoneGrabber(this.core).configureLogging("StoneGrabber", logLevel);
-        stoneGrabber.configure(configuration, false);
+//        stoneGrabber = new StoneGrabber(this.core).configureLogging("StoneGrabber", logLevel);
+//        stoneGrabber.configure(configuration, false);
 
-        // intakeV2 = new IntakeV2(this.core).configureLogging("intakeV2", logLevel);
-        // intakeV2.configure(configuration, false);
+         intakeV2 = new IntakeV2(this.core).configureLogging("intakeV2", logLevel);
+         intakeV2.configure(configuration, false);
 
     }
 
