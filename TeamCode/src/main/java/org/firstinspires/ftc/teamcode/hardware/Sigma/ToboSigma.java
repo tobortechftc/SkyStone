@@ -185,19 +185,13 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             @Override
             public void stickMoved(EventManager source, Events.Side side, float currentX, float changeX,
                                    float currentY, float changeY) throws InterruptedException {
-                if (Math.abs(source.getStick(Events.Side.RIGHT, Events.Axis.BOTH)) < 0.2 &&
-                        Math.abs(currentX) > 0.1) {
-                    // left stick with idle right stick rotates robot in place
-                    chassis.rotate(currentX * Math.abs(currentX) * powerAdjustment(source) * rotateRatio);
-                } else if (source.getTrigger(Events.Side.RIGHT) < 0.2 && Math.abs(currentX) > 0.1) {
-                    // right stick with left stick operates robot in "car" mode
-//                    double heading = currentX * 90;
-//                    double power = source.getStick(Events.Side.RIGHT, Events.Axis.Y_ONLY);
-//                    if (chassis.isReversed()) power *= -1;
-//                    debug("sticksOnly(): left / steer, pwr: %.2f, head: %.2f", power, heading);
-//                    chassis.driveAndSteer(power * powerAdjustment(source), heading, false);
-                } else if (chassis != null) {
-                    chassis.stop();
+                if (Math.abs(source.getStick(Events.Side.RIGHT, Events.Axis.BOTH)) < 0.2) {
+                    if (Math.abs(currentX) > 0.1) {
+                        // left stick with idle right stick rotates robot in place
+                        chassis.rotate(currentX * Math.abs(currentX) * powerAdjustment(source) * rotateRatio);
+                    } else {
+                        chassis.stop();
+                    }
                 }
             }
         }, Events.Axis.X_ONLY, Events.Side.LEFT);
