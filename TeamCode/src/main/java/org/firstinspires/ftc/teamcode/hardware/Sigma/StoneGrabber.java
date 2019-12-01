@@ -27,6 +27,9 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private AdjustableServo arm;
     private AdjustableServo wrist;
     private AdjustableServo grabber;
+    private ElapsedTime SGTimer;
+    private double waitSec;
+
 
     private final double ARM_UP = 0.1;
     private final double ARM_DOWN = 0.9;
@@ -367,11 +370,41 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         }
     }
 
-
-    public void armOutCombo() {
+    public void waitTM(double sec) {
+        final String taskName = "Wait";
+        if (!TaskManager.isComplete(taskName)) return;
+        waitSec = sec;
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                SGTimer.reset();
+                return new Progress() {
+                    @Override
+                    public boolean isDone() { return (SGTimer.seconds() >= waitSec); }
+                };
+            }
+        }, taskName);
+    }
+    public void armOutCombo(){
+        armOutCombo(0);
+    }
+    public void armOutCombo(double delaySec) {
         final String taskName = "Arm Out Combo";
         if (!TaskManager.isComplete(taskName)) return;
         boolean grabIsOpened = isGrabberOpened;
+        if (delaySec>0) {
+            waitSec = delaySec;
+            TaskManager.add(new Task() {
+                @Override
+                public Progress start() {
+                    SGTimer.reset();
+                    return new Progress() {
+                        @Override
+                        public boolean isDone() { return (SGTimer.seconds() >= waitSec); }
+                    };
+                }
+            }, taskName);
+        }
         TaskManager.add(new Task() {
             @Override
             public Progress start() {

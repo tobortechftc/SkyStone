@@ -126,7 +126,7 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
         while (elapsedTime.seconds() < 2 && skystoneLocation == ToboSigma.SkystoneLocation.UNKNOWN) {
             List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
 
-            if (updatedRecognitions== null ||updatedRecognitions.size() < 1) {
+            if (updatedRecognitions.size() < 1) {
                 continue;
             }
             //logger.verbose("Starting recognitions");
