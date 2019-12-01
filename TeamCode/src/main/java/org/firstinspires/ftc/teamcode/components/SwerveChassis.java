@@ -1353,7 +1353,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             wheels[index].servo.setPosition(newPositions[index]);
         }
         if (!Thread.currentThread().isInterrupted())
-            sleep((int) Math.round(2 * maxServoAdjustment));
+            sleep((int) Math.round(3 * maxServoAdjustment));
     }
 
     /**

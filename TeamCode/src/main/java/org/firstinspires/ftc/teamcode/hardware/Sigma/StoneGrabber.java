@@ -27,7 +27,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private AdjustableServo arm;
     private AdjustableServo wrist;
     private AdjustableServo grabber;
-    private ElapsedTime SGTimer;
+    private ElapsedTime SGTimer = new ElapsedTime();
     private double waitSec;
 
 
@@ -394,10 +394,10 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         boolean grabIsOpened = isGrabberOpened;
         if (delaySec>0) {
             waitSec = delaySec;
+            SGTimer.reset();
             TaskManager.add(new Task() {
                 @Override
                 public Progress start() {
-                    SGTimer.reset();
                     return new Progress() {
                         @Override
                         public boolean isDone() { return (SGTimer.seconds() >= waitSec); }
