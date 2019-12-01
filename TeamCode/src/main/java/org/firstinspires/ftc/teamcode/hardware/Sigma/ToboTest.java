@@ -77,6 +77,8 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
                 chassis.setupTelemetry(telemetry);
             }
         }
+        if (intakeV2!=null)
+            intakeV2.intakeDropInit();
     }
 
     @MenuEntry(label = "TeleOp", group = "Competition")
@@ -182,6 +184,14 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
 
             }
         }, Button.Y);
+
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (intakeV2!=null)
+                    intakeV2.intakeDropAuto();
+            }
+        }, Button.DPAD_UP);
 
         em.onButtonDown(new Events.Listener() {
             @Override
