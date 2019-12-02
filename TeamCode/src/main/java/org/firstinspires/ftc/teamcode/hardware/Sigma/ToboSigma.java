@@ -24,7 +24,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     public SwerveChassis chassis;
     public CameraStoneDetector cameraStoneDetector;
     public FoundationHook foundationHook;
-    public Intake intake;
+    public IntakeV2 intake;
     public StoneGrabber stoneGrabber;
 
     public enum SkystoneLocation {
@@ -80,7 +80,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
         stoneGrabber = new StoneGrabber(this.core).configureLogging("StoneGrabber", logLevel);
         stoneGrabber.configure(configuration, (autoColor != AutoTeamColor.NOT_AUTO));
-        intake = new Intake(this.core).configureLogging("Intake", logLevel);
+        intake = new IntakeV2(this.core).configureLogging("IntakeV2", logLevel);
         intake.configure(configuration, (autoColor != AutoTeamColor.NOT_AUTO));
 
     }
