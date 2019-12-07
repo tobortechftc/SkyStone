@@ -18,7 +18,7 @@ import java.util.List;
 /**
  * Created by 28761 on 6/29/2019.
  */
-
+@Disabled
 @Autonomous(name="Sigma-Blue-Right", group="Sigma")
 public class SigmaAutoBlueRight extends LinearOpMode {
     private ToboSigma.SkystoneLocation StoneLoc;

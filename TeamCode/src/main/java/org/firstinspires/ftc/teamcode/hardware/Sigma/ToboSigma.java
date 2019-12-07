@@ -43,7 +43,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     public ElapsedTime runtime = new ElapsedTime();
     public double rotateRatio = 0.7; // slow down ratio for rotation
     public double motor_count = 0;
-    public double auto_chassis_power = .7;
+    public double auto_chassis_power = .6;
     public double auto_chassis_power_slow = .4;
 
     @Override
@@ -583,7 +583,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         foundationHook.hookUp();
 
         chassis.rotateTo(.2, 0);
-        double dist = chassis.getDistance(SwerveChassis.Direction.FRONT) - 11;
+        double dist = chassis.getDistance(SwerveChassis.Direction.FRONT) - 13;
         if (skyStonePosition != SkystoneLocation.UNKNOWN)
             dist -= 2;
 
@@ -719,7 +719,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         stoneGrabber.armInCombo(true, true);
         chassis.driveStraightAutoRunToPosition(auto_chassis_power, -5, 0, 1000);
         chassis.rotateTo(.2, 0);
-        chassis.driveStraightAutoRunToPosition(.7, 120 + 20 * (6 - toTake), -90 * side, 15000);
+        chassis.driveStraightAutoRunToPosition(.7, 100 + 20 * (6 - toTake), -90 * side, 15000);
         stoneGrabber.armOutComboAuto();
         stoneGrabber.deliverStoneComboAuto();
         stoneGrabber.armInCombo(true, true);
@@ -828,21 +828,27 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         }*/
         //stoneGrabber.wristPerpendicular();
         chassis.changeStopBehavior(false);
-        chassis.driveStraightSec(-.6, .35, true);
+        chassis.driveStraightSec(-.5, .3, true);
         stoneGrabber.deliverStoneCombo(true);
-        chassis.rawRotateTo(.7, -85 * side, true);
+        chassis.rawRotateTo(.65, -90 * side, true);
         //stoneGrabber.deliverStoneCombo(true);
         chassis.changeStopBehavior(true);
-        chassis.driveStraightAutoRunToPosition(.7, 19, 0, 1000);
+        chassis.driveStraightAutoRunToPosition(.6, 35, 0, 1000);
         foundationHook.hookUp();
         chassis.driveStraightAutoRunToPosition(auto_chassis_power, -10, 0, 1500);
         stoneGrabber.armInCombo(false, true);
         chassis.rotateTo(.5,0);
         double dist = Math.max(10, Math.min(70, chassis.getDistance(SwerveChassis.Direction.BACK)));
-        chassis.driveStraightAutoRunToPosition(auto_chassis_power, 55-dist, 0, 1500);
+        chassis.driveStraightAutoRunToPosition(auto_chassis_power, 60-dist, 0, 1500);
         while (!TaskManager.isComplete("Deliver Stone Combo")) {
             TaskManager.processTasks();
         }
+
+    }
+    public void parkAfterRotate(boolean isBlue) throws InterruptedException{
+        if (Thread.currentThread().isInterrupted()) return;
+        int side = isBlue ? 1 : -1;
+        chassis.driveStraightAutoRunToPosition(auto_chassis_power, 75, side*90, 1500);
 
     }
     @MenuEntry(label = "Rotate Foundation]", group = "Test Chassis")
