@@ -292,7 +292,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 if (source.isPressed(Button.BACK)) { // back-X swap driving direction
                     chassis.changeChassisDrivingDirection();
                 } else if (source.isPressed(Button.LEFT_BUMPER))
-                    stoneGrabber.armInCombo(source.isPressed(Button.BACK), false);
+                    stoneGrabber.armInCombo(!source.isPressed(Button.BACK), false);
                 else
                     stoneGrabber.grabberAuto();
             }
@@ -340,7 +340,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (source.isPressed(Button.LEFT_BUMPER))
-                    stoneGrabber.armInCombo(source.isPressed(Button.BACK), false);
+                    stoneGrabber.armInCombo(!source.isPressed(Button.BACK), false);
                 else
                     stoneGrabber.grabberAuto();
             }
