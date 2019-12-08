@@ -54,12 +54,12 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
 
     //private final int LIFT_RUN_TO_POSITION_OFFSET = 20;   // V5.2 
     private final int LIFT_RUN_TO_POSITION_OFFSET = 100;  // V5.3, new control for goBilda 5205 motor
-    private final int LIFT_DOWN_GRAB = 5;
+    private final int LIFT_DOWN_GRAB = 20;
     private final int LIFT_DOWN = 20;
     private final int LIFT_GRAB = 400;
     private final int LIFT_GRAB_AUTO = 640;
     private final int LIFT_MAX = 3640;
-    private final int LIFT_SAFE_SWING_AUTO = 950;
+    private final int LIFT_SAFE_SWING_AUTO = 1000;
     private final int LIFT_SAFE_BRIDGE = 800;
     private final int LIFT_SAFE_SWING_IN = 1200;
     private final int LIFT_SAFE_SWING = 950;
@@ -596,7 +596,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 liftToPosition(LIFT_DOWN_GRAB);
                 return new Progress() {
                     @Override
-                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 10;
+                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 40;
                     }
                 };
             }

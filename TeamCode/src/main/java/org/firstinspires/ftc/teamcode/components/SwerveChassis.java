@@ -238,10 +238,10 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         DistanceSensor rangeSensor;
 
         switch (direction) {
-            case FRONT:
             case FRONT_LEFT:
                 rangeSensor = frontLeftRangeSensor;
                 break;
+            case FRONT:
             case FRONT_RIGHT:
                 rangeSensor = frontRightRangeSensor;
                 break;
