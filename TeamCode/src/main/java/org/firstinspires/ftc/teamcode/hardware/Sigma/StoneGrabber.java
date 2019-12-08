@@ -16,6 +16,8 @@ import org.firstinspires.ftc.teamcode.support.tasks.Progress;
 import org.firstinspires.ftc.teamcode.support.tasks.Task;
 import org.firstinspires.ftc.teamcode.support.tasks.TaskManager;
 
+import static java.lang.Thread.*;
+
 /**
  * StoneGrabber spec:
  */
@@ -258,6 +260,14 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         isGrabberOpened = true;
     }
 
+    public void grabberReGrab () {
+        if (grabber==null) return;
+        grabberOpen();
+        for(int i=0; i<100; i++) // add some dummy delay
+            grabber.getPosition();
+        grabberClose();
+    }
+
     public void grabberClose () {
         if (grabber==null) return;
         grabber.setPosition(GRABBER_CLOSE);
@@ -363,7 +373,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     }
 
     public void armOutComboAuto() {
-        if (Thread.currentThread().isInterrupted()) return;
+        if (currentThread().isInterrupted()) return;
         armOutCombo();
         while (!TaskManager.isComplete("Arm Out Combo")) {
             TaskManager.processTasks();
@@ -454,7 +464,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         }
     }
     public void armInComboAuto(final boolean wristParallel) {
-        if (Thread.currentThread().isInterrupted()) return;
+        if (currentThread().isInterrupted()) return;
         armInCombo(wristParallel, true);
         while (!TaskManager.isComplete("Arm In Combo")) {
             TaskManager.processTasks();
@@ -527,26 +537,37 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
 
             }
         }, taskName);
-        if (wristParallel && grabIsOpened) { // restore grabber to open
-            TaskManager.add(new Task() {
-                @Override
-                public Progress start() {
-                    return moveGrabber(false);
-                }
-            }, taskName);
-        }
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
-                return moveArm(ARM_DOWN);
+                grabberReGrab();
+                return new Progress() {
+                    @Override
+                    public boolean isDone() { return true; }
+                };
+
             }
         }, taskName);
 
+//        if (wristParallel && grabIsOpened) { // restore grabber to open
+//            TaskManager.add(new Task() {
+//                @Override
+//                public Progress start() {
+//                    return moveGrabber(false);
+//                }
+//            }, taskName);
+//        }
+//        TaskManager.add(new Task() {
+//            @Override
+//            public Progress start() {
+//                return moveArm(ARM_DOWN);
+//            }
+//        }, taskName);
 
     }
 
     public void grabStoneComboAuto() {
-        if (Thread.currentThread().isInterrupted()) return;
+        if (currentThread().isInterrupted()) return;
         grabStoneCombo();
         while (!TaskManager.isComplete("Grab Stone Combo")) {
             TaskManager.processTasks();
@@ -684,7 +705,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     }
 
     public void deliverStoneComboAuto() {
-        if (Thread.currentThread().isInterrupted()) return;
+        if (currentThread().isInterrupted()) return;
         deliverStoneCombo(true);
         while (!TaskManager.isComplete("Deliver Stone Combo")) {
             TaskManager.processTasks();
