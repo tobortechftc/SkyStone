@@ -23,10 +23,10 @@ public class IntakeV2 extends Logger<IntakeV2> implements Configurable {
     private DcMotor leftIntakeMotor;
     private AdjustableServo rightIntakeDrop;
 
-    private final double INTAKE_FAST = 0.9;
+    private final double INTAKE_FAST = 1.0;
     private final double INTAKE_SPEED = 0.5;
 
-    private final double RIGHT_INTAKE_DROP_INIT = 0.995;
+    private final double RIGHT_INTAKE_DROP_INIT = 1.0;
     private final double RIGHT_INTAKE_DROP_DOWN = 0.085;
 
     private boolean intakeDropDown = false;

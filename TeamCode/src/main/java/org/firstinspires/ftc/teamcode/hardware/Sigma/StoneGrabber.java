@@ -32,9 +32,9 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
 
 
     private final double ARM_UP = 0.1;
-    private final double ARM_DOWN = 0.9;
+    private final double ARM_DOWN = 0.82; // right position to grab stone inside
     private final double ARM_DOWN_SAFE = 0.9;
-    private final double ARM_INITIAL = 0.84;
+    private final double ARM_INITIAL = 0.86;
     private final double ARM_IN = 0.67;
     private final double ARM_LOW = 0.6;
     private final double ARM_OUT = 0.45;
@@ -42,7 +42,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double ARM_INC_UNIT = 0.02;
 
     private final double WRIST_PARALLEL = 0.06; // 0.18;
-    private final double WRIST_PERPENDICULAR = 0.62;
+    private final double WRIST_PERPENDICULAR = 0.65;
     private final double WRIST_INIT = WRIST_PERPENDICULAR;
 
     private final double GRABBER_INIT = 0.31;
@@ -609,6 +609,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             @Override
             public Progress start() {
                 liftToPosition(LIFT_DOWN);
+                armDown();
                 return new Progress() {
                     @Override
                     public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < LIFT_RUN_TO_POSITION_OFFSET;
