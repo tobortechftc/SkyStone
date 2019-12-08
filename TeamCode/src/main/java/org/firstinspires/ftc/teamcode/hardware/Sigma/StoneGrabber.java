@@ -41,8 +41,8 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double ARM_DELIVER = 0.3;
     private final double ARM_INC_UNIT = 0.02;
 
-    private final double WRIST_PARALLEL = 0.06; // 0.18;
-    private final double WRIST_PERPENDICULAR = 0.65;
+    private final double WRIST_PARALLEL = 0.025; // 0.18;
+    private final double WRIST_PERPENDICULAR = 0.605;
     private final double WRIST_INIT = WRIST_PERPENDICULAR;
 
     private final double GRABBER_INIT = 0.31;
