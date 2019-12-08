@@ -263,7 +263,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     public void grabberReGrab () {
         if (grabber==null) return;
         grabberOpen();
-        for(int i=0; i<100; i++) // add some dummy delay
+        for(int i=0; i<1000; i++) // add some dummy delay
             grabber.getPosition();
         grabberClose();
     }
@@ -404,10 +404,10 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         boolean grabIsOpened = isGrabberOpened;
         if (delaySec>0) {
             waitSec = delaySec;
-            SGTimer.reset();
             TaskManager.add(new Task() {
                 @Override
                 public Progress start() {
+                    SGTimer.reset();
                     return new Progress() {
                         @Override
                         public boolean isDone() { return (SGTimer.seconds() >= waitSec); }
@@ -537,15 +537,27 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
 
             }
         }, taskName);
+
+        waitSec = 0.3;
+        TaskManager.add(new Task() {
+                @Override
+                public Progress start() {
+                    grabberOpen();
+                    SGTimer.reset();
+                    return new Progress() {
+                        @Override
+                        public boolean isDone() { return (SGTimer.seconds() >= waitSec); }
+                    }; }
+                    }, taskName);
+
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
-                grabberReGrab();
+                grabberClose();
                 return new Progress() {
                     @Override
                     public boolean isDone() { return true; }
                 };
-
             }
         }, taskName);
 
