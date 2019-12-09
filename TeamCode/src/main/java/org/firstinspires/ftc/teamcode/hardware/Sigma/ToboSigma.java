@@ -376,7 +376,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             @Override
             public void stickMoved(EventManager source, Events.Side side, float currentX, float changeX,
                                    float currentY, float changeY) throws InterruptedException {
-                if (Math.abs(source.getStick(Events.Side.RIGHT, Events.Axis.Y_ONLY)) > 0.2) {
+                if (Math.abs(source.getStick(Events.Side.RIGHT, Events.Axis.Y_ONLY)) > 0.2 &&
+                (!source.isPressed(Button.LEFT_BUMPER))) {
                     // left stick with idle right stick rotates robot in place
                     if (source.getStick(Events.Side.RIGHT, Events.Axis.Y_ONLY) > 0)
                         stoneGrabber.liftUp(source.isPressed(Button.BACK));
@@ -387,7 +388,23 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             }
         }, Events.Axis.Y_ONLY, Events.Side.RIGHT);
 
+        em2.onStick(new Events.Listener() {
+            @Override
+            public void stickMoved(EventManager source, Events.Side side, float currentX, float changeX,
+                                   float currentY, float changeY) throws InterruptedException {
+                if (Math.abs(source.getStick(Events.Side.RIGHT, Events.Axis.X_ONLY)) > 0.2) {
+                    // left stick with idle right stick rotates robot in place
+                    if (source.isPressed(Button.LEFT_BUMPER)){
+                        if (source.getStick(Events.Side.RIGHT, Events.Axis.X_ONLY) < 0)
+                            stoneGrabber.wristLeftInc();
+                        else stoneGrabber.wristRightInc();
+                    }
+                }
+            }
+        }, Events.Axis.X_ONLY, Events.Side.RIGHT);
+
     }
+
 
     @MenuEntry(label = "Auto Straight", group = "Test Chassis")
     public void testStraightSkyStone(EventManager em) {

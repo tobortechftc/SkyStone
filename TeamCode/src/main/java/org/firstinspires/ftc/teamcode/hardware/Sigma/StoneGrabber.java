@@ -40,12 +40,14 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double ARM_IN = 0.67;
     private final double ARM_LOW = 0.6;
     private final double ARM_OUT = 0.45;
+    private final double ARM_CAPSTONE = 0.96;
     private final double ARM_DELIVER = 0.3;
     private final double ARM_INC_UNIT = 0.02;
 
     private final double WRIST_PARALLEL = 0.025; // 0.18;
     private final double WRIST_PERPENDICULAR = 0.605;
     private final double WRIST_INIT = WRIST_PERPENDICULAR;
+    private final double WRIST_INC_UNIT = 0.01;
 
     private final double GRABBER_INIT = 0.31;
     private final double GRABBER_OPEN_IN = 0.6;
@@ -60,13 +62,15 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final int LIFT_GRAB_AUTO = 640;
     private final int LIFT_MAX = 3640;
     private final int LIFT_SAFE_SWING_AUTO = 1000;
-    private final int LIFT_SAFE_BRIDGE = 800;
+    private final int LIFT_SAFE_BRIDGE = 1086;
     private final int LIFT_SAFE_SWING_IN = 1200;
     private final int LIFT_SAFE_SWING = 950;
+    private final int LIFT_UP_FOR_CAP = 50;
     //private final double LIFT_POWER = 0.5;   // V5.2
     private final double LIFT_POWER = 1.0;  // V5.3
     private final double LIFT_POWER_SLOW = 0.5;
     private final int LIFT_DELIVER = 1000;
+
 
 
     private boolean armIsDown = false;
@@ -229,6 +233,29 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     public void wristAuto() {
         if (isWristParallel) wristPerpendicular();
         else wristParallel();
+    }
+
+    public void wristLeftInc() {
+        double cur_pos = wrist.getPosition();
+        cur_pos -= WRIST_INC_UNIT;
+        if (cur_pos<0) cur_pos=0;
+        wrist.setPosition(cur_pos);
+        if (cur_pos<=(WRIST_PARALLEL+0.2))
+            isWristParallel = true;
+        else
+            isWristParallel = false;
+
+    }
+    public void wristRightInc() {
+        double cur_pos = wrist.getPosition();
+        cur_pos += WRIST_INC_UNIT;
+        if (cur_pos>1) cur_pos=1;
+        wrist.setPosition(cur_pos);
+        if (cur_pos>=(WRIST_PERPENDICULAR-0.2))
+            isWristParallel = false;
+        else
+            isWristParallel = true;
+
     }
 
     public Progress moveWrist(boolean parallel) {
@@ -628,6 +655,48 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                     public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < LIFT_RUN_TO_POSITION_OFFSET;
                     }
                 };
+            }
+        }, taskName);
+
+    }
+
+    public void grabCapStoneCombo() {
+        final String taskName = "Grab Cap Stone Combo";
+        if (!TaskManager.isComplete(taskName)) return;
+
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                liftToPosition(LIFT_UP_FOR_CAP);
+                moveArm(ARM_CAPSTONE);
+                return new Progress() {
+                    @Override
+                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 40;
+                    }
+                };
+            }
+        }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                return moveWrist(false);
+            }
+        }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                liftToPosition(LIFT_SAFE_SWING);
+                return new Progress() {
+                    @Override
+                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 40;
+                    }
+                };
+            }
+        }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                return moveWrist(true);
             }
         }, taskName);
 
