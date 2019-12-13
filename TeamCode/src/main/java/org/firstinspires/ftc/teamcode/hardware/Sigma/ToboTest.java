@@ -344,7 +344,7 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
                 if (Math.abs(source.getStick(Events.Side.LEFT, Events.Axis.Y_ONLY)) > 0.2) {
                     // left stick with idle right stick rotates robot in place
                     if (source.getStick(Events.Side.LEFT, Events.Axis.Y_ONLY) > 0)
-                        stoneGrabber.armUpInc();
+                        stoneGrabber.armUpInc(source.isPressed(Button.BACK));
                     else
                         stoneGrabber.armDownInc();
                 }

@@ -42,6 +42,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double ARM_OUT = 0.45;
     private final double ARM_CAPSTONE = 0.96;
     private final double ARM_DELIVER = 0.3;
+    private final double ARM_MIN = 0.28;
     private final double ARM_INC_UNIT = 0.02;
 
     private final double WRIST_PARALLEL = 0.025; // 0.18;
@@ -172,9 +173,11 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             armIsDown = true;
     }
 
-    public void armUpInc() {
+    public void armUpInc(boolean force) {
         double cur_pos = arm.getPosition();
         cur_pos -= ARM_INC_UNIT;
+        if ((cur_pos<ARM_MIN) && !force)
+            cur_pos=ARM_MIN;
         if (cur_pos<0) cur_pos=0;
         arm.setPosition(cur_pos);
         armIsDown = false;
