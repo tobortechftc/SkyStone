@@ -340,6 +340,11 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         };
     }
 
+    public void liftResetEncoder() {
+        lifter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
     public void liftToPosition(int pos, double power) {
         lifter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         lifter.setTargetPosition(pos);

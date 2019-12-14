@@ -324,7 +324,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                         stoneGrabber.grabStoneInsideCombo();
                     else
                         stoneGrabber.grabStoneCombo();
-                }
+                } else if (source.isPressed(Button.BACK)) // reset lifter encoder to 0
+                    stoneGrabber.liftResetEncoder();
             }
         }, new Button[]{Button.A});
 
