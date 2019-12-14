@@ -27,7 +27,7 @@ public class IntakeV2 extends Logger<IntakeV2> implements Configurable {
     private final double INTAKE_SPEED = 0.5;
 
     private final double RIGHT_INTAKE_DROP_INIT = 1.0;
-    private final double RIGHT_INTAKE_DROP_DOWN = 0.085;
+    private final double RIGHT_INTAKE_DROP_DOWN = 0.19;
 
     private boolean intakeDropDown = false;
     private boolean intakeOn = false;
