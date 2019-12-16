@@ -863,7 +863,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         stoneGrabber.armInCombo(false, true);
         chassis.rotateTo(.5,0);
         double dist = Math.max(10, Math.min(70, chassis.getDistance(SwerveChassis.Direction.BACK)));
-        chassis.driveStraightAutoRunToPosition(auto_chassis_power, 60-dist, 0, 1500);
+        chassis.driveStraightAutoRunToPosition(auto_chassis_power, 53-dist, 0, 1500);
         while (!TaskManager.isComplete("Deliver Stone Combo")) {
             TaskManager.processTasks();
         }
@@ -872,7 +872,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     public void parkAfterRotate(boolean isBlue) throws InterruptedException{
         if (Thread.currentThread().isInterrupted()) return;
         int side = isBlue ? 1 : -1;
-        chassis.driveStraightAutoRunToPosition(auto_chassis_power, 75, side*90, 1500);
+        chassis.driveStraightAutoRunToPosition(.4, 85, side*90, 1500);
 
     }
     @MenuEntry(label = "Rotate Foundation]", group = "Test Chassis")
