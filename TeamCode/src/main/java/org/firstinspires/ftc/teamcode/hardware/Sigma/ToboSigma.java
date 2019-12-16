@@ -263,6 +263,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                     chassis.setDefaultScale(1.0);
                 } else if (source.isPressed(Button.LEFT_BUMPER)) {
                     stoneGrabber.armInReadyGrabCombo();
+                } else if (source.isPressed(Button.RIGHT_BUMPER)) {
+                    chassis.incDefaultScale();
                 }
             }
         }, Button.Y);
@@ -280,6 +282,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                         stoneGrabber.grabStoneInsideCombo();
                     else
                         stoneGrabber.grabStoneCombo();
+                } else if (source.isPressed(Button.RIGHT_BUMPER)) {
+                    chassis.decDefaultScale();
                 } else if (!source.isPressed(button.START)) {
                     foundationHook.hookAuto();
                 }

@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.hardware.Sigma;
 
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -11,17 +12,21 @@ import org.firstinspires.ftc.teamcode.support.CoreSystem;
 import org.firstinspires.ftc.teamcode.support.Logger;
 import org.firstinspires.ftc.teamcode.support.hardware.Configurable;
 import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
+import org.firstinspires.ftc.teamcode.support.tasks.Progress;
+import org.firstinspires.ftc.teamcode.support.tasks.Task;
+import org.firstinspires.ftc.teamcode.support.tasks.TaskManager;
 
 /**
  * StoneGrabber spec:
  */
-public class IntakeV2 extends Logger<IntakeV2> implements Configurable {
+public class IntakeV3 extends Logger<IntakeV3> implements Configurable {
 
     final private CoreSystem core;
 
     private DcMotor rightIntakeMotor;
     private DcMotor leftIntakeMotor;
     private AdjustableServo rightIntakeDrop;
+    private CRServo leftIntakeDrop;
 
     private final double INTAKE_FAST = 1.0;
     private final double INTAKE_SPEED = 0.5;
@@ -49,7 +54,7 @@ public class IntakeV2 extends Logger<IntakeV2> implements Configurable {
     /**
      * Hanging constructor
      */
-    public IntakeV2(CoreSystem core) {
+    public IntakeV3(CoreSystem core) {
         this.core = core;
     }
 
@@ -67,25 +72,88 @@ public class IntakeV2 extends Logger<IntakeV2> implements Configurable {
         );
         rightIntakeDrop.configure(configuration.getHardwareMap(), "rightIntakeDrop");
         configuration.register(rightIntakeDrop);
+
+        leftIntakeDrop = configuration.getHardwareMap().tryGet(CRServo.class, "leftIntakeDrop");
         intakeDropInit();
 
         rightIntakeMotor = configuration.getHardwareMap().tryGet(DcMotor.class, "rightIntakeMotor");
-        if (rightIntakeMotor != null) rightIntakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        rightIntakeMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        if (rightIntakeMotor != null) {
+            rightIntakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+            rightIntakeMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
 
         leftIntakeMotor = configuration.getHardwareMap().tryGet(DcMotor.class, "leftIntakeMotor");
-        if (leftIntakeMotor != null) leftIntakeMotor.setDirection(DcMotorSimple.Direction.FORWARD);
-        leftIntakeMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        if (leftIntakeMotor != null) {
+            leftIntakeMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+            leftIntakeMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        }
     }
 
     public void intakeDropInit() {
         rightIntakeDrop.setPosition(RIGHT_INTAKE_DROP_INIT);
         intakeDropDown = false;
+        if (leftIntakeDrop!=null) {
+            leftIntakeDrop.setPower(0);
+        }
     }
 
     public void intakeDropDown(){
         rightIntakeDrop.setPosition(RIGHT_INTAKE_DROP_DOWN);
         intakeDropDown = true;
+    }
+    private Progress moveIntake(double position) {
+        double adjustment = Math.abs(position - rightIntakeDrop.getPosition());
+        rightIntakeDrop.setPosition(position);
+        // 3.3ms per degree of rotation
+        final long doneBy = System.currentTimeMillis() + Math.round(adjustment * 900);
+        if (position<RIGHT_INTAKE_DROP_DOWN+0.1)
+            intakeDropDown = true;
+        else
+            intakeDropDown = false;
+        return new Progress() {
+            @Override
+            public boolean isDone() {
+                return System.currentTimeMillis() >= doneBy;
+            }
+        };
+    }
+    public void intakeInOutCombo() {
+        final String taskName = "intake IoOut Combo";
+        if (!TaskManager.isComplete(taskName)) return;
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                double pos = (intakeDropDown?RIGHT_INTAKE_DROP_INIT:RIGHT_INTAKE_DROP_DOWN);
+                if (intakeDropDown)
+                    leftIntakeDropIn();
+                else
+                    leftIntakeDropOut();
+                return moveIntake(pos);
+            }
+        }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                leftIntakeStop();
+                return new Progress() {
+                    @Override
+                    public boolean isDone() { return true;
+                    }
+                };
+            }
+        }, taskName);
+    }
+    public void leftIntakeDropIn() {
+        if (leftIntakeDrop==null) return;
+        leftIntakeDrop.setPower(1.0);
+    }
+    public void leftIntakeDropOut() {
+        if (leftIntakeDrop==null) return;
+        leftIntakeDrop.setPower(-1.0);
+    }
+    public void leftIntakeStop() {
+        if (leftIntakeDrop==null) return;
+        leftIntakeDrop.setPower(0);
     }
 
     public void intakeDropAuto(){

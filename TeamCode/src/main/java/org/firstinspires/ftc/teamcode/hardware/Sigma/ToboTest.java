@@ -20,7 +20,7 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
     public CameraStoneDetector cameraStoneDetector;
     public FoundationHook foundationHook;
     public StoneGrabber stoneGrabber;
-    public IntakeV2 intakeV2;
+    public IntakeV3 intake;
 
     public enum SkystoneLocation {
         LEFT, CENTER, RIGHT, UNKNOWN
@@ -48,10 +48,10 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
 
         this.core = new CoreSystem();
         info("RoboSigma configure() after new CoreSystem()(run time = %.2f sec)", (runtime.seconds() - ini_time));
-        chassis = new SwerveChassis(this.core).configureLogging("Swerve", logLevel); // Log.DEBUG
-        chassis.enableRangeSensorTelemetry();
-        chassis.configure(configuration, ((autoColor != ToboSigma.AutoTeamColor.NOT_AUTO)), true);
-        info("RoboSigma configure() after init Chassis (run time = %.2f sec)", (runtime.seconds() - ini_time));
+//        chassis = new SwerveChassis(this.core).configureLogging("Swerve", logLevel); // Log.DEBUG
+//        chassis.enableRangeSensorTelemetry();
+//        chassis.configure(configuration, ((autoColor != ToboSigma.AutoTeamColor.NOT_AUTO)), true);
+//        info("RoboSigma configure() after init Chassis (run time = %.2f sec)", (runtime.seconds() - ini_time));
 //        if (auto) {
 //            cameraStoneDetector = new CameraStoneDetector().configureLogging("CameraStoneDetector", logLevel);
 //            cameraStoneDetector.configure(configuration, true);
@@ -61,11 +61,11 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
         // foundationHook = new FoundationHook(this.core).configureLogging("FoundationHook", logLevel);
         // foundationHook.configure(configuration, false);
 
-//        stoneGrabber = new StoneGrabber(this.core).configureLogging("StoneGrabber", logLevel);
-//        stoneGrabber.configure(configuration, false);
+        stoneGrabber = new StoneGrabber(this.core).configureLogging("StoneGrabber", logLevel);
+        stoneGrabber.configure(configuration, false);
 
-         intakeV2 = new IntakeV2(this.core).configureLogging("intakeV2", logLevel);
-         intakeV2.configure(configuration, false);
+         intake = new IntakeV3(this.core).configureLogging("intakeV3", logLevel);
+         intake.configure(configuration, false);
 
     }
 
@@ -77,8 +77,8 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
                 chassis.setupTelemetry(telemetry);
             }
         }
-        if (intakeV2!=null)
-            intakeV2.intakeDropInit();
+        if (intake!=null)
+            intake.intakeDropInit();
     }
 
     @MenuEntry(label = "TeleOp", group = "Competition")
@@ -178,7 +178,7 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
                     return;
                 }
                 else if (source.isPressed(Button.BACK)) { // default scale up
-                    chassis.setDefaultScale(1.0);
+                    if (chassis!=null) chassis.setDefaultScale(1.0);
                     return;
                 }
 
@@ -188,23 +188,40 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
         em.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
-                if (intakeV2!=null)
-                    intakeV2.intakeDropAuto();
+                intake.leftIntakeDropIn();
             }
         }, Button.DPAD_UP);
+        em.onButtonUp(new Events.Listener() {
+            @Override
+            public void buttonUp(EventManager source, Button button) throws InterruptedException {
+                intake.leftIntakeStop();
+            }
+        }, Button.DPAD_UP);
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                intake.leftIntakeDropOut();
+            }
+        }, Button.DPAD_DOWN);
+        em.onButtonUp(new Events.Listener() {
+            @Override
+            public void buttonUp(EventManager source, Button button) throws InterruptedException {
+                intake.leftIntakeStop();
+            }
+        }, Button.DPAD_DOWN);
 
         em.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
-                if (intakeV2!=null)
-                    intakeV2.intakeIn(!source.isPressed(Button.BACK));
+                if (intake!=null)
+                    intake.intakeIn(!source.isPressed(Button.BACK));
             }
         }, Button.LEFT_BUMPER);
 
         em.onButtonUp(new Events.Listener() {
             @Override
             public void buttonUp(EventManager source, Button button) throws InterruptedException {
-                if (intakeV2 != null) intakeV2.intakeStop();
+                if (intake != null) intake.intakeStop();
             }
         }, Button.LEFT_BUMPER);
 
@@ -214,9 +231,9 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
                 // 0.2 is a dead zone threshold for the trigger
 
                 if (current > 0.2) {
-                    if (intakeV2 != null) intakeV2.intakeOut(!source.isPressed(Button.BACK));
+                    if (intake != null) intake.intakeOut(!source.isPressed(Button.BACK));
                 } else {
-                    if (intakeV2 != null) intakeV2.intakeStop();
+                    if (intake != null) intake.intakeStop();
                 }
             }
         }, Events.Side.LEFT);
@@ -224,8 +241,11 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
         em.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) {
-                if (source.isPressed(Button.BACK)) { // default scale back to 0.5
-                    chassis.setDefaultScale(0.7);
+                if (source.isPressed(Button.Y) && source.isPressed(Button.BACK)) {
+                    // intake drop In/out
+                    if (intake != null) intake.intakeInOutCombo();
+                } else if (source.isPressed(Button.BACK)) { // default scale back to 0.5
+                    if (chassis!=null) chassis.setDefaultScale(0.7);
                 }
             }
         }, Button.A);

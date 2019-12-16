@@ -95,6 +95,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     private double headingDeviation;  // current heading deviation for DriveMode.STRAIGHT as reported by orientation sensor
     private double servoCorrection;   // latest correction applied to leading wheels' servos to correct heading deviation
     private double defaultScale = 0.8;
+    private double SCALE_INC_TICK = 0.05;
     private double curHeading = 0;
     private boolean useScalePower = true;//
     private boolean swerveReverseDirection = false; // chassis front/back is reversed during Teleop
@@ -120,6 +121,18 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
 
     public void setDefaultScale(double val) {
         defaultScale = val;
+    }
+
+    public void incDefaultScale() {
+        defaultScale += SCALE_INC_TICK;
+        if (defaultScale>1)
+            defaultScale = 1;
+    }
+
+    public void decDefaultScale() {
+        defaultScale -= SCALE_INC_TICK;
+        if (defaultScale<0.2)
+            defaultScale = 0.2;
     }
 
     @Adjustable(min = 8.0, max = 18.0, step = 0.02)
