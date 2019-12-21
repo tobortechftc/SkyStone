@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.hardware.Sigma;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Func;
@@ -27,12 +28,13 @@ public class IntakeV3 extends Logger<IntakeV3> implements Configurable {
     private DcMotor leftIntakeMotor;
     private AdjustableServo rightIntakeDrop;
     private CRServo leftIntakeDrop;
+    private DigitalChannel prox = null;
 
     private final double INTAKE_FAST = 1.0;
     private final double INTAKE_SPEED = 0.5;
 
-    private final double RIGHT_INTAKE_DROP_INIT = 1.0;
-    private final double RIGHT_INTAKE_DROP_DOWN = 0.165;
+    private final double RIGHT_INTAKE_DROP_INIT = .985;
+    private final double RIGHT_INTAKE_DROP_DOWN = 0.14;
 
     private boolean intakeDropDown = false;
     private boolean intakeOn = false;
@@ -87,6 +89,15 @@ public class IntakeV3 extends Logger<IntakeV3> implements Configurable {
             leftIntakeMotor.setDirection(DcMotorSimple.Direction.FORWARD);
             leftIntakeMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
+
+        prox = configuration.getHardwareMap().get(DigitalChannel.class, "prox");
+        prox.setMode(DigitalChannel.Mode.INPUT);
+    }
+
+    public boolean proxDetectStone() {
+        if (prox==null)
+            return true; // assume detecting mineral
+        return !prox.getState();
     }
 
     public void intakeDropInit() {
@@ -237,6 +248,15 @@ public class IntakeV3 extends Logger<IntakeV3> implements Configurable {
                 @Override
                 public Double value() {
                     return rightIntakeDrop.getPosition();
+                }
+            });
+        }
+
+        if(prox != null){
+            line.addData("prox", "stoneDetect=%s", new Func<String>() {
+                @Override
+                public String value() {
+                    return (proxDetectStone()?"YES":"NO");
                 }
             });
         }

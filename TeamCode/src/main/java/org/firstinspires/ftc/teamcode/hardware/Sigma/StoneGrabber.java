@@ -29,6 +29,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private AdjustableServo arm;
     private AdjustableServo wrist;
     private AdjustableServo grabber;
+    private AdjustableServo capstoneServo;
     private ElapsedTime SGTimer = new ElapsedTime();
     private double waitSec;
 
@@ -72,12 +73,15 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double LIFT_POWER_SLOW = 0.5;
     private final int LIFT_DELIVER = 1000;
 
+    private final double CAPSTONE_INIT = 0.0;
+    private final double CAPSTONE_OUT = 0.5;
 
 
     private boolean armIsDown = false;
     private boolean armIsIn = true;
     private boolean isGrabberOpened = false;
     private boolean isWristParallel = false;
+    private boolean isCapstoneServoOut = false;
     private ElapsedTime runtime = new ElapsedTime();
 
     @Override
@@ -128,6 +132,13 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         grabber.configure(configuration.getHardwareMap(), "grabber");
         configuration.register(grabber);
         grabberInit();
+
+        capstoneServo = new AdjustableServo(0,1).configureLogging(
+                logTag + ":capstoneServo", logLevel
+        );
+        capstoneServo.configure(configuration.getHardwareMap(), "capstoneServo");
+        configuration.register(capstoneServo);
+        capstoneServoInit();
 
         lifter = configuration.getHardwareMap().tryGet(DcMotor.class, "lifter");
         //if (lifter != null) lifter.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -338,6 +349,23 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 return System.currentTimeMillis() >= doneBy;
             }
         };
+    }
+
+    public void capstoneServoInit() {
+        capstoneServo.setPosition(CAPSTONE_INIT);
+        isCapstoneServoOut = false;
+    }
+
+    public void capstoneServoOut(){
+        capstoneServo.setPosition(CAPSTONE_OUT);
+        isCapstoneServoOut = true;
+    }
+
+    public void capstoneServoAuto(){
+        if(isCapstoneServoOut)
+            capstoneServoInit();
+        else
+            capstoneServoOut();
     }
 
     public void liftResetEncoder() {

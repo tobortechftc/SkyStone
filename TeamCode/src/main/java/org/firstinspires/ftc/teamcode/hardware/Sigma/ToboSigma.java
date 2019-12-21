@@ -408,6 +408,13 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             }
         }, Events.Axis.X_ONLY, Events.Side.RIGHT);
 
+        em2.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                stoneGrabber.capstoneServoAuto();
+            }
+        }, new Button[]{Button.DPAD_RIGHT});
+
     }
 
 
