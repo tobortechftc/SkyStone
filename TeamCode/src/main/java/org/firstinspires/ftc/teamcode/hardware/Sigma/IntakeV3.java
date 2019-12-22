@@ -34,7 +34,7 @@ public class IntakeV3 extends Logger<IntakeV3> implements Configurable {
     private final double INTAKE_SPEED = 0.5;
 
     private final double RIGHT_INTAKE_DROP_INIT = .985;
-    private final double RIGHT_INTAKE_DROP_DOWN = 0.14;
+    private final double RIGHT_INTAKE_DROP_DOWN = 0.12;
 
     private boolean intakeDropDown = false;
     private boolean intakeOn = false;
@@ -116,7 +116,7 @@ public class IntakeV3 extends Logger<IntakeV3> implements Configurable {
         double adjustment = Math.abs(position - rightIntakeDrop.getPosition());
         rightIntakeDrop.setPosition(position);
         // 3.3ms per degree of rotation
-        final long doneBy = System.currentTimeMillis() + Math.round(adjustment * 900);
+        final long doneBy = System.currentTimeMillis() + Math.round(adjustment * 1200);
         if (position<RIGHT_INTAKE_DROP_DOWN+0.1)
             intakeDropDown = true;
         else
