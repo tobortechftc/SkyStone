@@ -201,7 +201,95 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
         }
         return skystoneLocation;
     }
+    public ToboSigma.SkystoneLocation getSkystonePositionTF2() {
+        // The TFObjectDetector uses the camera frames from the VuforiaLocalizer, so we create that
+        // first.
 
+        int left_center_border_x = 200;
+        int center_right_border_x = 400;
+
+        int min_stone_width = 150;
+        int max_stone_width = 250;
+        int large_stone_width = 320;
+
+        logger.verbose("Start getGoldPositionTF()");
+
+        ElapsedTime elapsedTime = new ElapsedTime();
+        elapsedTime.startTime();
+
+        ToboSigma.SkystoneLocation skystoneLocation = ToboSigma.SkystoneLocation.UNKNOWN;
+        //int goldXCoord = -1;
+        //int silverXCoord = -1;
+        if(tfod==null){
+            return ToboSigma.SkystoneLocation.UNKNOWN;
+        }
+
+        while (elapsedTime.seconds() < 2 && skystoneLocation == ToboSigma.SkystoneLocation.UNKNOWN) {
+            List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+
+            if (updatedRecognitions== null ||updatedRecognitions.size() < 1) {
+                continue;
+            }
+            //logger.verbose("Starting recognitions");
+            //logger.verbose("Recognitions: %d", (int) updatedRecognitions.size());
+            int validRecognitions = 0;
+            for (Recognition recognition :
+                    updatedRecognitions) {
+                double width = recognition.getRight() - recognition.getLeft();
+                if (width < max_stone_width && width > min_stone_width) {
+                    validRecognitions++;
+                }
+            }
+            //logger.verbose("Valid recognitions: %d", validRecognitions);
+            if (validRecognitions < 1 || validRecognitions > 3) {
+                continue;
+            }
+            for (Recognition recognition :
+                    updatedRecognitions) {
+                if (recognition.getLabel() == "Stone") {
+                    continue;
+                }
+                double pos = (recognition.getRight() + recognition.getLeft()) / 2;
+                double skystone_width = recognition.getRight() - recognition.getLeft();
+                if (skystone_width>large_stone_width) { // stone detected is twice as regular, assume the skystone is on the right half
+                    pos = (pos+recognition.getRight())/2;
+                }
+                if (pos < left_center_border_x) {
+                    skystoneLocation = ToboSigma.SkystoneLocation.LEFT;
+                } else if (pos > center_right_border_x) {
+                    skystoneLocation = ToboSigma.SkystoneLocation.RIGHT;
+                } else if (pos >= left_center_border_x && pos <= center_right_border_x) {
+                    skystoneLocation = ToboSigma.SkystoneLocation.CENTER;
+                } else {
+                    skystoneLocation = ToboSigma.SkystoneLocation.UNKNOWN;
+                }
+            }
+        }
+        if (tfod != null) {
+            tfod.deactivate();
+            tfod.shutdown();
+            logger.verbose("Tfod shutdown", tfod);
+        }
+
+        switch (skystoneLocation) {
+            case LEFT:
+                logger.verbose("SampleLocation: Left");
+                break;
+            case RIGHT:
+                logger.verbose("SampleLocation: Right");
+                break;
+            case CENTER:
+                logger.verbose("SampleLocation: Center");
+                break;
+            case UNKNOWN:
+                logger.verbose("Sample Location: Unknown");
+                break;
+            default:
+                logger.verbose("Sample Location: Unknown");
+                break;
+        }
+        return skystoneLocation;
+    }
 }
 
 /**
