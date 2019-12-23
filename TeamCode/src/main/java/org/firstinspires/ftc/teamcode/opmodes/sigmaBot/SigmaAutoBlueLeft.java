@@ -18,7 +18,6 @@ import java.util.List;
  */
 
 @Autonomous(name="Sigma-Blue-Left", group="Sigma")
-@Disabled
 public class SigmaAutoBlueLeft extends LinearOpMode {
     private ToboSigma.SkystoneLocation StoneLoc;
 
@@ -66,15 +65,16 @@ public class SigmaAutoBlueLeft extends LinearOpMode {
             try {
                 boolean isBlue = true;
                 boolean isLeft = true;
+                robot.autoOtherLocation(true);
                 // put autonomous steps here
                 // step-1: detect skystone location
-                StoneLoc = ToboSigma.SkystoneLocation.LEFT; // robot.cameraStoneDetector.getSkystonePositionTF(robot_pos);
+                //StoneLoc = ToboSigma.SkystoneLocation.LEFT; // robot.cameraStoneDetector.getSkystonePositionTF(robot_pos);
                 // telemetry.addLine(StoneLoc.toString());
                 // telemetry.update();
                 // sleep(10000); // 10 sec
 
                 // step-2: go to grab the first skystone and deliver
-                robot.getFirstSkyStone(StoneLoc, isBlue, isLeft);
+                //robot.getFirstSkyStone(StoneLoc, isBlue, isLeft);
                 int count = 1;
 
                 // step-3: grab and deliver the next skystone/stone

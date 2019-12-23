@@ -845,6 +845,147 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         }
 
     }
+
+    public int autoOtherLocation(boolean isBlue) throws InterruptedException{
+        int side = isBlue?1:-1;
+        chassis.driveStraightAutoRunToPosition(auto_chassis_power_slow, 4, 0,1000);
+        chassis.driveStraightAutoRunToPosition(auto_chassis_power,115,90*side,1000);
+        SkystoneLocation StoneLoc = cameraStoneDetector.getSkystonePositionTF2();
+
+            //=================================Parallelized region=======================================
+            stoneGrabber.armOutCombo();
+            chassis.driveStraightAutoRunToPosition(.4, 46, 0, 10000);
+            while (!TaskManager.isComplete("Arm Out Combo")) {
+                TaskManager.processTasks();
+            }
+            //===========================================================================================
+            stoneGrabber.grabberOpen();
+            // go to stones
+            foundationHook.hookUp();
+
+            chassis.rotateTo(.2, 0);
+            double dist = chassis.getDistance(SwerveChassis.Direction.FRONT) - 14;
+            if (StoneLoc != SkystoneLocation.UNKNOWN)
+                dist -= 2;
+
+            if (dist > 20) dist = 20;
+
+            chassis.driveStraightAutoRunToPosition(.3, dist, 0, 1000);
+
+            if (StoneLoc == SkystoneLocation.UNKNOWN) { // use color sensor to detect the skystone
+                chassis.rotateTo(.2, 0);
+                core.yield_for(0.2);
+                StoneLoc = chassis.skyStoneLocation(isBlue); // using color sensors need to be close enough to the stones
+                chassis.driveStraightAutoRunToPosition(auto_chassis_power_slow, -2, 0, 1000);
+            }
+
+//        telemetry.addData("skeystone=","%s",skyStonePosition.toString());
+//        telemetry.update();
+//        core.yield_for(5);
+
+            if (!isBlue) { // Red side
+                if ((StoneLoc == SkystoneLocation.RIGHT) || StoneLoc == SkystoneLocation.UNKNOWN) {
+                    chassis.driveStraightAutoRunToPosition(auto_chassis_power_slow, 13, 90 * side, 3000);  // test to get exact numbers
+                } else {
+
+                }
+            } else { // Blue side
+                if (StoneLoc == ToboSigma.SkystoneLocation.LEFT || StoneLoc == SkystoneLocation.UNKNOWN) {
+                    chassis.driveStraightAutoRunToPosition(auto_chassis_power_slow, 10, 90 * side, 3000);  // test to get exact numbers
+                } else {
+
+                }
+            }
+
+            //grab stone
+            if (Thread.currentThread().isInterrupted()) return 0;
+
+            stoneGrabber.grabStoneComboAuto();
+            //chassis.driveStraightAutoRunToPosition(.3, -8, 0, 1000);
+
+            int ss_pos = 1;
+            if (isBlue) {
+                if (StoneLoc == ToboSigma.SkystoneLocation.RIGHT)
+                    ss_pos = 3;
+                else if (StoneLoc == ToboSigma.SkystoneLocation.CENTER)
+                    ss_pos = 2;
+            } else { // red
+                if (StoneLoc == ToboSigma.SkystoneLocation.LEFT)
+                    ss_pos = 3;
+                else if (StoneLoc == ToboSigma.SkystoneLocation.CENTER)
+                    ss_pos = 2;
+            }
+
+
+            // go to foundation
+
+
+//=================================Parallelized region=======================================
+//        stoneGrabber.armInComboAuto(true);
+            stoneGrabber.armInCombo(true, true);
+            chassis.driveStraightAutoRunToPosition(.3, -60, 0, 1000);// get the correct number
+            chassis.rotateTo(.2, 0);
+            if (ss_pos == 1) {
+                long iniTime = System.currentTimeMillis();
+                while (System.currentTimeMillis() - iniTime < 250) {
+                    TaskManager.processTasks();
+                }
+            } else if (ss_pos == 2) {
+                long iniTime = System.currentTimeMillis();
+                while (System.currentTimeMillis() - iniTime < 150) {
+                    TaskManager.processTasks();
+                }
+            }
+            chassis.driveStraightAutoRunToPosition(.6, 150 + 20 * ss_pos+60, -90 * side, 15000);
+            while (!TaskManager.isComplete("Arm In Combo")) {
+                TaskManager.processTasks();
+            }
+
+
+            chassis.driveStraightAutoRunToPosition(auto_chassis_power,40,0,4000);
+//===========================================================================================
+            //align
+
+            chassis.rotateTo(.2, 0);
+
+            dist = chassis.getDistance(isBlue ? SwerveChassis.Direction.LEFT : SwerveChassis.Direction.RIGHT);
+            dist = dist > 40 ? 35 : dist;
+            if (dist - 30>5){
+                chassis.driveStraightAutoRunToPosition(auto_chassis_power_slow, dist - 30, -90 * side, 15000);
+            }
+            if (Thread.currentThread().isInterrupted()) return 0;
+
+//=================================Parallelized region=======================================
+
+            return ss_pos;
+        //}
+        /*
+
+        if(isBlue)
+        {
+            if(StoneLoc == SkystoneLocation.LEFT)
+            {
+                chassis.driveStraightAutoRunToPosition(.4, 10,90*side,1000);
+            }
+            else
+            {
+                chassis.driveStraightAutoRunToPosition(.4,10,90*side,1000);
+            }
+        }
+        else
+        {
+            if(StoneLoc == SkystoneLocation.RIGHT)
+            {
+
+            }
+            else
+            {
+
+            }
+        }*/
+
+    }
+
     public void rotateFoundation(boolean isBlue)throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) return;
         int side = isBlue ? 1 : -1;
