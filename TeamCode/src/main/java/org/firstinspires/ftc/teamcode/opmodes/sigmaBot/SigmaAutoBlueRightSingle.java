@@ -85,7 +85,7 @@ public class SigmaAutoBlueRightSingle extends LinearOpMode {
             //count++;
             // }
             //robot.grabAndPark(true);
-            robot.rotateFoundation(isBlue);
+            robot.rotateFoundation(isBlue, true);
             robot.parkAfterRotate(isBlue);
             // move foundation
             // park

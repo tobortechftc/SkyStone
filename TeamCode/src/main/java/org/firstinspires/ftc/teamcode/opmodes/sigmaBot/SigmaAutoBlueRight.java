@@ -70,7 +70,7 @@ public class SigmaAutoBlueRight extends LinearOpMode {
                 boolean isLeft = false;
                 StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF(false);
                 int ss_pos = robot.getFirstSkyStone(StoneLoc, isBlue, isLeft);
-                robot.rotateFoundation(isBlue);
+                robot.rotateFoundation(isBlue, true);
                 int count = 1;
                 if (getRuntime() < 29000){
                     count++;
