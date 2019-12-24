@@ -66,7 +66,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final int LIFT_SAFE_SWING_AUTO = 1000;
     private final int LIFT_SAFE_BRIDGE = 1086;
     private final int LIFT_SAFE_SWING_IN = 1200;
-    private final int LIFT_SAFE_SWING = 950;
+    private final int LIFT_SAFE_SWING = 1000;
     private final int LIFT_UP_FOR_CAP = 1300;
     private final int LIFT_UP_FINAL_CAP = 1715;
     //private final double LIFT_POWER = 0.5;   // V5.2
@@ -143,7 +143,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
 
         lifter = configuration.getHardwareMap().tryGet(DcMotor.class, "lifter");
         //if (lifter != null) lifter.setDirection(DcMotorSimple.Direction.REVERSE);
-        if (lifter != null) lifter.setDirection(DcMotorSimple.Direction.FORWARD);
+        if (lifter != null) lifter.setDirection(DcMotorSimple.Direction.REVERSE);
         lifter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         lifter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
