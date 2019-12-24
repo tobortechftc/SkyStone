@@ -563,6 +563,25 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             }
         }, Events.Axis.X_ONLY, Events.Side.LEFT);
     }
+    @MenuEntry(label = "Wheel Intake", group = "Test Chassis")
+    public void testWheelIntake(EventManager em) {
+        telemetry.addLine().addData(" < (LS) >", "Power").setRetained(true);
+        chassis.setupTelemetry(telemetry);
+        em.updateTelemetry(telemetry, 100);
+        em.onStick(new Events.Listener() {
+            @Override
+            public void stickMoved(EventManager source, Events.Side side, float currentX, float changeX,
+                                   float currentY, float changeY) throws InterruptedException {
+                intake.intakeDropAuto();
+                chassis.driveStraightAutoRunToPosition(auto_chassis_power, 0, -40, 2000);
+                chassis.rotateTo(.5, 45);
+                chassis.driveStraightAutoRunToPosition(auto_chassis_power, 0, -20, 2000);
+                intake.intakeIn(true);
+                chassis.driveStraightAutoRunToPosition(auto_chassis_power, 0, 20, 2000);
+
+            }
+        }, Events.Axis.X_ONLY, Events.Side.LEFT);
+    }
 
     /**
      * Returns angle (-180 to 180 degrees) between positive Y axis
