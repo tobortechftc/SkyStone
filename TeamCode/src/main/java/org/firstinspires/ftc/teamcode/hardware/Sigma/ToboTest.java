@@ -58,11 +58,11 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
 //        }
         info("RoboSigma configure() after init cameraStoneDetector (run time = %.2f sec)", (runtime.seconds() - ini_time));
 
-        // foundationHook = new FoundationHook(this.core).configureLogging("FoundationHook", logLevel);
-        // foundationHook.configure(configuration, false);
+        foundationHook = new FoundationHook(this.core).configureLogging("FoundationHook", logLevel);
+        foundationHook.configure(configuration, false);
 
-        stoneGrabber = new StoneGrabber(this.core).configureLogging("StoneGrabber", logLevel);
-        stoneGrabber.configure(configuration, false);
+        //stoneGrabber = new StoneGrabber(this.core).configureLogging("StoneGrabber", logLevel);
+        //stoneGrabber.configure(configuration, false);
 
          intake = new IntakeV3(this.core).configureLogging("intakeV3", logLevel);
          intake.configure(configuration, false);

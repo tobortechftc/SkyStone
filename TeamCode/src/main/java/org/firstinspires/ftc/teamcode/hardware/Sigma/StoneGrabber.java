@@ -34,16 +34,16 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private double waitSec;
 
 
-    private final double ARM_UP = 0.1;
-    private final double ARM_DOWN = 0.82; // right position to grab stone inside
-    private final double ARM_DOWN_SAFE = 0.9;
-    private final double ARM_INITIAL = 0.86;
-    private final double ARM_IN = 0.67;
-    private final double ARM_LOW = 0.6;
-    private final double ARM_OUT = 0.53;
-    private final double ARM_CAPSTONE = 0.96;
-    private final double ARM_DELIVER = 0.3;
-    private final double ARM_MIN = 0.28;
+    private final double ARM_UP = 0.06; // 0.1;
+    private final double ARM_DOWN = 0.79; // 0.82; // right position to grab stone inside
+    private final double ARM_DOWN_SAFE = 0.86; // 0.9;
+    private final double ARM_INITIAL = 0.82; // 0.86;
+    private final double ARM_IN = 0.63; // 0.67;
+    private final double ARM_LOW = 0.56; // 0.6;
+    private final double ARM_OUT = 0.49; // 0.53;
+    private final double ARM_CAPSTONE = 0.92; // 0.96;
+    private final double ARM_DELIVER = 0.26; // 0.3;
+    private final double ARM_MIN = 0.24; // 0.28;
     private final double ARM_INC_UNIT = 0.02;
 
     private final double WRIST_PARALLEL = 0.07;
