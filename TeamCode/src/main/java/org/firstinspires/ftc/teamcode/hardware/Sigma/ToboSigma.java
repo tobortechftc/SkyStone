@@ -338,6 +338,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (source.isPressed(Button.LEFT_BUMPER))
                     stoneGrabber.armInReadyGrabCombo();
+                else if(source.isPressed(Button.X))
+                    stoneGrabber.releaseStoneCombo();
             }
         }, new Button[]{Button.Y});
 

@@ -544,6 +544,33 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             }, taskName);
         }
     }
+    public void releaseStoneCombo() {
+        final String taskName = "Release Stone Combo";
+        if (!TaskManager.isComplete(taskName)) return;
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                return moveGrabber(false);
+            }
+        }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+
+                int cur_pos = lifter.getCurrentPosition();
+                int target_pos = cur_pos + 850;
+                if(target_pos > LIFT_MAX)
+                    target_pos = LIFT_MAX;
+                liftToPosition(target_pos);
+
+                return new Progress() {
+                    @Override
+                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < LIFT_RUN_TO_POSITION_OFFSET;
+                    }
+                };
+            }
+        }, taskName);
+    }
     public void armInComboAuto(final boolean wristParallel) {
         if (currentThread().isInterrupted()) return;
         armInCombo(wristParallel, true);
