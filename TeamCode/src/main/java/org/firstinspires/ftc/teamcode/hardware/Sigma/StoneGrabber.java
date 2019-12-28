@@ -35,13 +35,14 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
 
 
     private final double ARM_UP = 0.06; // 0.1;
-    private final double ARM_DOWN = 0.79; // 0.82; // right position to grab stone inside
+    private final double ARM_DOWN_FOR_CAP = 0.8;
+    private final double ARM_DOWN = 0.82; // 0.82; // right position to grab stone inside
     private final double ARM_DOWN_SAFE = 0.86; // 0.9;
     private final double ARM_INITIAL = 0.82; // 0.86;
     private final double ARM_IN = 0.63; // 0.67;
     private final double ARM_LOW = 0.56; // 0.6;
-    private final double ARM_OUT = 0.49; // 0.53;
-    private final double ARM_CAPSTONE = 0.92; // 0.96;
+    private final double ARM_OUT = 0.46; // 0.53;
+    private final double ARM_CAPSTONE = 0.96; // 0.96;
     private final double ARM_DELIVER = 0.26; // 0.3;
     private final double ARM_MIN = 0.24; // 0.28;
     private final double ARM_INC_UNIT = 0.02;
@@ -52,7 +53,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double WRIST_INC_UNIT = 0.01;
 
     private final double GRABBER_INIT = 0.25;
-    private final double GRABBER_OPEN_IN = 0.54;
+    private final double GRABBER_OPEN_IN = 0.5;
     private final double GRABBER_OPEN = 0.86;
     private final double GRABBER_CLOSE = 0.25;
 
@@ -67,8 +68,9 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final int LIFT_SAFE_BRIDGE = 1086;
     private final int LIFT_SAFE_SWING_IN = 1200;
     private final int LIFT_SAFE_SWING = 1000;
+    private final int LIFT_UP_FOR_REGRAB = 300;
     private final int LIFT_UP_FOR_CAP = 1300;
-    private final int LIFT_UP_FINAL_CAP = 1715;
+    private final int LIFT_UP_FINAL_CAP = 1800;
     //private final double LIFT_POWER = 0.5;   // V5.2
     private final double LIFT_POWER = 1.0;  // V5.3
     private final double LIFT_POWER_SLOW = 0.5;
@@ -500,9 +502,13 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             @Override
             public Progress start() {
                 if (isWristParallel && isGrabberOpened) grabberClose();
-                if (arm.getPosition()>ARM_LOW) // arm inside the robot
-                    liftToPosition(LIFT_SAFE_SWING);
-                else
+                if (arm.getPosition()>ARM_LOW) {
+                    // arm inside the robot
+                    int cur_pos = lifter.getCurrentPosition();
+                    if (cur_pos<LIFT_SAFE_SWING) {
+                        liftToPosition(LIFT_SAFE_SWING);
+                    }
+                } else
                     liftToPosition(LIFT_GRAB);
 
                 return new Progress() {
@@ -710,12 +716,11 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     public void grabCapStoneCombo() {
         final String taskName = "Grab Cap Stone Combo";
         if (!TaskManager.isComplete(taskName)) return;
-
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
-                liftToPosition(LIFT_UP_FOR_CAP);
-                capstoneServoAuto();
+                grabberOpen();
+                liftToPosition(LIFT_UP_FOR_REGRAB);
                 return new Progress() {
                     @Override
                     public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 40;
@@ -726,7 +731,20 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
-                return moveWrist(false);
+                return moveArm(ARM_DOWN_FOR_CAP);
+            }
+        }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                return moveGrabber(true);
+            }
+        }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                capstoneServoAuto();
+                return moveArm(ARM_CAPSTONE);
             }
         }, taskName);
         TaskManager.add(new Task() {
@@ -740,13 +758,6 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 };
             }
         }, taskName);
-        TaskManager.add(new Task() {
-            @Override
-            public Progress start() {
-                return moveWrist(true);
-            }
-        }, taskName);
-
     }
 
     public void grabStoneInsideCombo() {

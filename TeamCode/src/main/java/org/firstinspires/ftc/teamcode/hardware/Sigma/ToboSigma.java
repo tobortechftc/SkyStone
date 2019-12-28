@@ -414,7 +414,14 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 stoneGrabber.capstoneServoAuto();
             }
         }, new Button[]{Button.DPAD_RIGHT});
-
+        em2.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.RIGHT_BUMPER)) {
+                    stoneGrabber.grabCapStoneCombo();
+                }
+            }
+        }, new Button[]{Button.DPAD_UP});
     }
 
 
