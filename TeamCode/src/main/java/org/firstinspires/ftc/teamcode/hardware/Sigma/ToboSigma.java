@@ -306,7 +306,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (source.isPressed(Button.LEFT_BUMPER))
-                    stoneGrabber.armOutCombo();
+                    stoneGrabber.armOutCombo(0,false);
                 else if (!source.isPressed(Button.START))
                     stoneGrabber.wristAuto();
             }
@@ -357,7 +357,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (source.isPressed(Button.RIGHT_BUMPER))
-                    stoneGrabber.armOutCombo(1.0);
+                    stoneGrabber.armOutCombo(1.0,true);
                 else if (source.isPressed(Button.LEFT_BUMPER))
                     stoneGrabber.armOutCombo();
                 else if (!source.isPressed(Button.START))
@@ -757,7 +757,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         // stoneGrabber.armInComboAuto(false);// ASK CHARLIE
         // chassis.driveStraightAutoRunToPosition(.6, 55, 0, 1500);
         chassis.rotateTo(.2, 0);
-        stoneGrabber.armOutCombo(2.0);
+        stoneGrabber.armOutCombo(2.0,true);
         chassis.driveStraightAutoRunToPosition(auto_chassis_power, 210, 90 * side, 5000);
         stoneGrabber.grabberOpen();
         chassis.rotateTo(.2, 0);
@@ -1067,7 +1067,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         // stoneGrabber.armInComboAuto(false);// ASK CHARLIE
         // chassis.driveStraightAutoRunToPosition(.6, 55, 0, 1500);
         //chassis.rotateTo(.2, 0);
-        stoneGrabber.armOutCombo(1.3);
+        stoneGrabber.armOutCombo(1.3, true);
         chassis.driveStraightAutoRunToPosition(auto_chassis_power, 210, 90 * side, 5000);
         stoneGrabber.grabberOpen();
         chassis.rotateTo(.2, 0);

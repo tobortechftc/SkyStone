@@ -42,9 +42,10 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double ARM_IN = 0.63; // 0.67;
     private final double ARM_LOW = 0.56; // 0.6;
     private final double ARM_OUT = 0.34; // 0.53;
+    private final double ARM_OUT_AUTO = 0.45;
     private final double ARM_CAPSTONE = 0.8; // 0.96;
     private final double ARM_DELIVER = 0.26; // 0.3;
-    private final double ARM_MIN = 0.24; // 0.28;
+    private final double ARM_MIN = 0.1; // 0.28;
     private final double ARM_INC_UNIT = 0.02;
 
     private final double WRIST_PARALLEL = 0.04;
@@ -489,9 +490,9 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         }, taskName);
     }
     public void armOutCombo(){
-        armOutCombo(0);
+        armOutCombo(0, true);
     }
-    public void armOutCombo(double delaySec) {
+    public void armOutCombo(double delaySec, boolean auto) {
         final String taskName = "Arm Out Combo";
         if (!TaskManager.isComplete(taskName)) return;
         boolean grabIsOpened = isGrabberOpened;
@@ -535,12 +536,21 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 };
             }
         }, taskName);
-        TaskManager.add(new Task() {
-            @Override
-            public Progress start() {
-                return moveArm(ARM_OUT);
-            }
-        }, taskName);
+        if (auto) {
+            TaskManager.add(new Task() {
+                @Override
+                public Progress start() {
+                    return moveArm(ARM_OUT_AUTO);
+                }
+            }, taskName);
+        } else {
+            TaskManager.add(new Task() {
+                @Override
+                public Progress start() {
+                    return moveArm(ARM_OUT);
+                }
+            }, taskName);
+        }
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
@@ -728,12 +738,12 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 };
             }
         }, taskName);
-        TaskManager.add(new Task() {
-            @Override
-            public Progress start() {
-                return moveArm(ARM_OUT);
-            }
-        }, taskName);
+//        TaskManager.add(new Task() {
+//            @Override
+//            public Progress start() {
+//                return moveArm(ARM_OUT);
+//            }
+//        }, taskName);
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
@@ -925,18 +935,25 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
-                return moveArm(ARM_DOWN);
+                grabberClose();
+                return moveArm(ARM_IN);
+            }
+        }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                final Progress wristProgress = moveWrist(true);
+                return new Progress() {
+                    @Override
+                    public boolean isDone() { return wristProgress.isDone();}
+                };
             }
         }, taskName);
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
                 grabberOpen();
-                final Progress wristProgress = moveWrist(true);
-                return new Progress() {
-                    @Override
-                    public boolean isDone() { return wristProgress.isDone();}
-                };
+                return moveArm(ARM_DOWN);
             }
         }, taskName);
         if (!armWasIn) {
