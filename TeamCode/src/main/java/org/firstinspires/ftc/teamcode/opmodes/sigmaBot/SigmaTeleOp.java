@@ -42,7 +42,7 @@ public class SigmaTeleOp extends LinearOpMode implements YieldHandler {
             // configure robot and reset all hardware
             robot.configure(configuration, telemetry, ToboSigma.AutoTeamColor.NOT_AUTO);
             configuration.apply();
-            robot.reset(false);
+            robot.reset(false, false);
 
             eventManager1 = new EventManager(gamepad1, true);
             eventManager2 = new EventManager(gamepad2, true);

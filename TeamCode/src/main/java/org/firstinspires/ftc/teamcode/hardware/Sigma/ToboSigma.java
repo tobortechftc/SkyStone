@@ -87,6 +87,10 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
     @Override
     public void reset(boolean auto) {
+        reset(auto, false);
+    }
+
+    public void reset(boolean auto, boolean armOut) {
         if (Thread.currentThread().isInterrupted()) return;
         if (chassis != null) {
             chassis.reset();
@@ -101,7 +105,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             foundationHook.reset(auto);
         }
         if (stoneGrabber != null)
-            stoneGrabber.reset(auto);
+            stoneGrabber.reset(auto, armOut);
 
         if (intake != null) {
             intake.reset(auto);
@@ -389,7 +393,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                     if (source.getStick(Events.Side.RIGHT, Events.Axis.Y_ONLY) > 0)
                         stoneGrabber.liftUp(source.isPressed(Button.BACK), source.isPressed(Button.RIGHT_BUMPER));
                     else
-                        stoneGrabber.liftDown(source.isPressed(Button.BACK));
+                        stoneGrabber.liftDown(source.isPressed(Button.BACK), source.isPressed(Button.RIGHT_BUMPER));
                 } else
                     stoneGrabber.liftStop();
             }
@@ -413,9 +417,21 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         em2.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
-                stoneGrabber.capstoneServoAuto();
+                if (source.isPressed(Button.RIGHT_BUMPER))
+                    stoneGrabber.capstoneLeftInc();
+                else
+                    stoneGrabber.capstoneServoAuto();
             }
         }, new Button[]{Button.DPAD_RIGHT});
+
+        em2.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.RIGHT_BUMPER))
+                    stoneGrabber.capstoneRightInc();
+            }
+        }, new Button[]{Button.DPAD_LEFT});
+
         em2.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {

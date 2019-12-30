@@ -332,7 +332,7 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (!source.isPressed(Button.LEFT_BUMPER))
-                    stoneGrabber.liftDown(source.isPressed(Button.BACK));
+                    stoneGrabber.liftDown(source.isPressed(Button.BACK), source.isPressed(Button.RIGHT_BUMPER));
             }
         }, new Button[]{Button.A});
         em.onButtonUp(new Events.Listener() {
