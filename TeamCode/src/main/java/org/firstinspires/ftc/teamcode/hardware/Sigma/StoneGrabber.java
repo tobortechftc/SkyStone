@@ -42,7 +42,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double ARM_IN = 0.63; // 0.67;
     private final double ARM_LOW = 0.56; // 0.6;
     private final double ARM_OUT = 0.34; // 0.53;
-    private final double ARM_OUT_AUTO = 0.45;
+    private final double ARM_OUT_AUTO = 0.41;
     private final double ARM_CAPSTONE = 0.8; // 0.96;
     private final double ARM_DELIVER = 0.26; // 0.3;
     private final double ARM_MIN = 0.1; // 0.28;
@@ -733,7 +733,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 liftToPosition(LIFT_DOWN_GRAB, false);
                 return new Progress() {
                     @Override
-                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 30;
+                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 40;
                     }
                 };
             }
@@ -1005,6 +1005,17 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             }
         }, taskName);
     }
+    public void lifterDownCombo() {
+        final String taskName = "Lifter Down Combo";
+        if (!TaskManager.isComplete(taskName)) return;
+
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                return liftToPosition(LIFT_DOWN, false);
+            }
+        }, taskName);
+    }
     /*
      * Set up telemetry lines for chassis metrics
      * Shows current motor power, orientation sensors,
@@ -1053,6 +1064,63 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             });
         }
 
+    }
+    public void grabStoneComboHigher(){
+        final String taskName = "Grab Stone Combo";
+        if (!TaskManager.isComplete(taskName)) return;
+
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                liftToPosition(LIFT_DOWN_GRAB,true);
+                return new Progress() {
+                    @Override
+                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 30;
+                    }
+                };
+            }
+        }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                return moveArm(ARM_OUT_AUTO);
+            }
+        }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                final Progress grabberProgress = moveGrabber(true);
+                return new Progress() {
+                    @Override
+                    public boolean isDone() { return grabberProgress.isDone();}
+                };
+            }
+        }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                grabberClose();
+                arm.setPosition(ARM_DELIVER);
+                liftToPosition(LIFT_DOWN+500,false);
+                return new Progress() {
+                    @Override
+                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < LIFT_RUN_TO_POSITION_OFFSET;
+                    }
+                };
+            }
+        }, taskName);
+    }
+
+    public void grabStoneComboAutoHigher() {
+        if (currentThread().isInterrupted()) return;
+        grabStoneComboHigher();
+        while (!TaskManager.isComplete("Grab Stone Combo")) {
+            TaskManager.processTasks();
+        }
+    }
+    public void deliverAndArmIn(){
+        deliverStoneCombo(true);
+        armInCombo(true, true);
     }
 
 }
