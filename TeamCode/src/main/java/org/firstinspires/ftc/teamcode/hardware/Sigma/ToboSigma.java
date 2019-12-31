@@ -607,6 +607,57 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
             }
         }, Events.Axis.X_ONLY, Events.Side.LEFT);
+
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.Y) && source.isPressed(Button.BACK)) {
+                    // intake drop In/out
+                    if (intake != null) intake.intakeDropAuto();
+                } else if (source.isPressed(Button.LEFT_BUMPER)) {
+                    if (stoneGrabber.isArmInside())
+                        stoneGrabber.grabStoneInsideCombo();
+                    else
+                        stoneGrabber.grabStoneCombo();
+                } else if (source.isPressed(Button.BACK)) // reset lifter encoder to 0
+                    stoneGrabber.liftResetEncoder();
+            }
+        }, new Button[]{Button.A});
+
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.LEFT_BUMPER))
+                    stoneGrabber.armInReadyGrabCombo();
+                else if(source.isPressed(Button.X))
+                    stoneGrabber.releaseStoneCombo();
+                else if (source.isPressed(Button.BACK)) {
+                    if (stoneGrabber != null) stoneGrabber.deliverStoneThrowCombo();
+                }
+            }
+        }, new Button[]{Button.Y});
+
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.LEFT_BUMPER))
+                    stoneGrabber.armInCombo(!source.isPressed(Button.BACK), false);
+                else
+                    stoneGrabber.grabberAuto();
+            }
+        }, new Button[]{Button.X});
+
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.RIGHT_BUMPER))
+                    stoneGrabber.armOutCombo(1.0,true);
+                else if (source.isPressed(Button.LEFT_BUMPER))
+                    stoneGrabber.armOutCombo();
+                else if (!source.isPressed(Button.START))
+                    stoneGrabber.wristAuto();
+            }
+        }, new Button[]{Button.B});
     }
 
     /**

@@ -1086,7 +1086,6 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             TaskManager.add(new Task() {
                 @Override
                 public Progress start() {
-                    moveArm(ARM_MIN);
                     grabberOpen();
                     return liftToPosition(LIFT_SAFE_SWING, false);
                 }
@@ -1108,11 +1107,16 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             TaskManager.add(new Task() {
                 @Override
                 public Progress start() {
-                    moveArm(ARM_DELIVER_THROW);
-                    grabberOpen();
-                    return liftToPosition(LIFT_SAFE_SWING, false);
+                    return liftToPosition(LIFT_SAFE_SWING-400, false);
                 }
             }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                grabberOpen();
+                return moveArm(ARM_DELIVER_THROW);
+            }
+        }, taskName);
     }
 
     public void lifterDownCombo() {
