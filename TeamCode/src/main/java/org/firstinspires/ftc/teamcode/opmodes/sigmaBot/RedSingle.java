@@ -65,27 +65,13 @@ public class RedSingle extends LinearOpMode{
         if (opModeIsActive()) {
             try {
                 boolean isBlue = false;
-                // put autonomous steps here
-                // step-1: detect skystone location
-                // StoneLoc = robot.chassis.skyStoneLocation(isBlue);
                 StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF(true);
-                 telemetry.addLine(StoneLoc.toString());
-                telemetry.update();
-                sleep(10000); // 10 sec
-
-                // step-2: go to grab the first skystone and deliver
-                robot.getFirstSkyStoneDefense(StoneLoc, isBlue);
-                int count = 1;
-
-                // step-3: grab and deliver the next skystone/stone
-               /* if (getRuntime() < 25000){
-                    count++;
-                    robot.getAnotherSkyStone(StoneLoc, count, isBlue);
-                }*/
+                //telemetry.addLine(StoneLoc.toString());
+                //telemetry.update();
+                //sleep(10000); // 10 sec
+                robot.getFirstSkyStoneDefense(StoneLoc, isBlue, true);
                 robot.rotateFoundationNew(isBlue);
                 robot.parkAfterRotateNew(isBlue);
-                // move foundation
-                // park
 
             } catch (Exception E) {
                 telemetry.addData("Error in event handler", E.getMessage());

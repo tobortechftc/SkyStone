@@ -64,10 +64,15 @@ public class RedTwoSS extends LinearOpMode {
             try {
                 boolean isBlue = false;
                 StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF(true);
-                int ss_pos = robot.getFirstSkyStoneDefense(StoneLoc, isBlue);
+                int ss_pos = robot.getFirstSkyStoneDefense(StoneLoc, isBlue, false);
                 robot.rotateFoundationNew(isBlue);
                 int count = 2;
-                robot.getAnotherSkyStoneNew(ss_pos, count, isBlue);
+                if (getRuntime() < 20000){//may be too large - TYPICALLY AROUND 17-18
+                    robot.getAnotherSkyStoneNew(ss_pos, count, isBlue);
+                } else{
+                    robot.parkAfterRotateNew(isBlue);
+                }
+
             } catch (Exception E) {
                 telemetry.addData("Error in event handler", E.getMessage());
                 handleException(E);
