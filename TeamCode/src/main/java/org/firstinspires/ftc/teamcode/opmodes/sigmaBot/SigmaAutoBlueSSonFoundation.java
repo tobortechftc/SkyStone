@@ -18,8 +18,8 @@ import java.util.List;
  * Created by 28761 on 6/29/2019.
  */
 
-@Autonomous(name = "Sigma-Blue-Stone Only", group = "Sigma")
-public class SigmaAutoBlueStoneOnly extends LinearOpMode {
+@Autonomous(name = "Sigma-Blue-Stone-on-Foundation", group = "Sigma")
+public class SigmaAutoBlueSSonFoundation extends LinearOpMode {
     private ToboSigma.SkystoneLocation StoneLoc;
 
     protected static int LOG_LEVEL = Log.INFO;
@@ -72,25 +72,20 @@ public class SigmaAutoBlueStoneOnly extends LinearOpMode {
             // put autonomous steps here
             // step-1: detect skystone location
             StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF(false);
-//            sysout(StoneLoc.toString(), 2000);
+
             // step-2: go to grab the first skystone and deliver
             robot.approachStone(StoneLoc, isBlue, isLeft);
-//            sysout(String.format("first stone X: %f", nextStoneX(StoneLoc, 0)), 2000);
-            double dumpping = 120;
-            robot.oneMoreStone(true, 0.0, nextStoneX(StoneLoc, 0), dumpping, getStoneId(StoneLoc, 0));
-
-            // step-3: repetitively grab and deliver the next skystone/stone
-
-            int count = 1;
-            while (getRuntime() < 25000) {
-//                sysout(String.format("%dth stone X: %f", count,nextStoneX(StoneLoc, count)), 2000);
-                robot.oneMoreStone(false, dumpping + (count-1) * 10, nextStoneX(StoneLoc, count), dumpping + (count * 10), getStoneId(StoneLoc, count));
-                count++;
-            }
+            robot.chassis.driveStraightAutoRunToPosition(0.5, Math.abs(nextStoneX(StoneLoc, 0)), nextStoneX(StoneLoc, 0) > 0 ? -90 : +90, 5000);
+            double currentDistance = robot.grabStoneAndDeliverOnFoundation(nextStoneX(StoneLoc, 0),true);
+            //go to second sky stone
+            robot.chassis.driveStraightAutoRunToPositionNoIMU(0.70,nextStoneX(StoneLoc, 1)-currentDistance-7,0,5000);
+            robot.chassis.rotateTo(0.5,0);
+            robot.stoneGrabber.grabberOpen();
+            robot.stoneGrabber.armOutComboAuto();
+            robot.grabStoneAndDeliverOnFoundation(nextStoneX(StoneLoc, 1),false);
 
             // park
-            robot.chassis.driveStraightAutoRunToPosition(0.4, 20, +90, 1000);
-
+            robot.chassis.driveStraightAutoRunToPosition(0.7,-40,0,3000);
 
         } catch (Exception E) {
             telemetry.addData("Error in event handler", E.getMessage());
@@ -124,12 +119,6 @@ public class SigmaAutoBlueStoneOnly extends LinearOpMode {
         else
             stoneID = CENTER_ORDER[count];
         return (stoneID - 3) * 20.32 - 8.0;
-    }
-
-    void sysout(String str, long time) {
-        telemetry.addLine(str);
-        telemetry.update();
-        sleep(time);
     }
 
     protected void handleException(Throwable T) {
