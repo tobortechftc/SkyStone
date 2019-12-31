@@ -46,6 +46,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double ARM_OUT_AUTO = 0.41;
     private final double ARM_CAPSTONE = 0.78;
     private final double ARM_DELIVER = 0.26;
+    private final double ARM_DELIVER_THROW = 0.15;
     private final double ARM_MIN = 0.1;
     private final double ARM_INC_UNIT = 0.02;
 
@@ -1081,13 +1082,39 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 }
             }, taskName);
         }
-        TaskManager.add(new Task() {
-            @Override
-            public Progress start() {
-                grabberOpen(); return liftToPosition(LIFT_SAFE_SWING, false);
-            }
-        }, taskName);
+        if (auto) {
+            TaskManager.add(new Task() {
+                @Override
+                public Progress start() {
+                    moveArm(ARM_MIN);
+                    grabberOpen();
+                    return liftToPosition(LIFT_SAFE_SWING, false);
+                }
+            }, taskName);
+        }
     }
+
+    public void deliverStoneThrowCombo() {
+        final String taskName = "Deliver Stone Throw Combo";
+        if (!TaskManager.isComplete(taskName)) return;
+
+            TaskManager.add(new Task() {
+                @Override
+                public Progress start() {
+                    return moveArm(ARM_DELIVER);
+                }
+            }, taskName);
+
+            TaskManager.add(new Task() {
+                @Override
+                public Progress start() {
+                    moveArm(ARM_DELIVER_THROW);
+                    grabberOpen();
+                    return liftToPosition(LIFT_SAFE_SWING, false);
+                }
+            }, taskName);
+    }
+
     public void lifterDownCombo() {
         final String taskName = "Lifter Down Combo";
         if (!TaskManager.isComplete(taskName)) return;
