@@ -1361,22 +1361,30 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
     }
 
-    void autoFoundationOnly(boolean isBlue, boolean laneOne, boolean offensive) throws InterruptedException {
-        int side = isBlue ? 1 : -1;
-        chassis.driveStraightAutoRunToPosition(auto_chassis_power, 113, 0, 1500);
-        if (offensive) {
+    public void autoFoundationOnly(boolean isBlue, boolean laneFront, boolean offensive) throws InterruptedException
+    {
+        int side = isBlue?1:-1;
+        chassis.driveStraightAutoRunToPosition(auto_chassis_power, 70, 0, 1500);
+        if(offensive)
+        {
             foundationHook.hookDown();
-            chassis.driveStraightAutoRunToPosition(auto_chassis_power, 147, 0, 1500);
-            chassis.driveStraightAutoRunToPosition(auto_chassis_power, -147, 0, 1500);
+            chassis.driveStraightAutoRunToPosition(auto_chassis_power,111,0,1500);
+            chassis.driveStraightAutoRunToPosition(auto_chassis_power,-111,0,1500);
         }
         rotateFoundation(isBlue, false);
-        if (laneOne) {
-
-        } else {
-
+        double dist = chassis.getDistance(isBlue?SwerveChassis.Direction.LEFT: SwerveChassis.Direction.RIGHT);
+        if(laneFront)
+        {
+            chassis.driveStraightAutoRunToPosition(auto_chassis_power,60-dist,90*side,1500);
         }
+        else
+        {
+            chassis.driveStraightAutoRunToPosition(auto_chassis_power,10-dist,90*side,1500);
+        }
+        chassis.driveStraightAutoRunToPosition(.4, -85, 0, 1500);
     }
-   public void getFoundation(boolean isBlue, boolean laneTwo) throws InterruptedException {
+
+    public void getFoundation(boolean isBlue, boolean laneTwo) throws InterruptedException {
         int side = isBlue ? 1 : -1;
         chassis.driveStraightAutoRunToPosition(auto_chassis_power, 70, 0, 1500);
         rotateFoundationOnly(isBlue, laneTwo);
