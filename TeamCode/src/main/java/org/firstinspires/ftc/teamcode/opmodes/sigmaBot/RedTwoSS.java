@@ -8,8 +8,6 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.hardware.Sigma.ToboSigma;
 import org.firstinspires.ftc.teamcode.support.Logger;
-import org.firstinspires.ftc.teamcode.support.OpModeTerminationException;
-import org.firstinspires.ftc.teamcode.support.YieldHandler;
 import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
 
 import java.util.List;
@@ -17,9 +15,8 @@ import java.util.List;
 /**
  * Created by 28761 on 6/29/2019.
  */
-
-@Autonomous(name = "Sigma-Blue-Right-SingleStone", group = "Sigma")
-public class SigmaAutoBlueRightSingle extends LinearOpMode {
+@Autonomous(name="Red 2SS", group="Sigma")
+public class RedTwoSS extends LinearOpMode {
     private ToboSigma.SkystoneLocation StoneLoc;
 
     protected static int LOG_LEVEL = Log.INFO;
@@ -36,7 +33,7 @@ public class SigmaAutoBlueRightSingle extends LinearOpMode {
         telemetry.update();
 
         ToboSigma robot = new ToboSigma();
-        robot.configureLogging("ToboSigma", LOG_LEVEL);
+        robot.configureLogging("ToboSigma",LOG_LEVEL);
         configuration = new Configuration(hardwareMap, robot.getName()).configureLogging("Config", LOG_LEVEL);
         log.info("RoboSigma Autonomous finished log configuration (CPU_time = %.2f sec)", getRuntime());
 
@@ -58,50 +55,31 @@ public class SigmaAutoBlueRightSingle extends LinearOpMode {
 //            updatedRecognitions = robot.cameraStoneDetector.getTfod().getUpdatedRecognitions();
 //        }
         int robot_pos = 1;
-        if (robot.intake != null)
+        if (robot.intake!=null)
             robot.intake.intakeDropInit();
         waitForStart();
         robot.runtime.reset();
         // run until the end of the match (driver presses STOP or timeout)
-        if (!opModeIsActive()) {
-            return;
+        if (opModeIsActive()) {
+            try {
+                boolean isBlue = false;
+                StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF(true);
+                int ss_pos = robot.getFirstSkyStoneDefense(StoneLoc, isBlue);
+                robot.rotateFoundationNew(isBlue);
+                int count = 2;
+                robot.getAnotherSkyStoneNew(ss_pos, count, isBlue);
+            } catch (Exception E) {
+                telemetry.addData("Error in event handler", E.getMessage());
+                handleException(E);
+                Thread.sleep(5000);
+            }
         }
-        try {
-            boolean isBlue = true;
-            boolean isLeft = false;
-            // put autonomous steps here
-            // step-1: detect skystone location
-            StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF(false);
-            // telemetry.addLine(StoneLoc.toString());
-            // telemetry.update();
-            // sleep(10000); // 10 sec
-            // step-2: go to grab the first skystone and deliver
-            robot.getFirstSkyStone(StoneLoc, isBlue, isLeft);
-
-            // step-3: grab and deliver the next skystone/stone
-            int count = 1;
-            // if (getRuntime() < 25000){
-            //robot.getAnotherSkyStone(StoneLoc, count, isBlue);
-            //count++;
-            // }
-            //robot.grabAndPark(true);
-            robot.rotateFoundation(isBlue, true);
-            robot.parkAfterRotate(isBlue);
-            // move foundation
-            // park
-
-        } catch (Exception E) {
-            telemetry.addData("Error in event handler", E.getMessage());
-            handleException(E);
-            Thread.sleep(5000);
-        }
-
     }
 
     protected void handleException(Throwable T) {
         log.error(T.getMessage(), T);
         int linesToShow = 5;
-        for (StackTraceElement line : T.getStackTrace()) {
+        for(StackTraceElement line : T.getStackTrace()) {
             telemetry.log().add("%s.%s():%d", line.getClassName(), line.getMethodName(), line.getLineNumber());
             if (--linesToShow == 0) break;
         }

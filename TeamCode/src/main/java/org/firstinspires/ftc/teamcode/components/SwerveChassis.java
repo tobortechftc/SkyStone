@@ -62,7 +62,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     // wheel radius, inches
     private double wheelRadius = 2.0;
     // minimum power that should be applied to the wheel motors for robot to start moving
-    private double minPower = 0.3;
+    private double minPower = 0.35;
     // maximum power that should be applied to the wheel motors
     private double maxPower = 0.99;
     // the ratio of the distance that should be drove with desired power
@@ -1447,7 +1447,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         rawRotateTo(power, finalHeading, true);//!!! A very bold move
         if (power > 0.25) {
             sleep(100);
-            rawRotateTo(0.25, finalHeading, false);
+            rawRotateTo(0.2, finalHeading, false);
         }
     }
 

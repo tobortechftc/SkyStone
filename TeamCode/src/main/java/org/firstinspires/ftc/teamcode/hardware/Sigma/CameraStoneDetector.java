@@ -155,11 +155,11 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
                 }
                 if (redSide) {
                     if (pos < left_center_border_x) {
-                        skystoneLocation = ToboSigma.SkystoneLocation.RIGHT;
-                    } else if (pos > center_right_border_x) {
-                        skystoneLocation = ToboSigma.SkystoneLocation.CENTER;
-                    } else if (pos >= left_center_border_x && pos <= center_right_border_x) {
                         skystoneLocation = ToboSigma.SkystoneLocation.LEFT;
+                    } else if (pos > center_right_border_x) {
+                        skystoneLocation = ToboSigma.SkystoneLocation.RIGHT;
+                    } else if (pos >= left_center_border_x && pos <= center_right_border_x) {
+                        skystoneLocation = ToboSigma.SkystoneLocation.CENTER;
                     } else {
                         skystoneLocation = ToboSigma.SkystoneLocation.UNKNOWN;
                     }
