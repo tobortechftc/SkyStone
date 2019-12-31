@@ -700,14 +700,14 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             //====================parallelized region===================
 //        stoneGrabber.armInCombo(true, true);
             chassis.driveStraightAutoRunToPosition(.35, beforeStone ? -8 : -10, 0, 1000);
-        }else{
+        } else {
 
             stoneGrabber.grabStoneCombo();
-            long iniTime=System.currentTimeMillis();
-            while (System.currentTimeMillis()-iniTime<500){
-                TaskManager.processTasks();
-            }
-            chassis.driveStraightAutoRunToPosition(.35, 10, 0, 1000);
+//            long iniTime=System.currentTimeMillis();
+//            while (System.currentTimeMillis()-iniTime<500){
+//                TaskManager.processTasks();
+//            }
+            chassis.driveStraightAutoRunToPosition(.4, 10, 0, 1000);//power was 0.35
             while (!TaskManager.isComplete("Grab Stone Combo")) {
                 TaskManager.processTasks();
             }
@@ -721,15 +721,20 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 //            while (System.currentTimeMillis() - iniTime < 150) {
 //                TaskManager.processTasks();
 //            }
-        chassis.driveStraightAutoRunToPosition(0.7, 130 - stoneX, 0, 5000);
+        chassis.driveStraightAutoRunToPosition(0.7, 135 - stoneX, 0, 5000);
         //===========================================================
 
 //        stoneGrabber.armOutComboAuto();
-        stoneGrabber.deliverStoneComboAuto();
-        stoneGrabber.lifterDownCombo();
+        if (beforeStone) {
+            stoneGrabber.deliverStoneThrowComboAuto();
+        } else {
+            stoneGrabber.deliverStoneComboAuto();
+        }
+//        stoneGrabber.lifterDownCombo();
+        //let it finish
         stoneGrabber.armInComboAuto(false);
 //        chassis.rotateTo(0.2,-90);
-        return 130;
+        return 135;
     }
 
     public int getFirstSkyStone(ToboSigma.SkystoneLocation skyStonePosition, boolean isBlue, boolean isLeft) throws InterruptedException {

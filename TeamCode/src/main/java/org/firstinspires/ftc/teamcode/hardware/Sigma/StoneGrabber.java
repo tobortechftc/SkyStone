@@ -1093,6 +1093,14 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         }
     }
 
+    public void deliverStoneThrowComboAuto() {
+        if (currentThread().isInterrupted()) return;
+        deliverStoneThrowCombo();
+        while (!TaskManager.isComplete("Deliver Stone Throw Combo")) {
+            TaskManager.processTasks();
+        }
+    }
+
     public void deliverStoneThrowCombo() {
         final String taskName = "Deliver Stone Throw Combo";
         if (!TaskManager.isComplete(taskName)) return;
