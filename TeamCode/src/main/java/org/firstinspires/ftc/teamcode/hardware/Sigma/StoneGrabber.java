@@ -40,6 +40,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double ARM_DOWN = 0.86;  // right position to grab stone inside
     private final double ARM_DOWN_SAFE = 0.86;
     private final double ARM_INITIAL = 0.82;
+    private final double ARM_OUT_INIT = 0.45;
     private final double ARM_IN = 0.63;
     private final double ARM_LOW = 0.56;
     private final double ARM_OUT = 0.34;
@@ -171,7 +172,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     }
 
     public void armInit(boolean armOut) {
-        arm.setPosition((armOut?ARM_OUT:ARM_INITIAL));
+        arm.setPosition((armOut?ARM_OUT_INIT:ARM_INITIAL));
         armIsDown = false;
         armIsIn = true;
     }
