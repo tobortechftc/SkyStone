@@ -279,8 +279,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 if (source.isPressed(Button.Y) && source.isPressed(Button.BACK)) {
                     // intake drop In/out
                     if (intake != null) intake.intakeDropAuto();
-                } else if (source.isPressed(Button.BACK)) { // default scale back to 0.5
-                    chassis.setDefaultScale(0.7);
+                } else if (source.isPressed(Button.BACK)) { // default scale toggle slow and fast
+                    chassis.toggleSlowMode();
                 } else if (source.isPressed(Button.LEFT_BUMPER)) { // same for driver-2 grab stone combos
                     if (stoneGrabber.isArmInside())
                         stoneGrabber.grabStoneInsideCombo();
@@ -363,7 +363,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 if (source.isPressed(Button.RIGHT_BUMPER))
                     stoneGrabber.armOutCombo(1.0, true);
                 else if (source.isPressed(Button.LEFT_BUMPER))
-                    stoneGrabber.armOutCombo();
+                    stoneGrabber.armOutCombo(0, false);
                 else if (!source.isPressed(Button.START))
                     stoneGrabber.wristAuto();
             }
@@ -442,6 +442,53 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         }, new Button[]{Button.DPAD_UP});
     }
 
+    boolean isBlue = true;
+    boolean laneFront = true;
+    boolean offensive = false;
+    @MenuEntry(label = "Auto Backup", group = "Competition")
+    public void AutoBackup(EventManager em) {
+
+        telemetry.addLine().addData(" <(A/Y)>", "Lane: %s",(laneFront?"Front":"Back")).setRetained(true);
+        telemetry.addLine().addData(" <(X/B)>", "Team: %s",(isBlue?"Blue":"Red")).setRetained(true);
+        telemetry.addLine().addData(" <(Dpad L/R)>", "%s Offensive",(offensive?"":"No")).setRetained(true);
+        telemetry.addLine().addData(" <(Start)>", "Start progarm").setRetained(true);
+        chassis.setupTelemetry(telemetry);
+        em.updateTelemetry(telemetry, 100);
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                laneFront = false;
+            }
+        }, new Button[]{Button.A});
+
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                laneFront = true;
+            }
+        }, new Button[]{Button.Y});
+
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                isBlue = false;
+            }
+        }, new Button[]{Button.X});
+
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                isBlue = true;
+            }
+        }, new Button[]{Button.B});
+
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                isBlue = true;
+            }
+        }, new Button[]{Button.B});
+    }
 
     @MenuEntry(label = "Auto Straight", group = "Test Chassis")
     public void testStraightSkyStone(EventManager em) {

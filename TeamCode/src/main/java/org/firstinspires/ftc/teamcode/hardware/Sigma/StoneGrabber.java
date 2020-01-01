@@ -43,9 +43,9 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double ARM_OUT_INIT = 0.45;
     private final double ARM_IN = 0.63;
     private final double ARM_LOW = 0.56;
-    private final double ARM_OUT = 0.37;
+    private final double ARM_OUT = 0.33;
     private final double ARM_OUT_AUTO = 0.41;
-    private final double ARM_CAPSTONE = 0.78;
+    private final double ARM_CAPSTONE = 0.82;
     private final double ARM_DELIVER = 0.26;
     private final double ARM_DELIVER_THROW = 0.15;
     private final double ARM_MIN = 0.1;
@@ -434,6 +434,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
 
     public void liftUp (boolean slow, boolean force)  {
         if (lifter==null) return;
+        lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         if (!force) {
             if (lifter.getCurrentPosition() > LIFT_MAX) {
                 liftStop();
@@ -444,11 +445,11 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             lifter.setPower(LIFT_POWER_SLOW);
         else
             lifter.setPower(LIFT_POWER);
-        lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     public void liftDown(boolean slow, boolean force) {
         if (lifter==null) return;
+        lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         if (!force) {
             if (lifter.getCurrentPosition() < LIFT_MIN) {
                 liftStop();
@@ -459,7 +460,6 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             lifter.setPower(-LIFT_POWER_SLOW);
         else
             lifter.setPower(-LIFT_POWER);
-        lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
     public void liftStop() {
@@ -972,16 +972,43 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         final String taskName = "Arm In Ready Grab Combo";
         if (!TaskManager.isComplete(taskName)) return;
         final boolean armWasIn = armIsIn;
-        if (!armWasIn) {
+        if (!armWasIn) { // move arm inside
             TaskManager.add(new Task() {
                 @Override
                 public Progress start() {
-                    int position = LIFT_SAFE_SWING_IN;
+                    return moveGrabber(true);
+                }
+            }, taskName);
+            if (Math.abs(lifter.getCurrentPosition()-LIFT_SAFE_SWING)>50) {
+                TaskManager.add(new Task() {
+                    @Override
+                    public Progress start() {
+                        int position = LIFT_SAFE_SWING;
+                        liftToPosition(position, false);
+                        return new Progress() {
+                            @Override
+                            public boolean isDone() {
+                                return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 100;
+                            }
+                        };
+                    }
+                }, taskName);
+            }
+            TaskManager.add(new Task() {
+                @Override
+                public Progress start() {
+                    return moveArm(ARM_DOWN);
+                }
+            }, taskName);
+            TaskManager.add(new Task() {
+                @Override
+                public Progress start() {
+                    int position = LIFT_DOWN_GRAB;
                     liftToPosition(position, false);
                     return new Progress() {
                         @Override
                         public boolean isDone() {
-                            return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 50;
+                            return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 100;
                         }
                     };
                 }

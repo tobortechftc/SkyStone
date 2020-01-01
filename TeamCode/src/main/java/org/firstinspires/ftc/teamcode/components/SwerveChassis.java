@@ -94,16 +94,18 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     private double targetHeading;     // intended heading for DriveMode.STRAIGHT as reported by orientation sensor
     private double headingDeviation;  // current heading deviation for DriveMode.STRAIGHT as reported by orientation sensor
     private double servoCorrection;   // latest correction applied to leading wheels' servos to correct heading deviation
-    private double defaultScale = 0.8;
-    private double SCALE_INC_TICK = 0.05;
     private double curHeading = 0;
     private boolean useScalePower = true;//
     private boolean swerveReverseDirection = false; // chassis front/back is reversed during Teleop
     private boolean setImuTelemetry = false;//unless debugging, don't set telemetry for imu
     private boolean setRangeSensorTelemetry = false;//unless debugging, don't set telemetry for range sensor
     private boolean showColor = false;
+    private boolean slowMode = false;
     final double TICKS_PER_CM = 537.6 / (4.0 * 2.54 * Math.PI); // 16.86; //number of encoder ticks per cm of driving
-
+    final double DEFAULT_FAST_SCALE = 0.85;
+    final double DEFAULT_SLOW_SCALE = 0.35;
+    private double defaultScale = DEFAULT_FAST_SCALE;
+    private double SCALE_INC_TICK = 0.05;
     public void enableRangeSensorTelemetry() { // must be call before reset() or setupTelemetry()
         setRangeSensorTelemetry = true;
     }
@@ -115,12 +117,23 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     public void enableShowColors() {
         showColor = true;
     }
+    public boolean isSlowMode() { return slowMode;}
+    public void toggleSlowMode() {
+        slowMode = !slowMode;
+        if (slowMode) {
+            defaultScale = DEFAULT_SLOW_SCALE;
+        } else {
+            defaultScale = DEFAULT_FAST_SCALE;
+        }
+    }
 
     public double getDefaultScale() {
         return defaultScale;
     }
 
     public void setDefaultScale(double val) {
+        if (val>0.5) slowMode = false;
+        else slowMode = true;
         defaultScale = val;
     }
 
@@ -128,12 +141,16 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         defaultScale += SCALE_INC_TICK;
         if (defaultScale > 1)
             defaultScale = 1;
+        if (defaultScale>0.5) slowMode = false;
+        else slowMode = true;
     }
 
     public void decDefaultScale() {
         defaultScale -= SCALE_INC_TICK;
         if (defaultScale < 0.2)
             defaultScale = 0.2;
+        if (defaultScale>0.5) slowMode = false;
+        else slowMode = true;
     }
 
     @Adjustable(min = 8.0, max = 18.0, step = 0.02)
