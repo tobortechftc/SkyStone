@@ -102,8 +102,8 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     private boolean showColor = false;
     private boolean slowMode = false;
     final double TICKS_PER_CM = 537.6 / (4.0 * 2.54 * Math.PI); // 16.86; //number of encoder ticks per cm of driving
-    final double DEFAULT_FAST_SCALE = 0.85;
-    final double DEFAULT_SLOW_SCALE = 0.35;
+    public final double DEFAULT_FAST_SCALE = 0.85;
+    public final double DEFAULT_SLOW_SCALE = 0.35;
     private double defaultScale = DEFAULT_FAST_SCALE;
     private double SCALE_INC_TICK = 0.05;
     public void enableRangeSensorTelemetry() { // must be call before reset() or setupTelemetry()
@@ -118,6 +118,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         showColor = true;
     }
     public boolean isSlowMode() { return slowMode;}
+
     public void toggleSlowMode() {
         slowMode = !slowMode;
         if (slowMode) {
@@ -1565,7 +1566,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         line.addData("Pwr/Scale", new Func<String>() {
             @Override
             public String value() {
-                return String.format("%.2f / %.1f %s", frontLeft.motor.getPower(), getDefaultScale(), (isReversed() ? "(R)" : "(F)"));
+                return String.format("%.2f / %.2f %s", frontLeft.motor.getPower(), getDefaultScale(), (isReversed() ? "(R)" : "(F)"));
             }
         });
         if (frontLeft.motor != null) {

@@ -236,14 +236,20 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                     if (intake != null) intake.intakeStop();
                     return;
                 }
-                if (intake != null) intake.intakeIn(!source.isPressed(Button.BACK));
+                if (intake != null) {
+                    intake.intakeIn(!source.isPressed(Button.BACK));
+                    chassis.setDefaultScale(chassis.DEFAULT_SLOW_SCALE);
+                }
             }
         }, Button.LEFT_BUMPER);
 
         em.onButtonUp(new Events.Listener() {
             @Override
             public void buttonUp(EventManager source, Button button) throws InterruptedException {
-                if (intake != null) intake.intakeStop();
+                if (intake != null) {
+                    intake.intakeStop();
+                    chassis.setDefaultScale(chassis.DEFAULT_FAST_SCALE);
+                }
             }
         }, Button.LEFT_BUMPER);
 
@@ -418,7 +424,9 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (source.isPressed(Button.RIGHT_BUMPER))
-                    stoneGrabber.capstoneLeftInc();
+                    stoneGrabber.capstoneRightInc();
+                else if (source.isPressed(Button.LEFT_BUMPER))
+                    stoneGrabber.regrabStoneCombo(true);
                 else
                     stoneGrabber.capstoneServoAuto();
             }
@@ -428,7 +436,9 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (source.isPressed(Button.RIGHT_BUMPER))
-                    stoneGrabber.capstoneRightInc();
+                    stoneGrabber.capstoneLeftInc();
+                else if (source.isPressed(Button.LEFT_BUMPER))
+                    stoneGrabber.regrabStoneCombo(false);
             }
         }, new Button[]{Button.DPAD_LEFT});
 
