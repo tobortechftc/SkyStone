@@ -478,11 +478,11 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
     @MenuEntry(label = "Auto Backup", group = "Competition")
     public void AutoBackup(EventManager em) {
-        telemetry.addLine().addData(" <(A)>", "Lane: %s",(autoPara.laneFront?"Front":"Back")).setRetained(true);
-        telemetry.addLine().addData(" <(B)>", "Team: %s",(autoPara.isBlue?"Blue":"Red")).setRetained(true);
-        telemetry.addLine().addData(" <(Y)>", "%s Offensive",(autoPara.offensive?"":"No")).setRetained(true);
-        telemetry.addLine().addData(" <(X)>", "Done Selection").setRetained(true);
-        chassis.setupTelemetry(telemetry);
+        telemetry.addLine().addData(" <A>", "Lane %s",(autoPara.laneFront?"Front":"Back")).setRetained(true);
+        telemetry.addLine().addData(" <B>", "Team %s",(autoPara.isBlue?"Blue":"Red")).setRetained(true);
+        telemetry.addLine().addData(" <Y>", "%s Offensive",(autoPara.offensive?"":"No")).setRetained(true);
+        telemetry.addLine().addData(" <X>", "Done Selection").setRetained(true);
+        // chassis.setupTelemetry(telemetry);
         em.updateTelemetry(telemetry, 100);
         em.onButtonDown(new Events.Listener() {
             @Override

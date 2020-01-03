@@ -35,7 +35,6 @@ public class AutoBackup extends LinearOpMode {
         log.info("RoboSigma Autonomous runOpMode() starts (CPU_time = %.2f sec)", getRuntime());
         em1 = new EventManager(gamepad1, true);
         ToboSigma robot = new ToboSigma();
-        robot.AutoBackup(em1);
 
         telemetry.addData("Initializing Robot", "Please Wait ...");
         telemetry.update();
@@ -56,33 +55,37 @@ public class AutoBackup extends LinearOpMode {
             handleException(E);
         }
 
+        robot.AutoBackup(em1);
         while (!robot.autoPara.isDone()) { // push X will exit the loop
             try {
                 em1.processEvents();
                 TaskManager.processTasks();
+                if (Thread.interrupted()) {
+                    return;
+                }
             } catch (Exception E) {
                 telemetry.addData("Error in event handler", E.getMessage());
                 handleException(E);
                 Thread.sleep(5000);
             }
         }
+
         log.info("RoboSigma Autonomous finished initialization (CPU_time = %.2f sec)", getRuntime());
+
         // Wait for the game to start (driver presses PLAY)
-        List<Recognition> updatedRecognitions = null;
-//        if (robot.cameraStoneDetector.getTfod()!=null) {
-//            updatedRecognitions = robot.cameraStoneDetector.getTfod().getUpdatedRecognitions();
-//        }
-        int robot_pos = 1;
         telemetry.addData("Robot is ready", "Press Play");
         telemetry.update();
-
         waitForStart();
-        robot.runtime.reset();
-        // run until the end of the match (driver presses STOP or timeout)
+
         if (!opModeIsActive()) {
             return;
         }
+        robot.runtime.reset();
+        // run until the end of the match (driver presses STOP or timeout)
+
         try {
+            telemetry.addData("Auto program:", "%s %s %s",(robot.autoPara.isBlue()?"Blue":"Red"),
+                    (robot.autoPara.isLaneFront()?"Front":"Back"), (robot.autoPara.isOffensive()?"Offensive":""));
             robot.autoFoundationOnly(robot.autoPara.isBlue(), robot.autoPara.isLaneFront(), robot.autoPara.isOffensive());
         } catch (Exception E) {
             telemetry.addData("Error in event handler", E.getMessage());
