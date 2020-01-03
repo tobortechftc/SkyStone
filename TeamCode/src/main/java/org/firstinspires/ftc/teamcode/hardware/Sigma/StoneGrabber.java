@@ -83,6 +83,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     //private final double LIFT_POWER = 0.5;   // V5.2
     private final double LIFT_POWER = 1.0;  // V5.3
     private final double LIFT_POWER_SLOW = 0.5;
+    private final double LIFT_POWER_SLOW_DOWN = 0.3;
     private final int LIFT_DELIVER = 1000;
 
     private final double CAPSTONE_INIT = 0.0;
@@ -460,7 +461,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             }
         }
         if (slow)
-            lifter.setPower(-LIFT_POWER_SLOW);
+            lifter.setPower(-LIFT_POWER_SLOW_DOWN);
         else
             lifter.setPower(-LIFT_POWER);
     }

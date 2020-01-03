@@ -27,6 +27,28 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     public IntakeV3 intake;
     public StoneGrabber stoneGrabber;
 
+    public class AutoPara {
+        boolean isBlue = true;
+        boolean laneFront = true;
+        boolean offensive = false;
+        boolean isDone = false;
+
+        public boolean isDone() {
+            return isDone;
+        }
+        public boolean isBlue() {
+            return isBlue;
+        }
+        public boolean isLaneFront() {
+            return laneFront;
+        }
+        public boolean isOffensive() {
+            return offensive;
+        }
+    };
+
+    public AutoPara autoPara = null;
+
     public enum SkystoneLocation {
         LEFT, CENTER, RIGHT, UNKNOWN
     }
@@ -56,6 +78,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         runtime.reset();
         double ini_time = runtime.seconds();
         this.telemetry = telemetry;
+
+        autoPara = new AutoPara();
 
         this.core = new CoreSystem();
         info("RoboSigma configure() after new CoreSystem()(run time = %.2f sec)", (runtime.seconds() - ini_time));
@@ -452,52 +476,42 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         }, new Button[]{Button.DPAD_UP});
     }
 
-    boolean isBlue = true;
-    boolean laneFront = true;
-    boolean offensive = false;
     @MenuEntry(label = "Auto Backup", group = "Competition")
     public void AutoBackup(EventManager em) {
-
-        telemetry.addLine().addData(" <(A/Y)>", "Lane: %s",(laneFront?"Front":"Back")).setRetained(true);
-        telemetry.addLine().addData(" <(X/B)>", "Team: %s",(isBlue?"Blue":"Red")).setRetained(true);
-        telemetry.addLine().addData(" <(Dpad L/R)>", "%s Offensive",(offensive?"":"No")).setRetained(true);
-        telemetry.addLine().addData(" <(Start)>", "Start progarm").setRetained(true);
+        telemetry.addLine().addData(" <(A)>", "Lane: %s",(autoPara.laneFront?"Front":"Back")).setRetained(true);
+        telemetry.addLine().addData(" <(B)>", "Team: %s",(autoPara.isBlue?"Blue":"Red")).setRetained(true);
+        telemetry.addLine().addData(" <(Y)>", "%s Offensive",(autoPara.offensive?"":"No")).setRetained(true);
+        telemetry.addLine().addData(" <(X)>", "Done Selection").setRetained(true);
         chassis.setupTelemetry(telemetry);
         em.updateTelemetry(telemetry, 100);
         em.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
-                laneFront = false;
+                autoPara.laneFront = !autoPara.laneFront;
             }
         }, new Button[]{Button.A});
 
         em.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
-                laneFront = true;
+                autoPara.offensive = !autoPara.offensive;
             }
         }, new Button[]{Button.Y});
 
         em.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
-                isBlue = false;
+                autoPara.isDone = true;
             }
         }, new Button[]{Button.X});
 
         em.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
-                isBlue = true;
+                autoPara.isBlue = !autoPara.isBlue;
             }
         }, new Button[]{Button.B});
 
-        em.onButtonDown(new Events.Listener() {
-            @Override
-            public void buttonDown(EventManager source, Button button) throws InterruptedException {
-                isBlue = true;
-            }
-        }, new Button[]{Button.B});
     }
 
     @MenuEntry(label = "Auto Straight", group = "Test Chassis")

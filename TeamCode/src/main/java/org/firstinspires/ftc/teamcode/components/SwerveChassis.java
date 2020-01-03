@@ -64,7 +64,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     // minimum power that should be applied to the wheel motors for robot to start moving
     private double minPower = 0.35;
     // maximum power that should be applied to the wheel motors
-    private double maxPower = 0.99;
+    private double maxPower = 1.0;
     // the ratio of the distance that should be drove with desired power
     private double bufferPercentage = 0.8;
 
@@ -102,7 +102,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     private boolean showColor = false;
     private boolean slowMode = false;
     final double TICKS_PER_CM = 537.6 / (4.0 * 2.54 * Math.PI); // 16.86; //number of encoder ticks per cm of driving
-    public final double DEFAULT_FAST_SCALE = 0.85;
+    public final double DEFAULT_FAST_SCALE = 1.0;
     public final double DEFAULT_SLOW_SCALE = 0.35;
     private double defaultScale = DEFAULT_FAST_SCALE;
     private double SCALE_INC_TICK = 0.05;

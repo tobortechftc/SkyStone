@@ -10,6 +10,7 @@ import org.firstinspires.ftc.teamcode.hardware.Sigma.ToboSigma;
 import org.firstinspires.ftc.teamcode.support.Logger;
 import org.firstinspires.ftc.teamcode.support.events.EventManager;
 import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
+import org.firstinspires.ftc.teamcode.support.tasks.TaskManager;
 
 import java.util.List;
 
@@ -33,12 +34,12 @@ public class AutoBackup extends LinearOpMode {
     public void runOpMode() throws InterruptedException {
         log.info("RoboSigma Autonomous runOpMode() starts (CPU_time = %.2f sec)", getRuntime());
         em1 = new EventManager(gamepad1, true);
-
+        ToboSigma robot = new ToboSigma();
+        robot.AutoBackup(em1);
 
         telemetry.addData("Initializing Robot", "Please Wait ...");
         telemetry.update();
 
-        ToboSigma robot = new ToboSigma();
         robot.configureLogging("ToboSigma", LOG_LEVEL);
         configuration = new Configuration(hardwareMap, robot.getName()).configureLogging("Config", LOG_LEVEL);
         log.info("RoboSigma Autonomous finished log configuration (CPU_time = %.2f sec)", getRuntime());
@@ -48,11 +49,22 @@ public class AutoBackup extends LinearOpMode {
             robot.configure(configuration, telemetry, ToboSigma.AutoTeamColor.AUTO_BLUE);
             configuration.apply();
             robot.reset(true);
-            telemetry.addData("Robot is ready", "Press Play");
+            telemetry.addData("Robot is ready to configure", "Press <A/B/Y/X>");
             telemetry.update();
         } catch (Exception E) {
             telemetry.addData("Init Failed", E.getMessage());
             handleException(E);
+        }
+
+        while (!robot.autoPara.isDone()) { // push X will exit the loop
+            try {
+                em1.processEvents();
+                TaskManager.processTasks();
+            } catch (Exception E) {
+                telemetry.addData("Error in event handler", E.getMessage());
+                handleException(E);
+                Thread.sleep(5000);
+            }
         }
         log.info("RoboSigma Autonomous finished initialization (CPU_time = %.2f sec)", getRuntime());
         // Wait for the game to start (driver presses PLAY)
@@ -61,8 +73,9 @@ public class AutoBackup extends LinearOpMode {
 //            updatedRecognitions = robot.cameraStoneDetector.getTfod().getUpdatedRecognitions();
 //        }
         int robot_pos = 1;
-        if (robot.intake != null)
-            robot.intake.intakeDropInit();
+        telemetry.addData("Robot is ready", "Press Play");
+        telemetry.update();
+
         waitForStart();
         robot.runtime.reset();
         // run until the end of the match (driver presses STOP or timeout)
@@ -70,12 +83,7 @@ public class AutoBackup extends LinearOpMode {
             return;
         }
         try {
-            boolean isBlue = true;
-            StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF(false);
-            robot.getFirstSkyStoneDefense(StoneLoc, isBlue, true);
-            int count = 1;
-            robot.rotateFoundationNew(isBlue);
-            robot.parkAfterRotateNew(isBlue);
+            robot.autoFoundationOnly(robot.autoPara.isBlue(), robot.autoPara.isLaneFront(), robot.autoPara.isOffensive());
         } catch (Exception E) {
             telemetry.addData("Error in event handler", E.getMessage());
             handleException(E);
