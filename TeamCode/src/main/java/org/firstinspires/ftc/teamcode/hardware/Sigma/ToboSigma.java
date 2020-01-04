@@ -476,13 +476,35 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         }, new Button[]{Button.DPAD_UP});
     }
 
+    public void setupTelemetry(Telemetry telemetry) {
+        if (Thread.currentThread().isInterrupted()) return;
+        Telemetry.Line line = telemetry.addLine();
+        line.addData("Lane", new Func<String>() {
+            @Override
+            public String value() {
+                return String.format("%s",  (autoPara.isLaneFront() ? "Front" : "Back"));
+            }
+        });
+        line.addData("Team", new Func<String>() {
+            @Override
+            public String value() {
+                return String.format("%s",  (autoPara.isBlue() ? "Blue" : "Red"));
+            }
+        });
+        line.addData("Offensive", new Func<String>() {
+            @Override
+            public String value() {
+                return String.format("%s",  (autoPara.isOffensive() ? "Yes" : "No"));
+            }
+        });
+
+    }
+
     @MenuEntry(label = "Auto Backup", group = "Competition")
     public void AutoBackup(EventManager em) {
-        telemetry.addLine().addData(" <A>", "Lane %s",(autoPara.laneFront?"Front":"Back")).setRetained(true);
-        telemetry.addLine().addData(" <B>", "Team %s",(autoPara.isBlue?"Blue":"Red")).setRetained(true);
-        telemetry.addLine().addData(" <Y>", "%s Offensive",(autoPara.offensive?"":"No")).setRetained(true);
-        telemetry.addLine().addData(" <X>", "Done Selection").setRetained(true);
-        // chassis.setupTelemetry(telemetry);
+        telemetry.addLine().addData(" <A|B|Y|X>", "Lane/Team/Offsesive/Done").setRetained(true);
+        setupTelemetry(telemetry);
+
         em.updateTelemetry(telemetry, 100);
         em.onButtonDown(new Events.Listener() {
             @Override
@@ -1444,6 +1466,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         }
         rotateFoundation(isBlue, false);
         double dist = chassis.getDistance(isBlue?SwerveChassis.Direction.LEFT: SwerveChassis.Direction.RIGHT);
+        if(dist>45) dist = 45;
         if(laneFront)
         {
             chassis.driveStraightAutoRunToPosition(auto_chassis_power,60-dist,90*side,1500);
@@ -1452,7 +1475,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         {
             chassis.driveStraightAutoRunToPosition(auto_chassis_power,10-dist,90*side,1500);
         }
-        chassis.driveStraightAutoRunToPosition(.4, -85, 0, 1500);
+        chassis.driveStraightAutoRunToPosition(.4, -95, 0, 1500);
     }
 
     public void getFoundation(boolean isBlue, boolean laneTwo) throws InterruptedException {

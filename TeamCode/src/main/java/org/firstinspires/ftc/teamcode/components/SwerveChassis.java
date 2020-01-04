@@ -1559,6 +1559,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
      * drive mode, heading deviation / servo adjustment (in <code>STRAIGHT</code> mode)
      * and servo position for each wheel
      */
+
     public void setupTelemetry(Telemetry telemetry) {
         if (Thread.currentThread().isInterrupted()) return;
         tl = telemetry;
