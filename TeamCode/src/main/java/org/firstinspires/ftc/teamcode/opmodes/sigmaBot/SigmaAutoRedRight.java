@@ -16,6 +16,7 @@ import java.util.List;
 /**
  * Created by 28761 on 6/29/2019.
  */
+@Disabled
 
 @Autonomous(name="Sigma-Red-Right", group="Sigma")
 
