@@ -264,7 +264,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
      */
     public double getDistance(Direction direction) {
         double dist = 0;
-        if (Thread.currentThread().isInterrupted()) return dist;
+        if (Thread.interrupted()) return dist;
 
         int count = 0;
         DistanceSensor rangeSensor;
@@ -508,7 +508,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
 
     //using the indicated absolute power to drive a certain distance at a certain heading
     public void driveStraightAuto(double power, double cm, double heading, int timeout) throws InterruptedException {
-        if (Thread.currentThread().isInterrupted()) return;
+        if (Thread.interrupted()) return;
         debug("driveStraight(pwr: %.3f, head: %.1f)", power, heading);
         if (power < 0 || power > 1) {
             throw new IllegalArgumentException("Power must be between 0 and 1");
@@ -639,9 +639,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             //determine if time limit is reached
             if (System.currentTimeMillis() - iniTime > timeout)
                 break;
-            if (Thread.currentThread().isInterrupted())
-                break;
-
+            if (Thread.interrupted()) return;
 
             // yield handler
             // this.core.yield();
@@ -652,7 +650,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
 
 
     public void driveStraightAutoRunToPosition(double power, double cm, double heading, int timeout) throws InterruptedException {
-        if (Thread.currentThread().isInterrupted()) return;
+        if (Thread.interrupted()) return;
         debug("driveStraight(pwr: %.3f, head: %.1f)", power, heading);
         if (power < 0 || power > 1) {
             throw new IllegalArgumentException("Power must be between 0 and 1");
@@ -798,8 +796,8 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             //determine if time limit is reached
             if (System.currentTimeMillis() - iniTime > timeout)
                 break;
-            if (Thread.currentThread().isInterrupted())
-                break;
+
+            if (Thread.interrupted()) return;
 
             //take care of other business
             TaskManager.processTasks();
@@ -822,7 +820,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     }
 
     public void driveStraightAutoRunToPosition(double power, double cm, double heading, double beginTaskPercent, int timeout) throws InterruptedException {
-        if (Thread.currentThread().isInterrupted()) return;
+        if (Thread.interrupted()) return;
         debug("driveStraight(pwr: %.3f, head: %.1f)", power, heading);
         if (power < 0 || power > 1) {
             throw new IllegalArgumentException("Power must be between 0 and 1");
@@ -1461,8 +1459,9 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     }
 
     public void rotateTo(double power, double finalHeading) throws InterruptedException {
-        if (Thread.currentThread().isInterrupted()) return;
+        if (Thread.interrupted()) return;
         rawRotateTo(power, finalHeading, true);//!!! A very bold move
+        if (Thread.interrupted()) return;
         if (power > 0.25) {
             sleep(100);
             rawRotateTo(0.2, finalHeading, false);
@@ -1515,7 +1514,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             //timeout, break. default timeout: 3s
             if (System.currentTimeMillis() - iniTime > 3000) break;
             //stop pressed, break
-            if (Thread.currentThread().isInterrupted()) break;
+            if (Thread.interrupted()) return;
             lastReading = currentHeading;
 //            sleep(0);
             // yield handler
@@ -1549,7 +1548,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             maxServoAdjustment = Math.max(maxServoAdjustment, servoAdjustment);
             wheels[index].servo.setPosition(newPositions[index]);
         }
-        if (!Thread.currentThread().isInterrupted())
+        if (!Thread.interrupted())
             sleep((int) Math.round(3 * maxServoAdjustment));
     }
 
@@ -1561,7 +1560,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
      */
 
     public void setupTelemetry(Telemetry telemetry) {
-        if (Thread.currentThread().isInterrupted()) return;
+        if (Thread.interrupted()) return;
         tl = telemetry;
         Telemetry.Line line = telemetry.addLine();
         line.addData("Pwr/Scale", new Func<String>() {
