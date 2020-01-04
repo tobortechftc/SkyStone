@@ -18,8 +18,8 @@ import java.util.List;
  * Created by 28761 on 6/29/2019.
  */
 
-@Autonomous(name = "Sigma-Blue-Stone-on-Foundation", group = "Sigma")
-public class SigmaAutoBlueSSonFoundation extends LinearOpMode {
+@Autonomous(name = "Sigma-Red-Stone-on-Foundation", group = "Sigma")
+public class SigmaAutoRedSSonFoundation extends LinearOpMode {
     private ToboSigma.SkystoneLocation StoneLoc;
 
     protected static int LOG_LEVEL = Log.INFO;
@@ -42,7 +42,7 @@ public class SigmaAutoBlueSSonFoundation extends LinearOpMode {
 
         try {
             // configure robot and reset all hardware
-            robot.configure(configuration, telemetry, ToboSigma.AutoTeamColor.AUTO_BLUE);
+            robot.configure(configuration, telemetry, ToboSigma.AutoTeamColor.AUTO_RED);
             configuration.apply();
             robot.reset(true);
             telemetry.addData("Robot is ready", "Press Play");
@@ -67,26 +67,27 @@ public class SigmaAutoBlueSSonFoundation extends LinearOpMode {
             return;
         }
         try {
-            boolean isBlue = true;
+            boolean isBlue = false;
             boolean isLeft = false;
             // put autonomous steps here
             // step-1: detect skystone location
-            StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF(false);
-
+            StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF(true);
+//            telemetry.addLine("stoneLoc "+StoneLoc);
+//            telemetry.update();
+//            sleep(3000);
             // step-2: go to grab the first skystone and deliver
             robot.approachStone(StoneLoc, isBlue, isLeft);
-            robot.chassis.driveStraightAutoRunToPosition(0.45, Math.abs(nextStoneX(StoneLoc, 0)), nextStoneX(StoneLoc, 0) > 0 ? -90 : +90, 5000);//power was 0.5
-            double currentDistance = robot.grabStoneAndDeliverOnFoundation(nextStoneX(StoneLoc, 0), true, true);
-            robot.chassis.rotateTo(0.2, -90.5);//not recommended
+            robot.chassis.driveStraightAutoRunToPosition(0.45, Math.abs(nextStoneX(StoneLoc, 0)), nextStoneX(StoneLoc, 0) > 0 ? +90 : -90, 5000);//power was 0.5
+            double currentDistance = robot.grabStoneAndDeliverOnFoundation(nextStoneX(StoneLoc, 0), true, isBlue);
             //go to second sky stone
             robot.chassis.driveStraightAutoRunToPositionNoIMU(0.70, nextStoneX(StoneLoc, 1) - currentDistance - 8, 0, 5000);
             robot.chassis.rotateTo(0.5, 0);
             robot.stoneGrabber.grabberOpen();
             robot.stoneGrabber.armOutComboAuto();
-            currentDistance = robot.grabStoneAndDeliverOnFoundation(nextStoneX(StoneLoc, 1), false, true);
+            currentDistance = robot.grabStoneAndDeliverOnFoundation(nextStoneX(StoneLoc, 1), false, isBlue);
 
             // park
-            robot.chassis.driveStraightAutoRunToPosition(0.7, -(currentDistance - 135) - 40, 0, 3000);
+            robot.chassis.driveStraightAutoRunToPosition(0.7, -(currentDistance - 135)-40, 0, 3000);
 
         } catch (Exception E) {
             telemetry.addData("Error in event handler", E.getMessage());
@@ -97,8 +98,8 @@ public class SigmaAutoBlueSSonFoundation extends LinearOpMode {
     }
 
     static final int[] CENTER_ORDER = {4, 1, 5, 3, 2, 0};
-    static final int[] LEFT_ORDER = {5, 2, 4, 3, 1, 0};
-    static final int[] RIGHT_ORDER = {3, 5, 4, 2, 1, 0};
+    static final int[] LEFT_ORDER = {3, 5, 4, 2, 1, 0};
+    static final int[] RIGHT_ORDER = {5, 2, 4, 3, 1, 0};
 
     int getStoneId(ToboSigma.SkystoneLocation ssloc, int count) {
         int stoneID;
