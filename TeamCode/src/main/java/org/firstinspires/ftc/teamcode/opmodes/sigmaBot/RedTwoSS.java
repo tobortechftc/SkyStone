@@ -39,7 +39,7 @@ public class RedTwoSS extends LinearOpMode {
 
         try {
             // configure robot and reset all hardware
-            robot.configure(configuration, telemetry, ToboSigma.AutoTeamColor.AUTO_BLUE);
+            robot.configure(configuration, telemetry, ToboSigma.AutoTeamColor.AUTO_RED);
             configuration.apply();
             robot.reset(true);
             telemetry.addData("Robot is ready", "Press Play");
