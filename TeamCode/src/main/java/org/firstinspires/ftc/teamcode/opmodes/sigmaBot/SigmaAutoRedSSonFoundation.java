@@ -72,15 +72,13 @@ public class SigmaAutoRedSSonFoundation extends LinearOpMode {
             // put autonomous steps here
             // step-1: detect skystone location
             StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF(true);
-//            telemetry.addLine("stoneLoc "+StoneLoc);
-//            telemetry.update();
-//            sleep(3000);
+
             // step-2: go to grab the first skystone and deliver
             robot.approachStone(StoneLoc, isBlue, isLeft);
             robot.chassis.driveStraightAutoRunToPosition(0.45, Math.abs(nextStoneX(StoneLoc, 0)), nextStoneX(StoneLoc, 0) > 0 ? +90 : -90, 5000);//power was 0.5
             double currentDistance = robot.grabStoneAndDeliverOnFoundation(nextStoneX(StoneLoc, 0), true, isBlue);
             //go to second sky stone
-            robot.chassis.driveStraightAutoRunToPositionNoIMU(0.70, nextStoneX(StoneLoc, 1) - currentDistance - 8, 0, 5000);
+            robot.chassis.driveStraightAutoRunToPositionNoIMU(0.70, nextStoneX(StoneLoc, 1) - currentDistance - 6, 0, 5000);
             robot.chassis.rotateTo(0.5, 0);
             robot.stoneGrabber.grabberOpen();
             robot.stoneGrabber.armOutComboAuto();

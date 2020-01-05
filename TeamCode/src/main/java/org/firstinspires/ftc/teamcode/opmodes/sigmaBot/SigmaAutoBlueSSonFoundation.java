@@ -72,13 +72,11 @@ public class SigmaAutoBlueSSonFoundation extends LinearOpMode {
             // put autonomous steps here
             // step-1: detect skystone location
             StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF(false);
-            telemetry.addLine("Stone loc "+StoneLoc);
-            telemetry.update();
             // step-2: go to grab the first skystone and deliver
             robot.approachStone(StoneLoc, isBlue, isLeft);
             robot.chassis.driveStraightAutoRunToPosition(0.45, Math.abs(nextStoneX(StoneLoc, 0)), nextStoneX(StoneLoc, 0) > 0 ? -90 : +90, 5000);//power was 0.5
             double currentDistance = robot.grabStoneAndDeliverOnFoundation(nextStoneX(StoneLoc, 0), true, true);
-            robot.chassis.rotateTo(0.2, -90.5);//not recommended
+            robot.chassis.rotateTo(0.2, -90.0);//it's working now
             //go to second sky stone
             robot.chassis.driveStraightAutoRunToPositionNoIMU(0.70, nextStoneX(StoneLoc, 1) - currentDistance - 8, 0, 5000);
             robot.chassis.rotateTo(0.5, 0);

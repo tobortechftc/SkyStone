@@ -50,7 +50,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double ARM_CAPSTONE = 0.76;
     private final double ARM_CAPSTONE_MORE = 0.8;
     private final double ARM_DELIVER = 0.26;
-    private final double ARM_DELIVER_HIGHER = 0.18;
+    private final double ARM_DELIVER_HIGHER = 0.2;
     private final double ARM_DELIVER_THROW = 0.12;
     private final double ARM_MIN = 0.1;
     private final double ARM_INC_UNIT = 0.02;
