@@ -48,8 +48,10 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double ARM_OUT_AUTO = 0.41;
     private final double ARM_DOWN_FOR_CAP = 0.74;
     private final double ARM_CAPSTONE = 0.76;
+    private final double ARM_CAPSTONE_MORE = 0.8;
     private final double ARM_DELIVER = 0.26;
-    private final double ARM_DELIVER_THROW = 0.15;
+    private final double ARM_DELIVER_HIGHER = 0.18;
+    private final double ARM_DELIVER_THROW = 0.12;
     private final double ARM_MIN = 0.1;
     private final double ARM_INC_UNIT = 0.02;
 
@@ -840,8 +842,6 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         final String taskName = "Grab Cap Stone Combo";
         if (!TaskManager.isComplete(taskName)) return;
 
-        // regrabStoneCombo(true);
-
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
@@ -872,6 +872,18 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 capstoneServoOut();
                 moveWristForCapstone();
                 return moveArm(ARM_CAPSTONE);
+            }
+        }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                return liftToPosition(LIFT_UP_BEFORE_CAP, true);
+            }
+        }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                return moveArm(ARM_CAPSTONE_MORE);
             }
         }, taskName);
         TaskManager.add(new Task() {
@@ -1328,7 +1340,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             @Override
             public Progress start() {
                 grabberClose();
-                arm.setPosition(ARM_DELIVER);
+                arm.setPosition(ARM_DELIVER_HIGHER);
                 liftToPosition(LIFT_DOWN+800,false);
                 return new Progress() {
                     @Override
