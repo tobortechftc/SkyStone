@@ -18,7 +18,7 @@ import java.util.List;
  * Created by 28761 on 6/29/2019.
  */
 
-@Autonomous(name = "Auto Backup", group = "Sigma")
+@Autonomous(name = "Auto Backup", group = "SigmaBackup")
 public class AutoBackup extends LinearOpMode {
     private ToboSigma.SkystoneLocation StoneLoc;
     private EventManager em1;

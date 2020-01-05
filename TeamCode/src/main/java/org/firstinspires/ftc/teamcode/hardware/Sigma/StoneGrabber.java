@@ -866,7 +866,6 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 return moveGrabber(true); // close grabber
             }
         }, taskName);
-
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
@@ -878,16 +877,9 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
-                // liftToPosition(LIFT_UP_BEFORE_CAP, false);
-                liftToPosition(LIFT_UP_FINAL_CAP, true);
-                return new Progress() {
-                    @Override
-                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 40;
-                    }
-                };
+                return liftToPosition(LIFT_UP_FINAL_CAP, true);
             }
         }, taskName);
-
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
@@ -1065,11 +1057,11 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                     return moveGrabber(true);
                 }
             }, taskName);
-            if (Math.abs(lifter.getCurrentPosition()-LIFT_SAFE_SWING)>50) {
+            if (Math.abs(lifter.getCurrentPosition()-LIFT_SAFE_SWING)>400) {
                 TaskManager.add(new Task() {
                     @Override
                     public Progress start() {
-                        int position = LIFT_SAFE_SWING;
+                        int position = LIFT_SAFE_SWING+400;
                         liftToPosition(position, false);
                         return new Progress() {
                             @Override

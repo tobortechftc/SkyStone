@@ -62,7 +62,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     // wheel radius, inches
     private double wheelRadius = 2.0;
     // minimum power that should be applied to the wheel motors for robot to start moving
-    private double minPower = 0.4;
+    private double minPower = 0.35;
     // maximum power that should be applied to the wheel motors
     private double maxPower = 1.0;
     // the ratio of the distance that should be drove with desired power
@@ -106,6 +106,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     public final double DEFAULT_SLOW_SCALE = 0.35;
     private double defaultScale = DEFAULT_FAST_SCALE;
     private double SCALE_INC_TICK = 0.05;
+
     public void enableRangeSensorTelemetry() { // must be call before reset() or setupTelemetry()
         setRangeSensorTelemetry = true;
     }
@@ -117,7 +118,10 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     public void enableShowColors() {
         showColor = true;
     }
-    public boolean isSlowMode() { return slowMode;}
+
+    public boolean isSlowMode() {
+        return slowMode;
+    }
 
     public void toggleSlowMode() {
         slowMode = !slowMode;
@@ -133,7 +137,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     }
 
     public void setDefaultScale(double val) {
-        if (val>0.5) slowMode = false;
+        if (val > 0.5) slowMode = false;
         else slowMode = true;
         defaultScale = val;
     }
@@ -142,7 +146,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         defaultScale += SCALE_INC_TICK;
         if (defaultScale > 1)
             defaultScale = 1;
-        if (defaultScale>0.5) slowMode = false;
+        if (defaultScale > 0.5) slowMode = false;
         else slowMode = true;
     }
 
@@ -150,7 +154,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         defaultScale -= SCALE_INC_TICK;
         if (defaultScale < 0.2)
             defaultScale = 0.2;
-        if (defaultScale>0.5) slowMode = false;
+        if (defaultScale > 0.5) slowMode = false;
         else slowMode = true;
     }
 
@@ -297,6 +301,9 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             dist = rangeSensor.getDistance(DistanceUnit.CM);
             // yield handler
             this.core.yield();
+        }
+        if (direction == Direction.FRONT) { // use both two front sensor to improve the accuracy
+            dist = Math.min(dist, frontLeftRangeSensor.getDistance(DistanceUnit.CM));
         }
         if (dist > maxRange)
             dist = maxRange;
@@ -650,174 +657,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
 
 
     public void driveStraightAutoRunToPosition(double power, double cm, double heading, int timeout) throws InterruptedException {
-        if (Thread.interrupted()) return;
-        debug("driveStraight(pwr: %.3f, head: %.1f)", power, heading);
-        if (power < 0 || power > 1) {
-            throw new IllegalArgumentException("Power must be between 0 and 1");
-        }
-        if (heading < -90 || heading > 90) {
-            throw new IllegalArgumentException("Heading must be between -90 and 90");
-        }
-
-        double distance = TICKS_PER_CM * cm;
-
-        if (power == 0) {
-            driveMode = DriveMode.STOP;
-            targetHeading = 0;
-            headingDeviation = 0;
-            servoCorrection = 0;
-            for (WheelAssembly wheel : wheels) wheel.motor.setPower(0);
-            orientationSensor.enableCorrections(false);
-            return;
-        }
-
-        //octant will determine which wheels to use to adjust heading deviation
-        int octant = 0;
-        if (0 < distance) {
-            if (67.5 <= heading)
-                octant = 0;
-            else if (22.5 <= heading && heading < 67.5)
-                octant = 1;
-            else if (-22.5 <= heading && heading < 22.5)
-                octant = 2;
-            else if (-67.5 <= heading && heading < -22.5)
-                octant = 3;
-            else if (heading < -67.5)
-                octant = 4;
-        } else {
-            if (67.5 <= heading)
-                octant = 4;
-            if (22.5 <= heading && heading < 67.5)
-                octant = 5;
-            if (-22.5 <= heading && heading < 22.5)
-                octant = 6;
-            if (-67.5 <= heading && heading < -22.5)
-                octant = 7;
-            if (heading <= -67.5)
-                octant = 0;
-        }
-
-//        tl.addData("octant",octant);
-//        tl.update();
-//        sleep(3000);
-
-        //motor settings
-        driveMode = DriveMode.STRAIGHT;
-        int[] startingCount = new int[4];
-        for (int i = 0; i < 4; i++) {
-            wheels[i].motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            wheels[i].motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            wheels[i].motor.setTargetPosition(wheels[i].motor.getCurrentPosition() + (int) distance);
-            startingCount[i] = wheels[i].motor.getCurrentPosition();
-        }
-
-        for (int i = 0; i < 4; i++) {
-            wheels[i].motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        }
-
-        //servo settings
-        double[] newServoPositions = new double[4];
-        Arrays.fill(newServoPositions, heading);
-        changeServoPositions(newServoPositions);
-
-        //imu initialization
-        orientationSensor.enableCorrections(true);
-        targetHeading = orientationSensor.getHeading();
-
-        //start powering wheels
-        for (WheelAssembly wheel : wheels) wheel.motor.setPower(power);
-
-        //record time
-        long iniTime = System.currentTimeMillis();
-
-        //waiting loop
-        while (wheels[0].motor.isBusy() && wheels[1].motor.isBusy() && wheels[2].motor.isBusy() && wheels[3].motor.isBusy()) {
-            // check and correct heading as needed
-            double sensorHeading = orientationSensor.getHeading();
-            headingDeviation = targetHeading - sensorHeading;
-            debug("driveStraight(): target=%+.2f, sensor=%+.2f, adjustment=%+.2f)",
-                    targetHeading, sensorHeading, headingDeviation);
-            if (Math.abs(headingDeviation) > 0.5) {//was 0.5
-                servoCorrection = headingDeviation / 2.0;//was 3.0
-                if (octant == 0) {  // right
-                    frontRight.servo.adjustPosition(servoCorrection);
-                    backRight.servo.adjustPosition(servoCorrection);
-                } else if (octant == 1) { // front right around 45
-                    frontLeft.servo.adjustPosition(servoCorrection);
-                    backRight.servo.adjustPosition(servoCorrection);
-                } else if (octant == 2) { // forward
-                    frontLeft.servo.adjustPosition(servoCorrection);
-                    frontRight.servo.adjustPosition(servoCorrection);
-                } else if (octant == 3) { // front left around 45
-                    frontRight.servo.adjustPosition(servoCorrection);
-                    backLeft.servo.adjustPosition(servoCorrection);
-                } else if (octant == 4) { // left
-                    frontLeft.servo.adjustPosition(servoCorrection);
-                    backLeft.servo.adjustPosition(servoCorrection);
-                } else if (octant == 5) { // back left around 45
-                    frontLeft.servo.adjustPosition(servoCorrection);
-                    backRight.servo.adjustPosition(servoCorrection);
-                } else if (octant == 6) { // backward
-                    backLeft.servo.adjustPosition(servoCorrection);
-                    backRight.servo.adjustPosition(servoCorrection);
-                } else { // back right around 45
-                    frontRight.servo.adjustPosition(servoCorrection);
-                    backLeft.servo.adjustPosition(servoCorrection);
-                }
-            } else {
-                servoCorrection = 0;
-//                if (distance < 0) {
-//                    backLeft.servo.setPosition(frontLeft.servo.getPosition());
-//                    backRight.servo.setPosition(frontRight.servo.getPosition());
-//                } else {
-//                    frontLeft.servo.setPosition(backLeft.servo.getPosition());
-//                    frontRight.servo.setPosition(backRight.servo.getPosition());
-//                }
-            }
-            //determine if target distance is reached
-            int maxTraveled = Integer.MIN_VALUE;
-            for (int i = 0; i < 4; i++) {
-                maxTraveled = Math.max(maxTraveled, Math.abs(wheels[i].motor.getCurrentPosition() - startingCount[i]));
-            }
-
-            if (maxTraveled / Math.abs(distance) > bufferPercentage) {
-                double traveledPercent = maxTraveled / Math.abs(distance);
-                if (traveledPercent >= 1.0)
-                    break;
-                double pow = (power - minPower) * Math.pow(1 - Math.pow((traveledPercent - cutoffPercent) / (1 - cutoffPercent), 2), 2) + minPower;
-                pow = Math.max(pow, minPower);
-                //(power - minPower)*(1-(traveledPercent - cutoffPercent)/(1-cutoffPercent) * (traveledPercent - cutoffPercent)/(1-cutoffPercent))* (1-(traveledPercent - cutoffPercent)/(1-cutoffPercent) * (traveledPercent - .8)/(1-.8)) + minPower;
-                for (WheelAssembly wheel : wheels) wheel.motor.setPower(pow);
-                //tl.addLine("in the last 20%");
-                //tl.addData("power output %f", pow);
-            } else {
-                //tl.addLine("in the first 80%");
-            }
-            //tl.update();
-            //determine if time limit is reached
-            if (System.currentTimeMillis() - iniTime > timeout)
-                break;
-
-            if (Thread.interrupted()) return;
-
-            //take care of other business
-            TaskManager.processTasks();
-            // yield handler
-            //this.core.yield();
-        }
-
-        for (WheelAssembly wheel : wheels) {
-            wheel.motor.setPower(0.0);
-            wheel.motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            wheel.motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        }
-
-        //tl.addData("number of loops %d",loop);
-        //tl.addData("ini encoder %d",iniEncoder);
-        //tl.addData("final encoder of loops %d",finalEncoder);
-        //tl.addData("total loop time %d",finalTime-iniTime);
-        //tl.update();
-        driveMode = DriveMode.STOP;
+        driveStraightAutoRunToPosition(power, cm, heading, 0.0, timeout);
     }
 
     public void driveStraightAutoRunToPosition(double power, double cm, double heading, double beginTaskPercent, int timeout) throws InterruptedException {
@@ -950,7 +790,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
 
             double traveledPercent = maxTraveled / Math.abs(distance);
             if (traveledPercent > bufferPercentage) {
-                if (traveledPercent >= 1.0)
+                if (traveledPercent >= 0.99)
                     break;
                 double pow = (power - minPower) * Math.pow(1 - Math.pow((traveledPercent - cutoffPercent) / (1 - cutoffPercent), 2), 2) + minPower;
                 //(power - minPower)*(1-(traveledPercent - cutoffPercent)/(1-cutoffPercent) * (traveledPercent - cutoffPercent)/(1-cutoffPercent))* (1-(traveledPercent - cutoffPercent)/(1-cutoffPercent) * (traveledPercent - .8)/(1-.8)) + minPower;
@@ -964,8 +804,8 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             //determine if time limit is reached
             if (System.currentTimeMillis() - iniTime > timeout)
                 break;
-            if (Thread.currentThread().isInterrupted())
-                break;
+            if (Thread.interrupted())
+                return;
 
             //take care of other business
             if (traveledPercent > beginTaskPercent) {
@@ -985,7 +825,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     }
 
     public void driveStraightAutoRunToPositionNoIMU(double power, double cm, double heading, int timeout) throws InterruptedException {
-        if (Thread.currentThread().isInterrupted()) return;
+        if (Thread.interrupted()) return;
         debug("driveStraight(pwr: %.3f, head: %.1f)", power, heading);
         if (power < 0 || power > 1) {
             throw new IllegalArgumentException("Power must be between 0 and 1");
@@ -1040,7 +880,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             }
             if (maxTraveled / Math.abs(distance) > bufferPercentage) {
                 double traveledPercent = maxTraveled / Math.abs(distance);
-                if (traveledPercent >= 1.0)
+                if (traveledPercent >= 0.99)
                     break;
                 double pow = (power - minPower) * Math.pow(1 - Math.pow((traveledPercent - cutoffPercent) / (1 - cutoffPercent), 2), 2) + minPower;
                 pow = Math.max(pow, minPower);
@@ -1054,8 +894,8 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             //determine if time limit is reached
             if (System.currentTimeMillis() - iniTime > timeout)
                 break;
-            if (Thread.currentThread().isInterrupted())
-                break;
+            if (Thread.interrupted())
+                return;
 
             //take care of other business
             TaskManager.processTasks();
@@ -1078,7 +918,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     }
 
     public void driveStraightAutoRunToWall(double power, double cm, Direction dir, int timeout) throws InterruptedException {
-        if (Thread.currentThread().isInterrupted()) return;
+        if (Thread.interrupted()) return;
 
         if (power < 0 || power > 1) {
             throw new IllegalArgumentException("Power must be between 0 and 1");
@@ -1210,8 +1050,8 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             //determine if time limit is reached
             if (System.currentTimeMillis() - iniTime > timeout)
                 break;
-            if (Thread.currentThread().isInterrupted())
-                break;
+            if (Thread.interrupted())
+                return;
 
             //take care of other business
             TaskManager.processTasks();
@@ -1462,17 +1302,27 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
 
     public void rotateTo(double power, double finalHeading) throws InterruptedException {
         if (Thread.interrupted()) return;
-        rawRotateTo(power, finalHeading, true);//!!! A very bold move
+        rawRotateTo(power, finalHeading, true, 3000);//!!! A very bold move
         if (Thread.interrupted()) return;
         if (power > 0.25) {
             sleep(100);
-            rawRotateTo(0.2, finalHeading, false);
+            rawRotateTo(0.22, finalHeading, false, 3000);
+        }
+    }
+
+    public void rotateTo(double power, double finalHeading, int timeout) throws InterruptedException {
+        if (Thread.interrupted()) return;
+        rawRotateTo(power, finalHeading, true, timeout);//!!! A very bold move
+        if (Thread.interrupted()) return;
+        if (power > 0.25) {
+            sleep(100);
+            rawRotateTo(0.22, finalHeading, false, 1000);
         }
     }
 
     //final heading needs to be with in range(-180,180]
-    public void rawRotateTo(double power, double finalHeading, boolean stopEarly) throws InterruptedException {
-        if (Thread.currentThread().isInterrupted()) return;
+    public void rawRotateTo(double power, double finalHeading, boolean stopEarly, int timeout) throws InterruptedException {
+        if (Thread.interrupted()) return;
         debug("rotateT0(pwr: %.3f, finalHeading: %.1f)", power, finalHeading);
         double iniHeading = orientationSensor.getHeading();
         double deltaD = finalHeading - iniHeading;
@@ -1514,7 +1364,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             if (deltaD > 0 && currentHeading - finalHeading > 0) break;
             if (deltaD < 0 && currentHeading - finalHeading < 0) break;
             //timeout, break. default timeout: 3s
-            if (System.currentTimeMillis() - iniTime > 3000) break;
+            if (System.currentTimeMillis() - iniTime > timeout) break;
             //stop pressed, break
             if (Thread.interrupted()) return;
             lastReading = currentHeading;
