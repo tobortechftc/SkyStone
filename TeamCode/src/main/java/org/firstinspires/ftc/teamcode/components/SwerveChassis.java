@@ -62,7 +62,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     // wheel radius, inches
     private double wheelRadius = 2.0;
     // minimum power that should be applied to the wheel motors for robot to start moving
-    private double minPower = 0.35;
+    private double minPower = 0.4;
     // maximum power that should be applied to the wheel motors
     private double maxPower = 1.0;
     // the ratio of the distance that should be drove with desired power
@@ -785,6 +785,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                 if (traveledPercent >= 1.0)
                     break;
                 double pow = (power - minPower) * Math.pow(1 - Math.pow((traveledPercent - cutoffPercent) / (1 - cutoffPercent), 2), 2) + minPower;
+                pow = Math.max(pow, minPower);
                 //(power - minPower)*(1-(traveledPercent - cutoffPercent)/(1-cutoffPercent) * (traveledPercent - cutoffPercent)/(1-cutoffPercent))* (1-(traveledPercent - cutoffPercent)/(1-cutoffPercent) * (traveledPercent - .8)/(1-.8)) + minPower;
                 for (WheelAssembly wheel : wheels) wheel.motor.setPower(pow);
                 //tl.addLine("in the last 20%");
@@ -1042,6 +1043,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                 if (traveledPercent >= 1.0)
                     break;
                 double pow = (power - minPower) * Math.pow(1 - Math.pow((traveledPercent - cutoffPercent) / (1 - cutoffPercent), 2), 2) + minPower;
+                pow = Math.max(pow, minPower);
                 //(power - minPower)*(1-(traveledPercent - cutoffPercent)/(1-cutoffPercent) * (traveledPercent - cutoffPercent)/(1-cutoffPercent))* (1-(traveledPercent - cutoffPercent)/(1-cutoffPercent) * (traveledPercent - .8)/(1-.8)) + minPower;
                 for (WheelAssembly wheel : wheels) wheel.motor.setPower(pow);
 

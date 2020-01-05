@@ -340,6 +340,10 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             grabber.setPosition(GRABBER_OPEN);
         isGrabberOpened = true;
     }
+    public void grabberOpenAuto () {
+        grabber.setPosition(GRABBER_OPEN);
+        isGrabberOpened = true;
+    }
 
     public void grabberReGrab () {
         if (grabber==null) return;
