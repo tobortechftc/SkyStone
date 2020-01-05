@@ -1231,7 +1231,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             chassis.rotateTo(auto_chassis_align_power, 0);
             sleep(200);
             skyStonePosition = chassis.skyStoneLocation(isBlue); // using color sensors need to be close enough to the stones
-            chassis.driveStraightAutoRunToPosition(auto_chassis_power_slow, -2, 0, 1000);
+            chassis.driveStraightAutoRunToPosition(auto_chassis_power_slow, -2, 0, 500);
         }
 
 //        telemetry.addData("skeystone=","%s",skyStonePosition.toString());
@@ -1240,19 +1240,19 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
         if (!isBlue) { // Red side
             if ((skyStonePosition == SkystoneLocation.LEFT) || skyStonePosition == SkystoneLocation.UNKNOWN) {
-                chassis.driveStraightAutoRunToPositionNoIMU(auto_chassis_power_slow, 13, 90 * side, 3000);  // test to get exact numbers
+                chassis.driveStraightAutoRunToPositionNoIMU(auto_chassis_power_slow, 13, 90 * side, 500);  // test to get exact numbers
             } else if (skyStonePosition == ToboSigma.SkystoneLocation.CENTER) {
-                chassis.driveStraightAutoRunToPositionNoIMU(auto_chassis_power_slow, 7, -90 * side, 3000);  // test to get exact numbers
+                chassis.driveStraightAutoRunToPositionNoIMU(auto_chassis_power_slow, 7, -90 * side, 700);  // test to get exact numbers
             } else { // if (skyStonePosition == ToboSigma.SkystoneLocation.RIGHT) {
-                chassis.driveStraightAutoRunToPositionNoIMU(auto_chassis_power_slow, 27, -90 * side, 3000);  // test to get exact numbers
+                chassis.driveStraightAutoRunToPositionNoIMU(auto_chassis_power_slow, 27, -90 * side, 1000);  // test to get exact numbers
             }
         } else { // Blue side
             if (skyStonePosition == ToboSigma.SkystoneLocation.RIGHT || skyStonePosition == SkystoneLocation.UNKNOWN) {
-                chassis.driveStraightAutoRunToPositionNoIMU(auto_chassis_power_slow, 8, 90 * side, 3000);  // test to get exact numbers
+                chassis.driveStraightAutoRunToPositionNoIMU(auto_chassis_power_slow, 8, 90 * side, 500);  // test to get exact numbers
             } else if (skyStonePosition == ToboSigma.SkystoneLocation.CENTER) {
-                chassis.driveStraightAutoRunToPositionNoIMU(auto_chassis_power_slow, 13, -90 * side, 3000); // test to get exact numbers
+                chassis.driveStraightAutoRunToPositionNoIMU(auto_chassis_power_slow, 13, -90 * side, 700); // test to get exact numbers
             } else { // skyStonePosition == ToboSigma.SkystoneLocation.LEFT
-                chassis.driveStraightAutoRunToPositionNoIMU(auto_chassis_power_slow, 30, -90 * side, 3000);  // test to get exact numbers
+                chassis.driveStraightAutoRunToPositionNoIMU(auto_chassis_power_slow, 30, -90 * side, 1000);  // test to get exact numbers
             }
         }
 
@@ -1279,8 +1279,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         // go to foundation
 
 
-//=================================Parallelized region=======================================
-//        stoneGrabber.armInComboAuto(true);
+        //=================================Parallelized region=======================================
+        //        stoneGrabber.armInComboAuto(true);
         stoneGrabber.armInCombo(true, true);
         chassis.driveStraightAutoRunToPosition(.7, -10, 0, 1000);
         chassis.rotateTo(auto_chassis_align_power, 0);
@@ -1295,6 +1295,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 TaskManager.processTasks();
             }
         }
+        // the following step acrossing the bridge
         chassis.driveStraightAutoRunToPosition(.7, 90 + 20 * ss_pos, -90 * side, 15000);
         while (!TaskManager.isComplete("Arm In Combo")) {
             TaskManager.processTasks();
@@ -1312,16 +1313,16 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             dForward = findFoundtaion(isBlue);
             dist = chassis.getDistance(isBlue ? SwerveChassis.Direction.LEFT : SwerveChassis.Direction.RIGHT);
         }
-        int d = 20;
-        if (dist - d > 3) {
-            chassis.driveStraightAutoRunToPosition(auto_chassis_power, dist - d, -90 * side, 15000);
+        dist = Math.min(dist-20, 55); // min for 55 cm as the range sensor is not accurate for long distance (over 50 cm) here.
+        if (dist > 3) {
+            chassis.driveStraightAutoRunToPosition(auto_chassis_power, dist, -90 * side, 3000);
         }
         if (dForward != 0) {
             chassis.driveStraightAutoRunToPosition(auto_chassis_power, dForward, 0, 2000);
         }
         if (Thread.currentThread().isInterrupted()) return 0;
 
-//=================================Parallelized region=======================================
+        //=================================Parallelized region=======================================
 
         return ss_pos;
     }
