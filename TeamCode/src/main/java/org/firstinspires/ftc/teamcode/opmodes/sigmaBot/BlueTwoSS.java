@@ -60,6 +60,8 @@ public class BlueTwoSS extends LinearOpMode {
             robot.intake.intakeDropInit();
         waitForStart();
         robot.runtime.reset();
+        robot.runtimeAuto.reset();
+
         // run until the end of the match (driver presses STOP or timeout)
         if (opModeIsActive()) {
             try {
@@ -68,7 +70,7 @@ public class BlueTwoSS extends LinearOpMode {
                 int ss_pos = robot.getFirstSkyStoneDefense(StoneLoc, isBlue, false );
                 robot.rotateFoundationNew(isBlue);
                 int count = 2;
-                if (getRuntime() < 20000){//may be too large - TYPICALLY AROUND 17-18
+                if (robot.runtimeAuto.seconds() < 20.0){//may be too large - TYPICALLY AROUND 17-18
                     robot.getAnotherSkyStoneNew(ss_pos, count, isBlue);
                 } else{
                     robot.parkAfterRotateNew(isBlue);

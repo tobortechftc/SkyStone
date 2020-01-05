@@ -62,7 +62,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     // wheel radius, inches
     private double wheelRadius = 2.0;
     // minimum power that should be applied to the wheel motors for robot to start moving
-    private double minPower = 0.4;
+    private double minPower = 0.35;
     // maximum power that should be applied to the wheel motors
     private double maxPower = 1.0;
     // the ratio of the distance that should be drove with desired power
@@ -297,6 +297,9 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             dist = rangeSensor.getDistance(DistanceUnit.CM);
             // yield handler
             this.core.yield();
+        }
+        if (direction==Direction.FRONT) { // use both two front sensor to improve the accuracy
+            dist = Math.min(dist, frontLeftRangeSensor.getDistance(DistanceUnit.CM));
         }
         if (dist > maxRange)
             dist = maxRange;
@@ -781,8 +784,8 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             }
 
             if (maxTraveled / Math.abs(distance) > bufferPercentage) {
-                double traveledPercent = maxTraveled / Math.abs(distance);
-                if (traveledPercent >= 1.0)
+                double traveledPercent = (double)maxTraveled / Math.abs(distance);
+                if (traveledPercent >= 0.99)
                     break;
                 double pow = (power - minPower) * Math.pow(1 - Math.pow((traveledPercent - cutoffPercent) / (1 - cutoffPercent), 2), 2) + minPower;
                 pow = Math.max(pow, minPower);
@@ -964,8 +967,8 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             //determine if time limit is reached
             if (System.currentTimeMillis() - iniTime > timeout)
                 break;
-            if (Thread.currentThread().isInterrupted())
-                break;
+            if (Thread.interrupted())
+                return;
 
             //take care of other business
             if (traveledPercent > beginTaskPercent) {
@@ -985,7 +988,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     }
 
     public void driveStraightAutoRunToPositionNoIMU(double power, double cm, double heading, int timeout) throws InterruptedException {
-        if (Thread.currentThread().isInterrupted()) return;
+        if (Thread.interrupted()) return;
         debug("driveStraight(pwr: %.3f, head: %.1f)", power, heading);
         if (power < 0 || power > 1) {
             throw new IllegalArgumentException("Power must be between 0 and 1");
@@ -1054,8 +1057,8 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             //determine if time limit is reached
             if (System.currentTimeMillis() - iniTime > timeout)
                 break;
-            if (Thread.currentThread().isInterrupted())
-                break;
+            if (Thread.interrupted())
+                return;
 
             //take care of other business
             TaskManager.processTasks();
@@ -1078,7 +1081,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     }
 
     public void driveStraightAutoRunToWall(double power, double cm, Direction dir, int timeout) throws InterruptedException {
-        if (Thread.currentThread().isInterrupted()) return;
+        if (Thread.interrupted()) return;
 
         if (power < 0 || power > 1) {
             throw new IllegalArgumentException("Power must be between 0 and 1");
@@ -1210,8 +1213,8 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             //determine if time limit is reached
             if (System.currentTimeMillis() - iniTime > timeout)
                 break;
-            if (Thread.currentThread().isInterrupted())
-                break;
+            if (Thread.interrupted())
+                return;
 
             //take care of other business
             TaskManager.processTasks();
@@ -1462,17 +1465,27 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
 
     public void rotateTo(double power, double finalHeading) throws InterruptedException {
         if (Thread.interrupted()) return;
-        rawRotateTo(power, finalHeading, true);//!!! A very bold move
+        rawRotateTo(power, finalHeading, true, 3000);//!!! A very bold move
         if (Thread.interrupted()) return;
         if (power > 0.25) {
             sleep(100);
-            rawRotateTo(0.2, finalHeading, false);
+            rawRotateTo(0.22, finalHeading, false, 3000);
+        }
+    }
+
+    public void rotateTo(double power, double finalHeading, int timeout) throws InterruptedException {
+        if (Thread.interrupted()) return;
+        rawRotateTo(power, finalHeading, true, timeout);//!!! A very bold move
+        if (Thread.interrupted()) return;
+        if (power > 0.25) {
+            sleep(100);
+            rawRotateTo(0.22, finalHeading, false, 1000);
         }
     }
 
     //final heading needs to be with in range(-180,180]
-    public void rawRotateTo(double power, double finalHeading, boolean stopEarly) throws InterruptedException {
-        if (Thread.currentThread().isInterrupted()) return;
+    public void rawRotateTo(double power, double finalHeading, boolean stopEarly, int timeout) throws InterruptedException {
+        if (Thread.interrupted()) return;
         debug("rotateT0(pwr: %.3f, finalHeading: %.1f)", power, finalHeading);
         double iniHeading = orientationSensor.getHeading();
         double deltaD = finalHeading - iniHeading;
@@ -1514,7 +1527,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             if (deltaD > 0 && currentHeading - finalHeading > 0) break;
             if (deltaD < 0 && currentHeading - finalHeading < 0) break;
             //timeout, break. default timeout: 3s
-            if (System.currentTimeMillis() - iniTime > 3000) break;
+            if (System.currentTimeMillis() - iniTime > timeout) break;
             //stop pressed, break
             if (Thread.interrupted()) return;
             lastReading = currentHeading;
