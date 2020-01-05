@@ -485,22 +485,23 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     public void setupTelemetry(Telemetry telemetry) {
         if (Thread.currentThread().isInterrupted()) return;
         Telemetry.Line line = telemetry.addLine();
+        line.addData(" | Team", new Func<String>() {
+            @Override
+            public String value() {
+                return String.format("%s\n",  (autoPara.isBlue() ? "Blue" : "Red"));
+            }
+        });
         line.addData("Lane", new Func<String>() {
             @Override
             public String value() {
-                return String.format("%s",  (autoPara.isLaneFront() ? "Front" : "Back"));
+                return String.format("%s\n",  (autoPara.isLaneFront() ? "Front" : "Back"));
             }
         });
-        line.addData("Team", new Func<String>() {
-            @Override
-            public String value() {
-                return String.format("%s",  (autoPara.isBlue() ? "Blue" : "Red"));
-            }
-        });
+
         line.addData("Offensive", new Func<String>() {
             @Override
             public String value() {
-                return String.format("%s",  (autoPara.isOffensive() ? "Yes" : "No"));
+                return String.format("%s\n",  (autoPara.isOffensive() ? "Yes" : "No"));
             }
         });
 
@@ -1189,7 +1190,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     public void parkAfterRotate(boolean isBlue) throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) return;
         int side = isBlue ? 1 : -1;
-        chassis.driveStraightAutoRunToPosition(.4, 85, side * 90, 1500);
+        chassis.driveStraightAutoRunToPosition(.4, 85, side * 90, 3000);
 
     }
 
@@ -1480,7 +1481,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     public void parkAfterRotateNew(boolean isBlue) throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) return;
         int side = isBlue ? 1 : -1;
-        chassis.driveStraightAutoRunToPosition(.4, 85, side * 90, 1500);
+        chassis.driveStraightAutoRunToPosition(.4, 85, side * 90, 3000);
 
     }
 
@@ -1489,9 +1490,13 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         chassis.driveStraightAutoRunToPosition(auto_chassis_power, 70, 0, 1500);
         if (offensive) {
             foundationHook.hookDown();
-            chassis.driveStraightAutoRunToPosition(auto_chassis_power, 111, 0, 1500);
-            chassis.driveStraightAutoRunToPosition(auto_chassis_power, -111, 0, 1500);
+            chassis.driveStraightAutoRunToPosition(auto_chassis_power, 70, 0, 1500);
+            chassis.driveStraightAutoRunToPosition(auto_chassis_power, -70, 0, 1500);
         }
+        chassis.rotateTo(.6,0);
+        double dist2 = chassis.getDistance(SwerveChassis.Direction.BACK);
+        if(dist2>128)dist2=70;
+        chassis.driveStraightAutoRunToPosition(auto_chassis_power,70-dist2,0,1500);
         rotateFoundation(isBlue, false);
         double dist = chassis.getDistance(isBlue?SwerveChassis.Direction.LEFT: SwerveChassis.Direction.RIGHT);
         if(dist>45) dist = 45;
@@ -1503,7 +1508,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         {
             chassis.driveStraightAutoRunToPosition(auto_chassis_power,10-dist,90*side,1500);
         }
-        chassis.driveStraightAutoRunToPosition(.4, -95, 0, 1500);
+        chassis.driveStraightAutoRunToPositionNoIMU(.4, -85, 0, 3000);
     }
 
     public void getFoundation(boolean isBlue, boolean laneTwo) throws InterruptedException {
