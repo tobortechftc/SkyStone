@@ -827,13 +827,16 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
         chassis.rotateTo(.5, isBlue ? -90 : +90);
         stoneGrabber.lifterDownCombo();
-
+        long iniTime = System.currentTimeMillis();
+        while (System.currentTimeMillis()-iniTime<200){
+            TaskManager.processTasks();
+        }
         chassis.driveStraightAutoRunToPositionNoIMU(0.7, 135 - stoneX, 0, 5000);//used to use IMU
         //==========================arriving before foundation=================================
-        double distanceToFoundation = Math.min(chassis.getDistance(SwerveChassis.Direction.FRONT_LEFT), chassis.getDistance(SwerveChassis.Direction.FRONT_RIGHT));
-        telemetry.addLine("distance to foundation : " + distanceToFoundation);
-        telemetry.update();
-        sleep(100);
+        double disLeft = chassis.getDistance(SwerveChassis.Direction.FRONT_LEFT);
+        double disRight = chassis.getDistance(SwerveChassis.Direction.FRONT_RIGHT);
+        double distanceToFoundation = Math.min(Math.min(disLeft, disRight),70);
+        
         if (distanceToFoundation > 5) {
             chassis.driveStraightAutoRunToPositionNoIMU(0.5, distanceToFoundation - 5, 0, 2000);
         }
