@@ -72,7 +72,8 @@ public class SigmaAutoBlueSSonFoundation extends LinearOpMode {
             // put autonomous steps here
             // step-1: detect skystone location
             StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF(false);
-
+            telemetry.addLine("Stone loc "+StoneLoc);
+            telemetry.update();
             // step-2: go to grab the first skystone and deliver
             robot.approachStone(StoneLoc, isBlue, isLeft);
             robot.chassis.driveStraightAutoRunToPosition(0.45, Math.abs(nextStoneX(StoneLoc, 0)), nextStoneX(StoneLoc, 0) > 0 ? -90 : +90, 5000);//power was 0.5
@@ -98,7 +99,7 @@ public class SigmaAutoBlueSSonFoundation extends LinearOpMode {
 
     static final int[] CENTER_ORDER = {4, 1, 5, 3, 2, 0};
     static final int[] LEFT_ORDER = {5, 2, 4, 3, 1, 0};
-    static final int[] RIGHT_ORDER = {3, 5, 4, 2, 1, 0};
+    static final int[] RIGHT_ORDER = {3, 2, 4, 5, 1, 0};//was {3, 5, 4, 2, 1, 0};
 
     int getStoneId(ToboSigma.SkystoneLocation ssloc, int count) {
         int stoneID;
