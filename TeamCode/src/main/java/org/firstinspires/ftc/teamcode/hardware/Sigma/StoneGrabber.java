@@ -676,7 +676,12 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     public void armInCombo(final boolean wristParallel, boolean isAuto) {
         final String taskName = "Arm In Combo";
         if (!TaskManager.isComplete(taskName)) return;
-        boolean grabIsOpened = isGrabberOpened;
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                return moveGrabber(true);
+            }
+        }, taskName);
         if (wristParallel!=isWristParallel) {
             TaskManager.add(new Task() {
                 @Override
@@ -763,22 +768,6 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 };
             }
         }, taskName);
-
-//        if (wristParallel && grabIsOpened) { // restore grabber to open
-//            TaskManager.add(new Task() {
-//                @Override
-//                public Progress start() {
-//                    return moveGrabber(false);
-//                }
-//            }, taskName);
-//        }
-//        TaskManager.add(new Task() {
-//            @Override
-//            public Progress start() {
-//                return moveArm(ARM_DOWN);
-//            }
-//        }, taskName);
-
     }
 
     public void grabStoneComboAuto() {

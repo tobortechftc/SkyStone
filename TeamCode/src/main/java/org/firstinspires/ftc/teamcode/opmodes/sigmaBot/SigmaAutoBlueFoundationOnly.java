@@ -19,7 +19,6 @@ import java.util.List;
  * Created by 28761 on 6/29/2019.
  */
 @Disabled
-
 @Autonomous(name="Sigma-Blue-Left-FoundationOnly", group="Sigma")
 public class SigmaAutoBlueFoundationOnly extends LinearOpMode implements YieldHandler {
     private ToboSigma.SkystoneLocation StoneLoc;
