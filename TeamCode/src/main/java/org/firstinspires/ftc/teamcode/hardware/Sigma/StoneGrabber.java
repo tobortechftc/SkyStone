@@ -380,7 +380,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         double adjustment = Math.abs(grabber.getPosition() - target);
         debug("moveGrabber(): target=%.2f, adjustment=%.2f", target, adjustment);
         // entire move from up to down takes 1 seconds
-        final long doneBy = System.currentTimeMillis() + Math.round(800 * adjustment);
+        final long doneBy = System.currentTimeMillis() + Math.round(1000 * adjustment);
         grabber.setPosition(target);
         return new Progress() {
             @Override
@@ -968,19 +968,13 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
-                grabberClose();
-                return new Progress() {
-                    @Override
-                    public boolean isDone() {
-                        return true;
-                    }
-                };
+                return moveArm(ARM_DOWN_SAFE);
             }
         }, taskName);
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
-                return moveArm(ARM_DOWN_SAFE);
+                return moveGrabber(true);
             }
         }, taskName);
     }

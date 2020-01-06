@@ -18,7 +18,7 @@ import java.util.List;
  * Created by 28761 on 6/29/2019.
  */
 
-@Autonomous(name = "Sigma-Red-Stone-on-Foundation", group = "Sigma")
+@Autonomous(name = "Red-Stones-Only", group = "Sigma")
 public class SigmaAutoRedSSonFoundation extends LinearOpMode {
     private ToboSigma.SkystoneLocation StoneLoc;
 

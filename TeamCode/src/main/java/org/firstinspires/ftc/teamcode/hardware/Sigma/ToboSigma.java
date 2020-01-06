@@ -1511,6 +1511,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
     public void autoFoundationOnly(boolean isBlue, boolean laneFront, boolean offensive) throws InterruptedException {
         int side = isBlue ? 1 : -1;
+        chassis.driveStraightAutoRunToPosition(auto_chassis_power,20,-90*side,1500);
         chassis.driveStraightAutoRunToPosition(auto_chassis_power, 70, 0, 1500);
         if (offensive) {
             foundationHook.hookDown();
