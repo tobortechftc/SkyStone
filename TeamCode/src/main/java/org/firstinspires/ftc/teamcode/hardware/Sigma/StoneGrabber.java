@@ -949,7 +949,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 armDown();
                 return new Progress() {
                     @Override
-                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < LIFT_RUN_TO_POSITION_OFFSET;
+                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 100;
                     }
                 };
             }
