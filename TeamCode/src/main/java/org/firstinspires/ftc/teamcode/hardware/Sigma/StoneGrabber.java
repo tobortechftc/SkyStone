@@ -37,7 +37,8 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double ARM_UP = 0.06;
     private final double ARM_READY_GRAB = 0.96;
     private final double ARM_DOWN = 0.86;  // right position to grab stone inside
-    private final double ARM_DOWN_MORE = ARM_DOWN+0.08;  // right position to grab stone inside
+    private final double ARM_DOWN_MORE = ARM_DOWN+0.06;  // right position to grab stone inside
+    private final double ARM_DOWN_MORE_CAP = ARM_DOWN+0.09;  // right position to grab stone inside
     private final double ARM_DOWN_SAFE = 0.86;
     private final double ARM_INITIAL = 0.82;
     private final double ARM_OUT_INIT = 0.45;
@@ -830,64 +831,67 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     public void grabCapStoneCombo() {
         final String taskName = "Grab Cap Stone Combo";
         if (!TaskManager.isComplete(taskName)) return;
-
-        TaskManager.add(new Task() {
-            @Override
-            public Progress start() {
-                return moveArm(ARM_DOWN_MORE);
-            }
-        }, taskName);
-        TaskManager.add(new Task() {
-            @Override
-            public Progress start() {
-                return moveGrabber(false); // open grabber
-            }
-        }, taskName);
-        TaskManager.add(new Task() {
-            @Override
-            public Progress start() {
-                return moveArm(ARM_DOWN_SAFE);
-            }
-        }, taskName);
-        TaskManager.add(new Task() {
-            @Override
-            public Progress start() {
-                return moveGrabber(true); // close grabber
-            }
-        }, taskName);
-        TaskManager.add(new Task() {
-            @Override
-            public Progress start() {
-                capstoneServoOut();
-                moveWristForCapstone();
-                return moveArm(ARM_CAPSTONE);
-            }
-        }, taskName);
-        TaskManager.add(new Task() {
-            @Override
-            public Progress start() {
-                return liftToPosition(LIFT_UP_BEFORE_CAP, true);
-            }
-        }, taskName);
-        TaskManager.add(new Task() {
-            @Override
-            public Progress start() {
-                return moveArm(ARM_CAPSTONE_MORE);
-            }
-        }, taskName);
-        TaskManager.add(new Task() {
-            @Override
-            public Progress start() {
-                return liftToPosition(LIFT_UP_FINAL_CAP, true);
-            }
-        }, taskName);
-        TaskManager.add(new Task() {
-            @Override
-            public Progress start() {
-                capstoneServoInit();
-                return moveWrist( true);
-            }
-        }, taskName);
+        boolean isLiftUp = (lifter.getCurrentPosition()>=LIFT_GRAB);
+        if (!isLiftUp) { // stage-1
+            TaskManager.add(new Task() {
+                @Override
+                public Progress start() {
+                    return moveArm(ARM_DOWN_MORE_CAP);
+                }
+            }, taskName);
+            TaskManager.add(new Task() {
+                @Override
+                public Progress start() {
+                    return moveGrabber(false); // open grabber
+                }
+            }, taskName);
+            TaskManager.add(new Task() {
+                @Override
+                public Progress start() {
+                    return moveArm(ARM_DOWN_SAFE);
+                }
+            }, taskName);
+            TaskManager.add(new Task() {
+                @Override
+                public Progress start() {
+                    return moveGrabber(true); // close grabber
+                }
+            }, taskName);
+            TaskManager.add(new Task() {
+                @Override
+                public Progress start() {
+                    capstoneServoOut();
+                    moveWristForCapstone();
+                    return moveArm(ARM_CAPSTONE);
+                }
+            }, taskName);
+            TaskManager.add(new Task() {
+                @Override
+                public Progress start() {
+                    return liftToPosition(LIFT_UP_BEFORE_CAP, true);
+                }
+            }, taskName);
+            TaskManager.add(new Task() {
+                @Override
+                public Progress start() {
+                    return moveArm(ARM_CAPSTONE_MORE);
+                }
+            }, taskName);
+        } else { // stage-2
+            TaskManager.add(new Task() {
+                @Override
+                public Progress start() {
+                    return liftToPosition(LIFT_UP_FINAL_CAP, true);
+                }
+            }, taskName);
+            TaskManager.add(new Task() {
+                @Override
+                public Progress start() {
+                    capstoneServoInit();
+                    return moveWrist(true);
+                }
+            }, taskName);
+        }
 //        TaskManager.add(new Task() {
 //            @Override
 //            public Progress start() {
