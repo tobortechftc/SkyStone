@@ -11,6 +11,7 @@ import org.firstinspires.ftc.teamcode.support.Logger;
 import org.firstinspires.ftc.teamcode.support.OpModeTerminationException;
 import org.firstinspires.ftc.teamcode.support.YieldHandler;
 import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
+import org.firstinspires.ftc.teamcode.support.tasks.TaskManager;
 
 import java.util.List;
 
@@ -78,15 +79,17 @@ public class SigmaAutoBlueSSonFoundation extends LinearOpMode {
             double currentDistance = robot.grabStoneAndDeliverOnFoundation(nextStoneX(StoneLoc, 0), true, true);
             robot.chassis.rotateTo(0.2, -90.0);//it's working now
             //go to second sky stone
-            robot.chassis.driveStraightAutoRunToPositionNoIMU(0.70, nextStoneX(StoneLoc, 1) - currentDistance - 8, 0, 5000);
-            robot.chassis.rotateTo(0.5, 0);
+            robot.chassis.driveStraightAutoRunToPositionNoIMU(0.75, nextStoneX(StoneLoc, 1) - currentDistance - 8, 0, 5000);
+            robot.chassis.rotateTo(0.6, 0);
             robot.stoneGrabber.grabberOpen();
             robot.stoneGrabber.armOutComboAuto();
             currentDistance = robot.grabStoneAndDeliverOnFoundation(nextStoneX(StoneLoc, 1), false, true);
 
             // park
-            robot.chassis.driveStraightAutoRunToPosition(0.7, -(currentDistance - 135) - 40, 0, 3000);
-
+            robot.chassis.driveStraightAutoRunToPosition(0.75, -(currentDistance - 135) - 40, 0, 3000);
+            while (!TaskManager.isComplete("Arm In Combo")) {
+                TaskManager.processTasks();
+            }
         } catch (Exception E) {
             telemetry.addData("Error in event handler", E.getMessage());
             handleException(E);

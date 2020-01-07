@@ -79,13 +79,13 @@ public class SigmaAutoRedSSonFoundation extends LinearOpMode {
             double currentDistance = robot.grabStoneAndDeliverOnFoundation(nextStoneX(StoneLoc, 0), true, isBlue);
             //go to second sky stone
             robot.chassis.driveStraightAutoRunToPositionNoIMU(0.70, nextStoneX(StoneLoc, 1) - currentDistance - 6, 0, 5000);
-            robot.chassis.rotateTo(0.5, 0);
+            robot.chassis.rotateTo(0.6, 0);
             robot.stoneGrabber.grabberOpen();
             robot.stoneGrabber.armOutComboAuto();
             currentDistance = robot.grabStoneAndDeliverOnFoundation(nextStoneX(StoneLoc, 1), false, isBlue);
 
             // park
-            robot.chassis.driveStraightAutoRunToPosition(0.7, -(currentDistance - 135)-40, 0, 3000);
+            robot.chassis.driveStraightAutoRunToPosition(0.75, -(currentDistance - 135)-40, 0, 3000);
 
         } catch (Exception E) {
             telemetry.addData("Error in event handler", E.getMessage());
