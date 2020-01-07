@@ -305,7 +305,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         double adjustment = Math.abs(grabber.getPosition() - target);
         debug("moveWrist(): target=%.2f, adjustment=%.2f", target, adjustment);
         // entire move from parallel to vertical takes 2 seconds
-        final long doneBy = System.currentTimeMillis() + Math.round(800 * adjustment);
+        final long doneBy = System.currentTimeMillis() + Math.round(700 * adjustment);
         wrist.setPosition(target);
         return new Progress() {
             @Override
@@ -320,7 +320,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         double adjustment = Math.abs(grabber.getPosition() - target);
         debug("moveWrist(): target=%.2f, adjustment=%.2f", target, adjustment);
         // entire move from parallel to vertical takes 2 seconds
-        final long doneBy = System.currentTimeMillis() + Math.round(800 * adjustment);
+        final long doneBy = System.currentTimeMillis() + Math.round(700 * adjustment);
         wrist.setPosition(target);
         return new Progress() {
             @Override
@@ -381,7 +381,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         double adjustment = Math.abs(grabber.getPosition() - target);
         debug("moveGrabber(): target=%.2f, adjustment=%.2f", target, adjustment);
         // entire move from up to down takes 1 seconds
-        final long doneBy = System.currentTimeMillis() + Math.round(1000 * adjustment);
+        final long doneBy = System.currentTimeMillis() + Math.round(900 * adjustment);
         grabber.setPosition(target);
         return new Progress() {
             @Override
@@ -431,6 +431,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     }
 
     public void liftResetEncoder() {
+        lifter.setPower(0);
         lifter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
@@ -453,7 +454,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 return;
             }
         }
-        if (slow)
+        if (slow || force)
             lifter.setPower(LIFT_POWER_SLOW);
         else
             lifter.setPower(LIFT_POWER);
@@ -468,7 +469,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 return;
             }
         }
-        if (slow)
+        if (slow || force)
             lifter.setPower(-LIFT_POWER_SLOW_DOWN);
         else
             lifter.setPower(-LIFT_POWER);
@@ -513,7 +514,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         else
             armIsDown = false;
         // 3.3ms per degree of rotation
-        final long doneBy = System.currentTimeMillis() + Math.round(adjustment * 900);
+        final long doneBy = System.currentTimeMillis() + Math.round(adjustment * 800);
         return new Progress() {
             @Override
             public boolean isDone() {
