@@ -15,9 +15,9 @@
     "right": 0.797
   },
   "servoBackLeft": {
-    "center": 0.537,
-    "left": 0.228,
-    "right": 0.830
+    "center": 0.525,
+    "left": 0.212,
+    "right": 0.814
   },
   "arm": {
     "center": 0.5,
