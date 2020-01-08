@@ -5,9 +5,9 @@
     "right": 0.804
   },
   "servoBackRight": {
-    "center": 0.490,
-    "left": 0.174,
-    "right": 0.777
+    "center": 0.506,
+    "left": 0.198,
+    "right": 0.797
   },
   "servoFrontLeft": {
     "center": 0.513,
