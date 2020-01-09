@@ -69,7 +69,7 @@ public class SigmaAutoBlueFoundationOnly extends LinearOpMode implements YieldHa
             try {
                 boolean isBlue = true;
                 boolean isLeft = false;
-                robot.autoFoundationOnly(true,true,false);
+                robot.autoBackupProgram(true,true,false,false);
                 // put autonomous steps here
                 // step-1: detect skystone location
                 //StoneLoc = ToboSigma.SkystoneLocation.LEFT; // robot.cameraStoneDetector.getSkystonePositionTF(robot_pos);

@@ -35,11 +35,11 @@ public class FoundationHook extends Logger<FoundationHook> implements Configurab
 
     private final double LEFT_HOOK_INIT = 0.1;
     private final double LEFT_HOOK_UP = 0.16;
-    private final double LEFT_HOOK_DOWN = 0.636;
+    private final double LEFT_HOOK_DOWN = 0.61;
 
     private final double RIGHT_HOOK_INIT = 0.87;
     private final double RIGHT_HOOK_UP = 0.74;
-    private final double RIGHT_HOOK_DOWN = .267;
+    private final double RIGHT_HOOK_DOWN = .273;
 
     private boolean hookIsDown = false;
     private ElapsedTime runtime = new ElapsedTime();

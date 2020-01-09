@@ -32,6 +32,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         boolean isBlue = true;
         boolean laneFront = true;
         boolean offensive = false;
+        boolean parkOnly = false;
         boolean isDone = false;
 
         public boolean isDone() {
@@ -48,6 +49,11 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
         public boolean isOffensive() {
             return offensive;
+        }
+
+        public boolean isParkOnly()
+        {
+            return parkOnly;
         }
     }
 
@@ -488,31 +494,37 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     public void setupTelemetry(Telemetry telemetry) {
         if (Thread.currentThread().isInterrupted()) return;
         Telemetry.Line line = telemetry.addLine();
-        line.addData(" | Team", new Func<String>() {
+        line.addData(" | <B> Team", new Func<String>() {
             @Override
             public String value() {
                 return String.format("%s\n",  (autoPara.isBlue() ? "Blue" : "Red"));
             }
         });
-        line.addData("Lane", new Func<String>() {
+        line.addData("<A> Lane", new Func<String>() {
             @Override
             public String value() {
                 return String.format("%s\n",  (autoPara.isLaneFront() ? "Front" : "Back"));
             }
         });
-
+        /*
         line.addData("Offensive", new Func<String>() {
             @Override
             public String value() {
                 return String.format("%s\n",  (autoPara.isOffensive() ? "Yes" : "No"));
             }
         });
-
+        */
+        line.addData("<Y> Park Only", new Func<String>() {
+            @Override
+            public String value() {
+                return String.format("%s\n",  (autoPara.isParkOnly() ? "Yes" : "No"));
+            }
+        });
     }
 
     @MenuEntry(label = "Auto Backup", group = "Competition")
     public void AutoBackup(EventManager em) {
-        telemetry.addLine().addData(" <A|B|Y|X>", "Lane/Team/Offsesive/Done").setRetained(true);
+        telemetry.addLine().addData(" | <X>", "Done").setRetained(true);
         setupTelemetry(telemetry);
 
         em.updateTelemetry(telemetry, 100);
@@ -526,7 +538,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         em.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
-                autoPara.offensive = !autoPara.offensive;
+                autoPara.parkOnly = !autoPara.parkOnly;
             }
         }, new Button[]{Button.Y});
 
@@ -1188,24 +1200,24 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         if (moveArm)
             chassis.driveStraightAutoRunToPosition(auto_chassis_power, isBlue ? 23 : 28, 0, 1000);
         foundationHook.hookDown();
-        chassis.driveStraightSec(0.25, 0.3, false);
+        chassis.driveStraightSec(0.25, 0.5, false);
         if (moveArm)
             stoneGrabber.armOutCombo();
-        chassis.driveStraightAutoRunToPositionNoIMU(auto_chassis_power, -40, -45 * side, 1500);
+        chassis.driveStraightAutoRunToPositionNoIMU(.8, -50, -50 * side, 1500);//.7?
         /*while (!TaskManager.isComplete("Arm Out Combo")) {
             TaskManager.processTasks();
         }*/
         //stoneGrabber.wristPerpendicular();
         chassis.changeStopBehavior(false);
-        chassis.driveStraightSec(-.5, .2, true);
+        chassis.driveStraightSec(-.7, .2, true);
         if (moveArm)
             stoneGrabber.deliverStoneCombo(true);
-        chassis.rawRotateTo(.65, -90 * side, true, 3000);
+        chassis.rawRotateTo(.8, -85 * side, true, 3000);
         //stoneGrabber.deliverStoneCombo(true);
         chassis.changeStopBehavior(true);
-        chassis.driveStraightAutoRunToPosition(.6, 35, 0, 1000);
+        chassis.driveStraightAuto(.6, 35, 0, 1000);
         foundationHook.hookUp();
-        chassis.driveStraightAutoRunToPosition(auto_chassis_power, -10, 0, 1500);
+        chassis.driveStraightAuto(auto_chassis_power, -10, 0, 1500);
         if (moveArm) {
             stoneGrabber.armInCombo(false, true);
             chassis.rotateTo(.5, 0);
@@ -1519,20 +1531,32 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
     }
 
-    public void autoFoundationOnly(boolean isBlue, boolean laneFront, boolean offensive) throws InterruptedException {
+    public void autoBackupProgram(boolean isBlue, boolean laneFront, boolean offensive, boolean parkOnly) throws InterruptedException {
         int side = isBlue ? 1 : -1;
-        chassis.driveStraightAutoRunToPosition(auto_chassis_power,20,-90*side,1500);
+        if(parkOnly)
+        {
+            chassis.driveStraightAutoRunToPosition(.4,82,90*side,5000);
+            if(laneFront)
+            {
+                chassis.driveStraightAutoRunToPosition(.4,60,0,4000);
+            }
+            return;
+        }
+        chassis.driveStraightAutoRunToPosition(auto_chassis_power,10,-90*side,1500);
         chassis.driveStraightAutoRunToPosition(auto_chassis_power, 70, 0, 1500);
-        if (offensive) {
+        if (offensive)
+        {
             foundationHook.hookDown();
             chassis.driveStraightAutoRunToPosition(auto_chassis_power, 70, 0, 1500);
             chassis.driveStraightAutoRunToPosition(auto_chassis_power, -70, 0, 1500);
+            double dist2 = chassis.getDistance(SwerveChassis.Direction.BACK);
+            if (dist2 > 128) dist2 = 70;
+            chassis.driveStraightAutoRunToPosition(auto_chassis_power, 70 - dist2, 0, 1500);
+            chassis.rotateTo(.6, 0);
         }
-        chassis.rotateTo(.6,0);
-        double dist2 = chassis.getDistance(SwerveChassis.Direction.BACK);
-        if(dist2>128)dist2=70;
-        chassis.driveStraightAutoRunToPosition(auto_chassis_power,70-dist2,0,1500);
+
         rotateFoundation(isBlue, false);
+        chassis.rotateTo(0.25, -90*side);
         double dist = chassis.getDistance(isBlue ? SwerveChassis.Direction.LEFT : SwerveChassis.Direction.RIGHT);
         if (dist > 45) dist = 45;
         if (laneFront) {

@@ -5,14 +5,11 @@ import android.util.Log;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.hardware.Sigma.ToboSigma;
 import org.firstinspires.ftc.teamcode.support.Logger;
 import org.firstinspires.ftc.teamcode.support.events.EventManager;
 import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
 import org.firstinspires.ftc.teamcode.support.tasks.TaskManager;
-
-import java.util.List;
 
 /**
  * Created by 28761 on 6/29/2019.
@@ -86,7 +83,7 @@ public class AutoBackup extends LinearOpMode {
         try {
             telemetry.addData("Auto program:", "%s %s %s",(robot.autoPara.isBlue()?"Blue":"Red"),
                     (robot.autoPara.isLaneFront()?"Front":"Back"), (robot.autoPara.isOffensive()?"Offensive":""));
-            robot.autoFoundationOnly(robot.autoPara.isBlue(), robot.autoPara.isLaneFront(), robot.autoPara.isOffensive());
+            robot.autoBackupProgram(robot.autoPara.isBlue(), robot.autoPara.isLaneFront(), robot.autoPara.isOffensive(), robot.autoPara.isParkOnly());
         } catch (Exception E) {
             telemetry.addData("Error in event handler", E.getMessage());
             handleException(E);
