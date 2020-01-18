@@ -1644,6 +1644,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             motor.setPower(0.0d);
             motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+            motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
             if (resetServo) servo.reset();
         }
 

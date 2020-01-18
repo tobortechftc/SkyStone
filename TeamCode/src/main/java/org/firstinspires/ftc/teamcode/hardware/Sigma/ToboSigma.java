@@ -95,7 +95,6 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         this.telemetry = telemetry;
 
         autoPara = new AutoPara();
-
         this.core = new CoreSystem();
         info("RoboSigma configure() after new CoreSystem()(run time = %.2f sec)", (runtime.seconds() - ini_time));
         chassis = new SwerveChassis(this.core).configureLogging("Swerve", logLevel); // Log.DEBUG
@@ -183,7 +182,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                                    float currentY, float changeY) throws InterruptedException {
                 if (Math.abs(source.getStick(Events.Side.LEFT, Events.Axis.BOTH)) < 0.1) {
                     // right stick with idle left stick operates robot in "crab" mode
-                    double power = Math.abs(source.getStick(Events.Side.RIGHT, Events.Axis.BOTH));
+                    double power = Math.abs(source.getStick(Events.Side.RIGHT, Events.Axis.X_ONLY));
+                    power = Math.max(power, Math.abs(source.getStick(Events.Side.RIGHT, Events.Axis.Y_ONLY)));
                     power *= power; // square power to stick
                     double heading = toDegrees(currentX, currentY);
                     if (chassis.isReversed()) power *= -1;
