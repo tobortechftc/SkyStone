@@ -70,8 +70,11 @@ public class BlueTwoSS extends LinearOpMode {
                 int ss_pos = robot.getFirstSkyStoneDefense(StoneLoc, isBlue, false );
                 robot.rotateFoundationNew(isBlue);
                 int count = 2;
-                if (robot.runtimeAuto.seconds() < 20.0){//may be too large - TYPICALLY AROUND 17-18
+                if (robot.runtimeAuto.seconds() < 18.5){//may be too large - TYPICALLY AROUND 17-18
                     robot.getAnotherSkyStoneNew(ss_pos, count, isBlue);
+                    if(robot.runtimeAuto.seconds() < 29.0){
+                        robot.park2SS();
+                    }
                 } else{
                     robot.parkAfterRotateNew(isBlue);
                 }

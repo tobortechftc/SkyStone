@@ -1446,14 +1446,18 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         foundationHook.hookDown();
         //stoneGrabber.grabberOpen();
         if (toTake != 6) {
-            chassis.driveStraightAutoRunToPositionNoIMU(.8, 120 + 20 * (toTake - 3), 0, 15000);
+            chassis.driveStraightAutoRunToPositionNoIMU(.9, 120 + 20 * (toTake - 3), 0, 15000);
         } else {
-            chassis.driveStraightAutoRunToPositionNoIMU(.8, 100 + 20 * (toTake - 3), 0, 15000);
+            chassis.driveStraightAutoRunToPositionNoIMU(.9, 100 + 20 * (toTake - 3), 0, 15000);
         }
         if (Thread.interrupted()) return;
         stoneGrabber.grabberOpenAuto();
         if (Thread.interrupted()) return;
-        chassis.driveStraightAutoRunToPosition(.8, -40, 0, 15000);
+        //chassis.driveStraightAutoRunToPosition(.9, -40, 0, 15000);
+
+    }
+    public void park2SS() throws InterruptedException{
+        chassis.driveStraightAutoRunToPosition(.9, -40, 0, 15000);
 
     }
 
@@ -1466,15 +1470,15 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         chassis.driveStraightSec(0.25, 0.2, false);
 
         stoneGrabber.armOutCombo();
-        chassis.driveStraightAutoRunToPositionNoIMU(.8, -50, -50 * side, 1500);//.7?
+        chassis.driveStraightAutoRunToPositionNoIMU(.9, -45, -50 * side, 1500);//.7?
         /*while (!TaskManager.isComplete("Arm Out Combo")) {
             TaskManager.processTasks();
         }*/
         //stoneGrabber.wristPerpendicular();
         chassis.changeStopBehavior(false);
-        chassis.driveStraightSec(-.7, .2, true);
+        chassis.driveStraightSec(-.9, .2, true);
         stoneGrabber.deliverStoneCombo(true);
-        chassis.rawRotateTo(.8, -85 * side, true, 3000);
+        chassis.rawRotateTo(.95, -85 * side, true, 2000);
         //stoneGrabber.deliverStoneCombo(true);
         chassis.changeStopBehavior(true);
         chassis.driveStraightAutoRunToPosition(.9, 30, 0, 1000);
