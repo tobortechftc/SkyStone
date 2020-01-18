@@ -30,7 +30,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
     public class AutoPara {
         boolean isBlue = true;
-        boolean laneFront = true;
+        boolean laneFront = false;
         boolean offensive = false;
         boolean parkOnly = false;
         boolean isDone = false;
@@ -514,10 +514,10 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             }
         });
         */
-        line.addData("<Y> Park Only", new Func<String>() {
+        line.addData("<Y> Mode", new Func<String>() {
             @Override
             public String value() {
-                return String.format("%s\n",  (autoPara.isParkOnly() ? "Yes" : "No"));
+                return String.format("%s\n",  (autoPara.isParkOnly() ? "Park Only" : "Foundation and PArk"));
             }
         });
     }
