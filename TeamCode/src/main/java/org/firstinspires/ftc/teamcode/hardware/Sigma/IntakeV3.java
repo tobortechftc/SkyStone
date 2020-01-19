@@ -33,8 +33,8 @@ public class IntakeV3 extends Logger<IntakeV3> implements Configurable {
     private final double INTAKE_FAST = 0.8;
     private final double INTAKE_SPEED = 0.5;
 
-    private final double RIGHT_INTAKE_DROP_INIT = .999;
-    private final double RIGHT_INTAKE_DROP_DOWN = 0.094;
+    private final double RIGHT_INTAKE_DROP_INIT = .937;
+    private final double RIGHT_INTAKE_DROP_DOWN = 0.1;
 
     private boolean intakeDropDown = false;
     private boolean intakeOn = false;
@@ -44,7 +44,7 @@ public class IntakeV3 extends Logger<IntakeV3> implements Configurable {
 
     private final double GATE_SERVO_INIT = 0.543;
     private final double GATE_SERVO_OPEN = 0.543;
-    private final double GATE_SERVO_CLOSE = 0.2;
+    private final double GATE_SERVO_CLOSE = 0.12;
 
     private boolean isGateOpen = true;
 

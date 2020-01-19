@@ -375,7 +375,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 } else if (source.isPressed(Button.LEFT_BUMPER))
                     stoneGrabber.armInCombo(!source.isPressed(Button.BACK), false);
                 else if (source.isPressed((Button.RIGHT_BUMPER)))
-                    intake.gateServoClose();
+                    intake.gateServoAuto();
                 else
                     stoneGrabber.grabberAuto();
             }
@@ -554,7 +554,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         });
     }
 
-    @MenuEntry(label = "Auto Backup", group = "Competition")
+    @MenuEntry(label = "Auto Backup", group = "Competition-Auto")
     public void AutoBackup(EventManager em) {
         telemetry.addLine().addData(" | <X>", "Done").setRetained(true);
         setupTelemetry(telemetry);

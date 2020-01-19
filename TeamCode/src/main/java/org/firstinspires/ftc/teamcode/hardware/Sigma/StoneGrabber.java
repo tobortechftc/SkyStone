@@ -49,7 +49,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double ARM_OUT_AUTO = 0.41;
     private final double ARM_DOWN_FOR_CAP = 0.74;
     private final double ARM_CAPSTONE = 0.76;
-    private final double ARM_CAPSTONE_MORE = 0.8;
+    private final double ARM_CAPSTONE_MORE = 0.87;
     private final double ARM_DELIVER = 0.26;
     private final double ARM_DELIVER_HIGHER = 0.22;
     private final double ARM_DELIVER_THROW = 0.12;
@@ -71,10 +71,11 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final int LIFT_RUN_TO_POSITION_OFFSET = 150;  // V5.3, new control for goBilda 5205 motor
     private final int LIFT_DOWN_GRAB = 20;
     private final int LIFT_DOWN = 20;
+    private final int LIFT_GRAB_READY_CAPSTONE = 440;
     private final int LIFT_GRAB = 600;
     private final int LIFT_GRAB_AUTO = 640;
     private final int LIFT_MIN = 0;
-    private final int LIFT_MAX = 5400;
+    private final int LIFT_MAX = 4800;
     private final int LIFT_SAFE_SWING_AUTO = 1000;
     private final int LIFT_SAFE_BRIDGE = 1086;
     private final int LIFT_SAFE_SWING_IN = 1200;
@@ -82,7 +83,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final int LIFT_SAFE_SWING = 1000;
     private final int LIFT_UP_FOR_REGRAB = 430;
     private final int LIFT_UP_FOR_CAP = 1300;
-    private final int LIFT_UP_BEFORE_CAP = 1500;
+    private final int LIFT_UP_BEFORE_CAP = 1200;
     private final int LIFT_UP_FINAL_CAP = 2100;
     //private final double LIFT_POWER = 0.5;   // V5.2
     private final double LIFT_POWER = 1.0;  // V5.3
@@ -168,7 +169,8 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         //if (lifter != null) lifter.setDirection(DcMotorSimple.Direction.REVERSE);
         if (lifter != null) lifter.setDirection(DcMotorSimple.Direction.REVERSE);
         lifter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        //lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        lifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         lifter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         // register hanging as configurable component
         // configuration.register(this);
@@ -436,7 +438,8 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     public void liftResetEncoder() {
         lifter.setPower(0);
         lifter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        // lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        lifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
 //    public void liftToPosition(int pos, double power) {
@@ -450,7 +453,8 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
 
     public void liftUp (boolean slow, boolean force)  {
         if (lifter==null) return;
-        lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        // lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        lifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         if (!force) {
             if (lifter.getCurrentPosition() > LIFT_MAX) {
                 liftStop();
@@ -465,7 +469,8 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
 
     public void liftDown(boolean slow, boolean force) {
         if (lifter==null) return;
-        lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        // lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        lifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         if (!force) {
             if (lifter.getCurrentPosition() < LIFT_MIN) {
                 liftStop();
@@ -483,7 +488,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         // lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         int pos = lifter.getCurrentPosition();
         liftToPosition(pos, true);
-        // lifter.setPower(0);
+        lifter.setPower(0);
     }
 
     public void liftToSafe() {
@@ -840,19 +845,19 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             TaskManager.add(new Task() {
                 @Override
                 public Progress start() {
-                    return moveArm(ARM_DOWN_MORE_CAP);
-                }
-            }, taskName);
-            TaskManager.add(new Task() {
-                @Override
-                public Progress start() {
                     return moveGrabber(false); // open grabber
                 }
             }, taskName);
             TaskManager.add(new Task() {
                 @Override
                 public Progress start() {
-                    return moveArm(ARM_DOWN_SAFE);
+                    return liftToPosition(LIFT_GRAB_READY_CAPSTONE,false);
+                }
+            }, taskName);
+            TaskManager.add(new Task() {
+                @Override
+                public Progress start() {
+                    return moveArm(ARM_CAPSTONE);
                 }
             }, taskName);
             TaskManager.add(new Task() {
@@ -881,7 +886,8 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                     return moveArm(ARM_CAPSTONE_MORE);
                 }
             }, taskName);
-        } else { // stage-2
+        }
+        // else { // stage-2
             TaskManager.add(new Task() {
                 @Override
                 public Progress start() {
@@ -895,7 +901,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                     return moveWrist(true);
                 }
             }, taskName);
-        }
+        // }
 //        TaskManager.add(new Task() {
 //            @Override
 //            public Progress start() {
