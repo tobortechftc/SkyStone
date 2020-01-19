@@ -152,16 +152,20 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
     @MenuEntry(label = "TeleOp", group = "Competition")
     public void mainTeleOp(EventManager em, EventManager em2) {
-        telemetry.addLine().addData("(RS)", "4WD").setRetained(true)
-                .addData("(RS) + (LS)", "2WD / Steer").setRetained(true);
-        telemetry.addLine().addData("< (LS) >", "Rotate").setRetained(true)
-                .addData("[LB]/[LT]", "Slow / Fast").setRetained(true);
-        telemetry.addLine().addData("motor_count=", new Func<String>() {
-            @Override
-            public String value() {
-                return String.format("%2.0f", motor_count);
-            }
-        });
+//        if (chassis.isTankDrive()) {
+//            telemetry.addLine().addData("(RS) + (LS)", "Tank").setRetained(true);
+//        } else {
+//            telemetry.addLine().addData("(RS)", "4WD").setRetained(true)
+//                    .addData("(RS) + (LS)", "2WD / Steer").setRetained(true);
+//            telemetry.addLine().addData("< (LS) >", "Rotate").setRetained(true)
+//                    .addData("[LB]/[LT]", "Slow / Fast").setRetained(true);
+//        }
+//        telemetry.addLine().addData("motor_count=", new Func<String>() {
+//            @Override
+//            public String value() {
+//                return String.format("%2.0f", motor_count);
+//            }
+//        });
         if (chassis != null)
             chassis.setupTelemetry(telemetry);
         if (stoneGrabber != null)
@@ -180,7 +184,10 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             @Override
             public void stickMoved(EventManager source, Events.Side side, float currentX, float changeX,
                                    float currentY, float changeY) throws InterruptedException {
-                if (Math.abs(source.getStick(Events.Side.LEFT, Events.Axis.BOTH)) < 0.1) {
+                if (chassis.isTankDrive()) {
+                    chassis.tankDrive(source.getStick(Events.Side.LEFT, Events.Axis.Y_ONLY), currentY);
+                }
+                else if (Math.abs(source.getStick(Events.Side.LEFT, Events.Axis.BOTH)) < 0.1) {
                     // right stick with idle left stick operates robot in "crab" mode
                     double power = Math.abs(source.getStick(Events.Side.RIGHT, Events.Axis.X_ONLY));
                     power = Math.max(power, Math.abs(source.getStick(Events.Side.RIGHT, Events.Axis.Y_ONLY)));
@@ -228,7 +235,10 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             @Override
             public void stickMoved(EventManager source, Events.Side side, float currentX, float changeX,
                                    float currentY, float changeY) throws InterruptedException {
-                if (Math.abs(source.getStick(Events.Side.RIGHT, Events.Axis.BOTH)) < 0.2) {
+                if (chassis.isTankDrive()) {
+                    ; // do nothing
+                }
+                else if (Math.abs(source.getStick(Events.Side.RIGHT, Events.Axis.BOTH)) < 0.2) {
                     if (Math.abs(currentX) > 0.1) {
                         // left stick with idle right stick rotates robot in place
                         chassis.rotate(currentX * Math.abs(currentX) * powerAdjustment(source) * rotateRatio);
@@ -238,6 +248,15 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 }
             }
         }, Events.Axis.X_ONLY, Events.Side.LEFT);
+        em.onStick(new Events.Listener() {
+            @Override
+            public void stickMoved(EventManager source, Events.Side side, float currentX, float changeX,
+                                   float currentY, float changeY) throws InterruptedException {
+                if (chassis.isTankDrive()) {
+                    chassis.tankDrive(currentY, source.getStick(Events.Side.RIGHT, Events.Axis.Y_ONLY));
+                }
+            }
+        }, Events.Axis.Y_ONLY, Events.Side.LEFT);
 
         em.onButtonDown(new Events.Listener() {
             @Override
@@ -281,6 +300,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                     } else {
                         intake.intakeIn(!source.isPressed(Button.BACK));
                         chassis.setDefaultScale(chassis.DEFAULT_SLOW_SCALE);
+                        intake.gateServoOpen();
                     }
                 }
             }
@@ -292,6 +312,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 if (intake != null) {
                     intake.intakeStop();
                     chassis.setDefaultScale(chassis.DEFAULT_FAST_SCALE);
+                    intake.gateServoClose();
                 }
             }
         }, Button.LEFT_BUMPER);
@@ -302,7 +323,10 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 // 0.2 is a dead zone threshold for the trigger
 
                 if (current > 0.2) {
-                    if (intake != null) intake.intakeOut(!source.isPressed(Button.BACK));
+                    if (intake != null) {
+                        intake.intakeOut(!source.isPressed(Button.BACK));
+                        intake.gateServoOpen();
+                    }
                 } else {
                     if (intake != null) intake.intakeStop();
                 }
@@ -350,6 +374,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                     chassis.changeChassisDrivingDirection();
                 } else if (source.isPressed(Button.LEFT_BUMPER))
                     stoneGrabber.armInCombo(!source.isPressed(Button.BACK), false);
+                else if (source.isPressed((Button.RIGHT_BUMPER)))
+                    intake.gateServoClose();
                 else
                     stoneGrabber.grabberAuto();
             }
@@ -360,6 +386,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (source.isPressed(Button.LEFT_BUMPER))
                     stoneGrabber.armOutCombo(0, false);
+                else if (source.isPressed(Button.RIGHT_BUMPER))
+                    chassis.toggleTankDrive();
                 else if (!source.isPressed(Button.START))
                     stoneGrabber.wristAuto();
             }

@@ -94,12 +94,15 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double CAPSTONE_OUT = 0.6;
 
 
+
     private boolean armIsDown = false;
     private boolean armIsIn = true;
     private boolean isGrabberOpened = false;
     private boolean isWristParallel = false;
     private boolean isCapstoneServoOut = false;
     private ElapsedTime runtime = new ElapsedTime();
+
+
 
     @Override
     public String getUniqueName() {

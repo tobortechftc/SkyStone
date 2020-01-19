@@ -45,8 +45,10 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         //  all servos are set to the same position
         ROTATE,    // rotating in place, all servos are set on tangent lines to a circle drawn
         //  through the centers of 4 wheels.
-        STEER      // motor power and servos in the direction of movement are controlled by
+        STEER, // motor power and servos in the direction of movement are controlled by
         //  the driver; opposite servos are in central position
+        TANK //Backup tank drive. Controlled with left power and right power
+
     }
 
     public enum LineColor {
@@ -106,10 +108,13 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     public final double DEFAULT_SLOW_SCALE = 0.35;
     private double defaultScale = DEFAULT_FAST_SCALE;
     private double SCALE_INC_TICK = 0.05;
+    private boolean isTankDrive = false;
 
     public void enableRangeSensorTelemetry() { // must be call before reset() or setupTelemetry()
         setRangeSensorTelemetry = true;
     }
+
+    public boolean isTankDrive() { return isTankDrive; }
 
     public void enableImuTelemetry() {
         setImuTelemetry = true;
@@ -1158,6 +1163,32 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         wheels[3].motor.setPower(scalePower(rightPower));
     }
 
+    public void toggleTankDrive() {
+        isTankDrive = !isTankDrive;
+    }
+
+    public void tankDrive(double leftPower, double rightPower) throws InterruptedException {
+        if (leftPower < -1 || leftPower > 1) {
+            throw new IllegalArgumentException("Power must be between -1 and 1");
+        }
+        if (rightPower < -1 || rightPower > 1) {
+            throw new IllegalArgumentException("Power must be between -1 and 1");
+        }
+        if (driveMode != DriveMode.TANK) {
+            driveMode = DriveMode.TANK;
+            double[] newServoPositions = new double[4];
+            Arrays.fill(newServoPositions, 0);
+            changeServoPositions(newServoPositions);
+            for (WheelAssembly wheel : wheels)
+                wheel.motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        }
+
+        wheels[0].motor.setPower(scalePower(leftPower));
+        wheels[1].motor.setPower(scalePower(rightPower));
+        wheels[2].motor.setPower(scalePower(leftPower));
+        wheels[3].motor.setPower(scalePower(rightPower));
+    }
+
     public void orbit(double power, double curvature, boolean orbitBack) throws InterruptedException {
         double leftPower;
         double rightPower;
@@ -1415,6 +1446,12 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         if (Thread.interrupted()) return;
         tl = telemetry;
         Telemetry.Line line = telemetry.addLine();
+        line.addData("DriveMode", new Func<String>() {
+            @Override
+            public String value() {
+                return String.format("%s", (isTankDrive() ? "Tank" : "Normal"));
+            }
+        });
         line.addData("Pwr/Scale", new Func<String>() {
             @Override
             public String value() {
