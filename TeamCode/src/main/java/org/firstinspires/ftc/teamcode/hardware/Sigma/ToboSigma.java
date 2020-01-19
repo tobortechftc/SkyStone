@@ -276,8 +276,12 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                     return;
                 }
                 if (intake != null) {
-                    intake.intakeIn(!source.isPressed(Button.BACK));
-                    chassis.setDefaultScale(chassis.DEFAULT_SLOW_SCALE);
+                    if (source.isPressed(Button.RIGHT_BUMPER)) {
+                        intake.gateServoAuto();
+                    } else {
+                        intake.intakeIn(!source.isPressed(Button.BACK));
+                        chassis.setDefaultScale(chassis.DEFAULT_SLOW_SCALE);
+                    }
                 }
             }
         }, Button.LEFT_BUMPER);
