@@ -68,14 +68,14 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double GRABBER_CLOSE = 0.25;
 
     //private final int LIFT_RUN_TO_POSITION_OFFSET = 20;   // V5.2 
-    private final int LIFT_RUN_TO_POSITION_OFFSET = 150;  // V5.3, new control for goBilda 5205 motor
+    private final int LIFT_RUN_TO_POSITION_OFFSET = 200;  // V5.3, new control for goBilda 5205 motor
     private final int LIFT_DOWN_GRAB = 20;
     private final int LIFT_DOWN = 20;
     private final int LIFT_GRAB_READY_CAPSTONE = 440;
     private final int LIFT_GRAB = 600;
     private final int LIFT_GRAB_AUTO = 640;
     private final int LIFT_MIN = 0;
-    private final int LIFT_MAX = 4800;
+    private final int LIFT_MAX = 5200;
     private final int LIFT_SAFE_SWING_AUTO = 1000;
     private final int LIFT_SAFE_BRIDGE = 1086;
     private final int LIFT_SAFE_SWING_IN = 1200;
@@ -87,6 +87,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final int LIFT_UP_FINAL_CAP = 2100;
     //private final double LIFT_POWER = 0.5;   // V5.2
     private final double LIFT_POWER = 1.0;  // V5.3
+    private final double LIFT_POWER_HOLD = 0.3;
     private final double LIFT_POWER_SLOW = 0.5;
     private final double LIFT_POWER_SLOW_DOWN = 0.3;
     private final int LIFT_DELIVER = 1000;
@@ -102,7 +103,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private boolean isWristParallel = false;
     private boolean isCapstoneServoOut = false;
     private ElapsedTime runtime = new ElapsedTime();
-
+    private int lift_target_pos;
 
 
     @Override
@@ -310,7 +311,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         double adjustment = Math.abs(grabber.getPosition() - target);
         debug("moveWrist(): target=%.2f, adjustment=%.2f", target, adjustment);
         // entire move from parallel to vertical takes 2 seconds
-        final long doneBy = System.currentTimeMillis() + Math.round(700 * adjustment);
+        final long doneBy = System.currentTimeMillis() + Math.round(500 * adjustment);
         wrist.setPosition(target);
         return new Progress() {
             @Override
@@ -325,7 +326,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         double adjustment = Math.abs(grabber.getPosition() - target);
         debug("moveWrist(): target=%.2f, adjustment=%.2f", target, adjustment);
         // entire move from parallel to vertical takes 2 seconds
-        final long doneBy = System.currentTimeMillis() + Math.round(700 * adjustment);
+        final long doneBy = System.currentTimeMillis() + Math.round(500 * adjustment);
         wrist.setPosition(target);
         return new Progress() {
             @Override
@@ -386,7 +387,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         double adjustment = Math.abs(grabber.getPosition() - target);
         debug("moveGrabber(): target=%.2f, adjustment=%.2f", target, adjustment);
         // entire move from up to down takes 1 seconds
-        final long doneBy = System.currentTimeMillis() + Math.round(900 * adjustment);
+        final long doneBy = System.currentTimeMillis() + Math.round(500 * adjustment);
         grabber.setPosition(target);
         return new Progress() {
             @Override
@@ -486,9 +487,22 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     public void liftStop() {
         if (lifter==null) return;
         // lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        int pos = lifter.getCurrentPosition();
-        liftToPosition(pos, true);
         lifter.setPower(0);
+        int pos = lifter.getCurrentPosition();
+        // liftToPosition(pos, true);
+        // lifter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        // lifter.setTargetPosition(pos);
+        // lifter.setPower(LIFT_POWER_HOLD);
+    }
+    public void liftHold() {
+        if (lifter==null) return;
+        // lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        lifter.setPower(0);
+        int pos = lifter.getCurrentPosition();
+        // liftToPosition(pos, true);
+        lifter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        lifter.setTargetPosition(pos);
+        lifter.setPower(LIFT_POWER_HOLD);
     }
 
     public void liftToSafe() {
@@ -500,12 +514,25 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         // if (Math.abs(lifter.getCurrentPosition()-pos)<20) return null;
 
         lifter.setPower(0);
-        lifter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        lifter.setTargetPosition(pos);
-        lifter.setPower((slow?LIFT_POWER_SLOW:LIFT_POWER));
+        // lifter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        // lifter.setTargetPosition(pos);
+        lifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        lift_target_pos = pos;
+        if (Math.abs(lifter.getCurrentPosition()-lift_target_pos)<50)
+            lifter.setPower(0);// liftStop();
+        else if (lifter.getCurrentPosition()<pos)
+            lifter.setPower((slow?LIFT_POWER_SLOW:LIFT_POWER));
+        else
+            lifter.setPower((slow?-LIFT_POWER_SLOW:-LIFT_POWER));
         return new Progress() {
             public boolean isDone() {
-                return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < LIFT_RUN_TO_POSITION_OFFSET;
+                if (Math.abs(lifter.getCurrentPosition()-lift_target_pos)<50) {
+                    lifter.setPower(0);
+                    // liftStop();
+                    return true;
+                }
+                return false;
+                // return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < LIFT_RUN_TO_POSITION_OFFSET;
             }
         };
     }
@@ -522,7 +549,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         else
             armIsDown = false;
         // 3.3ms per degree of rotation
-        final long doneBy = System.currentTimeMillis() + Math.round(adjustment * 800);
+        final long doneBy = System.currentTimeMillis() + Math.round(adjustment * 600);
         return new Progress() {
             @Override
             public boolean isDone() {
@@ -582,27 +609,15 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                     return moveArm(ARM_DOWN_SAFE);
                 }
             }, taskName);
-            TaskManager.add(new Task() {
-                @Override
-                public Progress start() {
-                    if (isWristParallel && isGrabberOpened) grabberClose();
-                    if (arm.getPosition() > ARM_LOW) {
-                        // arm inside the robot
-                        int cur_pos = lifter.getCurrentPosition();
-                        if (cur_pos < LIFT_SAFE_SWING) {
-                            liftToPosition(LIFT_SAFE_SWING, false);
-                        }
-                    } else
-                        liftToPosition(LIFT_GRAB, false);
-
-                    return new Progress() {
-                        @Override
-                        public boolean isDone() {
-                            return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < LIFT_RUN_TO_POSITION_OFFSET;
-                        }
-                    };
-                }
-            }, taskName);
+            if (lifter.getCurrentPosition()<LIFT_SAFE_SWING) {
+                TaskManager.add(new Task() {
+                    @Override
+                    public Progress start() {
+                        if (isWristParallel && isGrabberOpened) grabberClose();
+                        return liftToPosition(LIFT_SAFE_SWING, false);
+                    }
+                }, taskName);
+            }
         }
         if (auto) {
             TaskManager.add(new Task() {
@@ -626,20 +641,14 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 }
             }, taskName);
         }
-        TaskManager.add(new Task() {
-            @Override
-            public Progress start() {
-                int cur_pos = lifter.getCurrentPosition();
-                if (cur_pos<LIFT_SAFE_SWING) {
-                    liftToPosition(LIFT_GRAB, false);
+        if (lifter.getCurrentPosition()<=LIFT_SAFE_SWING) {
+            TaskManager.add(new Task() {
+                @Override
+                public Progress start() {
+                    return liftToPosition(LIFT_GRAB, false);
                 }
-                return new Progress() {
-                    @Override
-                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < LIFT_RUN_TO_POSITION_OFFSET;
-                    }
-                };
-            }
-        }, taskName);
+            }, taskName);
+        }
         if (grabIsOpened) { // restore grabber to open
             TaskManager.add(new Task() {
                 @Override
@@ -666,13 +675,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 int target_pos = cur_pos + 850;
                 if(target_pos > LIFT_MAX)
                     target_pos = LIFT_MAX;
-                liftToPosition(target_pos, true);
-
-                return new Progress() {
-                    @Override
-                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < LIFT_RUN_TO_POSITION_OFFSET;
-                    }
-                };
+                return liftToPosition(target_pos, true);
             }
         }, taskName);
     }
@@ -697,13 +700,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 @Override
                 public Progress start() {
                     moveWrist(wristParallel);
-                    grabberClose();
-                    return new Progress() {
-                        @Override
-                        public boolean isDone() {
-                            return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < LIFT_RUN_TO_POSITION_OFFSET;
-                        }
-                    };
+                    return moveGrabber(true);
                 }
             }, taskName);
         }
@@ -712,26 +709,14 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 TaskManager.add(new Task() {
                     @Override
                     public Progress start() {
-                        liftToPosition(LIFT_SAFE_SWING_AUTO, false);
-                        return new Progress() {
-                            @Override
-                            public boolean isDone() {
-                                return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < LIFT_RUN_TO_POSITION_OFFSET;
-                            }
-                        };
+                        return liftToPosition(LIFT_SAFE_SWING_AUTO, false);
                     }
                 }, taskName);
             } else {
                 TaskManager.add(new Task() {
                     @Override
                     public Progress start() {
-                        liftToPosition(LIFT_SAFE_SWING, false);
-                        return new Progress() {
-                            @Override
-                            public boolean isDone() {
-                                return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 100;
-                            }
-                        };
+                        return liftToPosition(LIFT_SAFE_SWING, false);
                     }
                 }, taskName);
             }
@@ -746,13 +731,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             @Override
             public Progress start() {
                 grabberClose();
-                liftToPosition(LIFT_DOWN, false);
-                return new Progress() {
-                    @Override
-                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 100;
-                    }
-                };
-
+                return liftToPosition(LIFT_DOWN, false);
             }
         }, taskName);
 
@@ -794,13 +773,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
-                liftToPosition(LIFT_DOWN_GRAB, false);
-                return new Progress() {
-                    @Override
-                    public boolean isDone() {
-                        return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 100;
-                    }
-                };
+                return liftToPosition(LIFT_DOWN_GRAB, false);
             }
         }, taskName);
         if (arm.getPosition() < ARM_OUT_AUTO) {
@@ -826,12 +799,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             public Progress start() {
                 grabberClose();
                 arm.setPosition(ARM_DELIVER);
-                liftToPosition(LIFT_DOWN, false);
-                return new Progress() {
-                    @Override
-                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < LIFT_RUN_TO_POSITION_OFFSET;
-                    }
-                };
+                return liftToPosition(LIFT_DOWN, false);
             }
         }, taskName);
 
@@ -905,12 +873,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
 //        TaskManager.add(new Task() {
 //            @Override
 //            public Progress start() {
-//                liftToPosition(LIFT_GRAB, false);
-//                return new Progress() {
-//                    @Override
-//                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 100;
-//                    }
-//                };
+//                return liftToPosition(LIFT_GRAB, false);
 //            }
 //        }, taskName);
 //
@@ -935,12 +898,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
 //        TaskManager.add(new Task() {
 //            @Override
 //            public Progress start() {
-//                liftToPosition(LIFT_DOWN_GRAB+50, false);
-//                return new Progress() {
-//                    @Override
-//                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 150;
-//                    }
-//                };
+//                return liftToPosition(LIFT_DOWN_GRAB+50, false);
 //            }
 //        }, taskName);
 //        TaskManager.add(new Task() {
@@ -959,13 +917,8 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
-                liftToPosition(LIFT_DOWN, false);
                 armDown();
-                return new Progress() {
-                    @Override
-                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 100;
-                    }
-                };
+                return liftToPosition(LIFT_DOWN, false);
             }
         }, taskName);
         TaskManager.add(new Task() {
@@ -1002,12 +955,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             TaskManager.add(new Task() {
                 @Override
                 public Progress start() {
-                    liftToPosition(LIFT_GRAB, false);
-                    return new Progress() {
-                        @Override
-                        public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 50;
-                        }
-                    };
+                    return liftToPosition(LIFT_GRAB, false);
                 }
             }, taskName);
             TaskManager.add(new Task() {
@@ -1039,12 +987,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
-                liftToPosition(LIFT_DOWN_GRAB, false);
-                return new Progress() {
-                    @Override
-                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 50;
-                    }
-                };
+                return liftToPosition(LIFT_DOWN_GRAB, false);
             }
         }, taskName);
         TaskManager.add(new Task() {
@@ -1071,13 +1014,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                     @Override
                     public Progress start() {
                         int position = LIFT_SAFE_SWING+400;
-                        liftToPosition(position, false);
-                        return new Progress() {
-                            @Override
-                            public boolean isDone() {
-                                return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 100;
-                            }
-                        };
+                        return liftToPosition(position, false);
                     }
                 }, taskName);
             }
@@ -1091,13 +1028,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 @Override
                 public Progress start() {
                     int position = LIFT_DOWN_GRAB;
-                    liftToPosition(position, false);
-                    return new Progress() {
-                        @Override
-                        public boolean isDone() {
-                            return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 100;
-                        }
-                    };
+                    return liftToPosition(position, false);
                 }
             }, taskName);
         }
@@ -1130,12 +1061,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 int position = LIFT_SAFE_SWING_IN;
                 if (armWasIn)
                     position = LIFT_SAFE_BRIDGE;
-                liftToPosition(position, false);
-                return new Progress() {
-                    @Override
-                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 50;
-                    }
-                };
+                return liftToPosition(position, false);
             }
         }, taskName);
         TaskManager.add(new Task() {
@@ -1160,12 +1086,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 @Override
                 public Progress start() {
                     int position = LIFT_SAFE_BRIDGE;
-                    liftToPosition(position, false);
-                    return new Progress() {
-                        @Override
-                        public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 50;
-                        }
-                    };
+                    return liftToPosition(position, false);
                 }
             }, taskName);
         }
@@ -1309,12 +1230,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
-                liftToPosition(LIFT_DOWN_GRAB,true);
-                return new Progress() {
-                    @Override
-                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < 100;
-                    }
-                };
+                return liftToPosition(LIFT_DOWN_GRAB,true);
             }
         }, taskName);
         TaskManager.add(new Task() {
@@ -1338,12 +1254,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             public Progress start() {
                 grabberClose();
                 arm.setPosition(ARM_DELIVER_HIGHER);
-                liftToPosition(LIFT_DOWN+800,false);
-                return new Progress() {
-                    @Override
-                    public boolean isDone() { return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < LIFT_RUN_TO_POSITION_OFFSET;
-                    }
-                };
+                return liftToPosition(LIFT_DOWN+800,false);
             }
         }, taskName);
     }

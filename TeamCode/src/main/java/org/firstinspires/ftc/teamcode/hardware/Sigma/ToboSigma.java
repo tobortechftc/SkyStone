@@ -486,6 +486,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                         if (source.getStick(Events.Side.RIGHT, Events.Axis.X_ONLY) < 0)
                             stoneGrabber.wristLeftInc();
                         else stoneGrabber.wristRightInc();
+                    } else {
+                        stoneGrabber.liftHold();
                     }
                 }
             }
