@@ -96,14 +96,13 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         this.telemetry = telemetry;
 
         autoPara = new AutoPara();
-        if(autoColor==AutoTeamColor.DIAGNOSIS){
-            chassis.enableImuTelemetry();
-        }
 
         this.core = new CoreSystem();
         info("RoboSigma configure() after new CoreSystem()(run time = %.2f sec)", (runtime.seconds() - ini_time));
         chassis = new SwerveChassis(this.core).configureLogging("Swerve", logLevel); // Log.DEBUG
-
+        if(autoColor==AutoTeamColor.DIAGNOSIS){
+            chassis.enableImuTelemetry();
+        }
         // Warning: MUST disable the following line during competition
         // chassis.enableRangeSensorTelemetry();//Comment out later
 
@@ -543,7 +542,15 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             }
         }, new Button[]{Button.DPAD_UP});
     }
-
+    public void setupTelemetryDiagnostics(Telemetry telemetry) {
+        Telemetry.Line line = telemetry.addLine();
+        line.addData("Test ", new Func<String>() {
+            @Override
+            public String value() {
+                return String.format("Power=%.2f, dist=%.1f\n", auto_chassis_power,auto_chassis_dist);
+            }
+        });
+    }
     public void setupTelemetry(Telemetry telemetry) {
         if (Thread.currentThread().isInterrupted()) return;
         Telemetry.Line line = telemetry.addLine();
@@ -611,10 +618,10 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
     }
 
-    @MenuEntry(label = "Auto Straight", group = "Test Chassis")
+    @MenuEntry(label = "TEST drive straight", group = "Test Chassis")
     public void testStraightSkyStone(EventManager em) {
-        telemetry.addLine().addData(" < (BACK) >", "Power=%.2f, dist=%.1f", auto_chassis_power,auto_chassis_dist).setRetained(true);
         chassis.setupTelemetry(telemetry);
+        setupTelemetryDiagnostics(telemetry);
         em.updateTelemetry(telemetry, 100);
         em.onButtonDown(new Events.Listener() {
             @Override
@@ -622,6 +629,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 if (source.isPressed(Button.BACK)) {
                     auto_chassis_power += 0.1;
                     if (auto_chassis_power > 1) auto_chassis_power = 1;
+
                 } else {
                     chassis.universalDriveStraight(auto_chassis_power, auto_chassis_dist, 0, 10000,false);
                 }
@@ -636,6 +644,22 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 }
             }
         }, new Button[]{Button.A});
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.BACK)) {
+                    auto_chassis_dist += 10;
+                }
+            }
+        }, new Button[]{Button.X});
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.BACK)) {
+                    auto_chassis_dist -= 10;
+                }
+            }
+        }, new Button[]{Button.B});
 
 
     }
