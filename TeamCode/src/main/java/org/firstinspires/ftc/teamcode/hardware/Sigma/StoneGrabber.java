@@ -7,7 +7,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.Func;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.components.AdjustableServo;
-import org.firstinspires.ftc.teamcode.components.CombinedOrientationSensor;
 import org.firstinspires.ftc.teamcode.support.CoreSystem;
 import org.firstinspires.ftc.teamcode.support.Logger;
 import org.firstinspires.ftc.teamcode.support.hardware.Configurable;
@@ -25,7 +24,8 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
 
     final private CoreSystem core;
 
-    private DcMotor lifter;
+    private DcMotor leftLifter;
+    private DcMotor rightLifter;
     private AdjustableServo arm;
     private AdjustableServo wrist;
     private AdjustableServo grabber;
@@ -71,20 +71,20 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final int LIFT_RUN_TO_POSITION_OFFSET = 200;  // V5.3, new control for goBilda 5205 motor
     private final int LIFT_DOWN_GRAB = 20;
     private final int LIFT_DOWN = 20;
-    private final int LIFT_GRAB_READY_CAPSTONE = 440;
-    private final int LIFT_GRAB = 600;
-    private final int LIFT_GRAB_AUTO = 640;
+    private final int LIFT_GRAB_READY_CAPSTONE = 220;
+    private final int LIFT_GRAB = 300;
+    private final int LIFT_GRAB_AUTO = 320;
     private final int LIFT_MIN = 0;
     private final int LIFT_MAX = 5200;
-    private final int LIFT_SAFE_SWING_AUTO = 1000;
-    private final int LIFT_SAFE_BRIDGE = 1086;
-    private final int LIFT_SAFE_SWING_IN = 1200;
-    private final int LIFT_SAFE_DELIVERY = 800;
-    private final int LIFT_SAFE_SWING = 1000;
-    private final int LIFT_UP_FOR_REGRAB = 430;
-    private final int LIFT_UP_FOR_CAP = 1300;
-    private final int LIFT_UP_BEFORE_CAP = 1200;
-    private final int LIFT_UP_FINAL_CAP = 2100;
+    private final int LIFT_SAFE_SWING_AUTO = 500;
+    private final int LIFT_SAFE_BRIDGE = 543;
+    private final int LIFT_SAFE_SWING_IN = 600;
+    private final int LIFT_SAFE_DELIVERY = 400;
+    private final int LIFT_SAFE_SWING = 500;
+    private final int LIFT_UP_FOR_REGRAB = 215;
+    private final int LIFT_UP_FOR_CAP = 650;
+    private final int LIFT_UP_BEFORE_CAP = 600;
+    private final int LIFT_UP_FINAL_CAP = 1050;
     //private final double LIFT_POWER = 0.5;   // V5.2
     private final double LIFT_POWER = 1.0;  // V5.3
     private final double LIFT_POWER_HOLD = 0.3;
@@ -166,15 +166,21 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         configuration.register(capstoneServo);
         capstoneServoInit();
 
-        lifter = configuration.getHardwareMap().tryGet(DcMotor.class, "lifter");
-        //if (lifter != null) lifter.setDirection(DcMotorSimple.Direction.REVERSE);
-        if (lifter != null) lifter.setDirection(DcMotorSimple.Direction.REVERSE);
-        lifter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        //lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        lifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        lifter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        leftLifter = configuration.getHardwareMap().tryGet(DcMotor.class, "leftLifter");
+        //if (leftLifter != null) leftLifter.setDirection(DcMotorSimple.Direction.REVERSE);
+        if (leftLifter != null) leftLifter.setDirection(DcMotorSimple.Direction.REVERSE);
+        leftLifter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        //leftLifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        leftLifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        leftLifter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         // register hanging as configurable component
         // configuration.register(this);
+
+        rightLifter = configuration.getHardwareMap().tryGet(DcMotor.class, "rightLifter");
+        //if (rightLifter != null) rightLifter.setDirection(DcMotorSimple.Direction.REVERSE);
+        rightLifter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightLifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightLifter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
     public boolean isArmInside() {
@@ -437,72 +443,94 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     }
 
     public void liftResetEncoder() {
-        lifter.setPower(0);
-        lifter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        // lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        lifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        leftLifter.setPower(0);
+        leftLifter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        // leftLifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        leftLifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        rightLifter.setPower(0);
+        rightLifter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightLifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
 //    public void liftToPosition(int pos, double power) {
-//        if (lifter==null) return;
-//        if (Math.abs(lifter.getCurrentPosition()-pos)<20) return;
+//        if (leftLifter==null) return;
+//        if (Math.abs(leftLifter.getCurrentPosition()-pos)<20) return;
 //
-//        lifter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//        lifter.setTargetPosition(pos);
-//        lifter.setPower(power);
+//        leftLifter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        leftLifter.setTargetPosition(pos);
+//        leftLifter.setPower(power);
 //    }
 
     public void liftUp (boolean slow, boolean force)  {
-        if (lifter==null) return;
-        // lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        lifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        if (leftLifter == null || rightLifter == null) return;
+        // leftLifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        leftLifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightLifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
         if (!force) {
-            if (lifter.getCurrentPosition() > LIFT_MAX) {
+            if (leftLifter.getCurrentPosition() > LIFT_MAX || rightLifter.getCurrentPosition() > LIFT_MAX) {
                 liftStop();
                 return;
             }
         }
-        if (slow || force)
-            lifter.setPower(LIFT_POWER_SLOW);
-        else
-            lifter.setPower(LIFT_POWER);
+        if (slow || force){
+            leftLifter.setPower(LIFT_POWER_SLOW);
+            rightLifter.setPower(LIFT_POWER_SLOW);
+        }
+        else{
+            leftLifter.setPower(LIFT_POWER);
+            rightLifter.setPower(LIFT_POWER);
+        }
     }
 
     public void liftDown(boolean slow, boolean force) {
-        if (lifter==null) return;
-        // lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        lifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        if (leftLifter ==null || rightLifter == null) return;
+        // leftLifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        leftLifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightLifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         if (!force) {
-            if (lifter.getCurrentPosition() < LIFT_MIN) {
+            if (leftLifter.getCurrentPosition() < LIFT_MIN || rightLifter.getCurrentPosition() < LIFT_MIN) {
                 liftStop();
                 return;
             }
         }
-        if (slow || force)
-            lifter.setPower(-LIFT_POWER_SLOW_DOWN);
-        else
-            lifter.setPower(-LIFT_POWER);
+        if (slow || force){
+            leftLifter.setPower(-LIFT_POWER_SLOW_DOWN);
+            rightLifter.setPower(-LIFT_POWER_SLOW_DOWN);
+        }
+        else{
+            leftLifter.setPower(-LIFT_POWER);
+            rightLifter.setPower(-LIFT_POWER);
+        }
     }
 
     public void liftStop() {
-        if (lifter==null) return;
-        // lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        lifter.setPower(0);
-        int pos = lifter.getCurrentPosition();
+        if (leftLifter ==null || rightLifter == null) return;
+        // leftLifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        leftLifter.setPower(0);
+        rightLifter.setPower(0);
+        //int pos = leftLifter.getCurrentPosition();
         // liftToPosition(pos, true);
-        // lifter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        // lifter.setTargetPosition(pos);
-        // lifter.setPower(LIFT_POWER_HOLD);
+        // leftLifter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        // leftLifter.setTargetPosition(pos);
+        // leftLifter.setPower(LIFT_POWER_HOLD);
     }
     public void liftHold() {
-        if (lifter==null) return;
-        // lifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        lifter.setPower(0);
-        int pos = lifter.getCurrentPosition();
+        if (leftLifter ==null || rightLifter == null) return;
+        // leftLifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        leftLifter.setPower(0);
+        rightLifter.setPower(0);
+        int posR = leftLifter.getCurrentPosition();
+        //int posL = rightLifter.getCurrentPosition();
         // liftToPosition(pos, true);
-        lifter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        lifter.setTargetPosition(pos);
-        lifter.setPower(LIFT_POWER_HOLD);
+        leftLifter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        leftLifter.setTargetPosition(posR);
+        leftLifter.setPower(LIFT_POWER_HOLD);
+
+//        rightLifter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        rightLifter.setTargetPosition(posL);
+//        rightLifter.setPower(LIFT_POWER_HOLD);
     }
 
     public void liftToSafe() {
@@ -510,29 +538,38 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     }
 
     public Progress liftToPosition(int pos, boolean slow) {
-        if (lifter==null) return null;
-        // if (Math.abs(lifter.getCurrentPosition()-pos)<20) return null;
+        if (leftLifter ==null || rightLifter == null) return null;
+        // if (Math.abs(leftLifter.getCurrentPosition()-pos)<20) return null;
 
-        lifter.setPower(0);
-        // lifter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        // lifter.setTargetPosition(pos);
-        lifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        leftLifter.setPower(0);
+        rightLifter.setPower(0);
+        // leftLifter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        // leftLifter.setTargetPosition(pos);
+        leftLifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rightLifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         lift_target_pos = pos;
-        if (Math.abs(lifter.getCurrentPosition()-lift_target_pos)<50)
-            lifter.setPower(0);// liftStop();
-        else if (lifter.getCurrentPosition()<pos)
-            lifter.setPower((slow?LIFT_POWER_SLOW:LIFT_POWER));
-        else
-            lifter.setPower((slow?-LIFT_POWER_SLOW:-LIFT_POWER));
+        if (Math.abs(leftLifter.getCurrentPosition()-lift_target_pos)<50 || Math.abs(rightLifter.getCurrentPosition()-lift_target_pos)<50){
+            leftLifter.setPower(0);// liftStop();
+            rightLifter.setPower(0);
+        }
+        else if (leftLifter.getCurrentPosition()<pos){
+            leftLifter.setPower((slow?LIFT_POWER_SLOW:LIFT_POWER));
+            rightLifter.setPower((slow?LIFT_POWER_SLOW:LIFT_POWER));
+        }
+        else{
+            leftLifter.setPower((slow?-LIFT_POWER_SLOW:-LIFT_POWER));
+            rightLifter.setPower((slow?-LIFT_POWER_SLOW:-LIFT_POWER));
+        }
         return new Progress() {
             public boolean isDone() {
-                if (Math.abs(lifter.getCurrentPosition()-lift_target_pos)<50) {
-                    lifter.setPower(0);
+                if (Math.abs(leftLifter.getCurrentPosition()-lift_target_pos)<50 || Math.abs((rightLifter.getCurrentPosition()-lift_target_pos))<50) {
+                    leftLifter.setPower(0);
+                    rightLifter.setPower(0);
                     // liftStop();
                     return true;
                 }
                 return false;
-                // return !lifter.isBusy() || Math.abs(lifter.getTargetPosition() - lifter.getCurrentPosition()) < LIFT_RUN_TO_POSITION_OFFSET;
+                // return !leftLifter.isBusy() || Math.abs(leftLifter.getTargetPosition() - leftLifter.getCurrentPosition()) < LIFT_RUN_TO_POSITION_OFFSET;
             }
         };
     }
@@ -609,7 +646,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                     return moveArm(ARM_DOWN_SAFE);
                 }
             }, taskName);
-            if (lifter.getCurrentPosition()<LIFT_SAFE_SWING) {
+            if (leftLifter.getCurrentPosition()<LIFT_SAFE_SWING) {
                 TaskManager.add(new Task() {
                     @Override
                     public Progress start() {
@@ -641,7 +678,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 }
             }, taskName);
         }
-        if (lifter.getCurrentPosition()<=LIFT_SAFE_SWING) {
+        if (leftLifter.getCurrentPosition()<=LIFT_SAFE_SWING) {
             TaskManager.add(new Task() {
                 @Override
                 public Progress start() {
@@ -671,7 +708,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             @Override
             public Progress start() {
 
-                int cur_pos = lifter.getCurrentPosition();
+                int cur_pos = leftLifter.getCurrentPosition();
                 int target_pos = cur_pos + 850;
                 if(target_pos > LIFT_MAX)
                     target_pos = LIFT_MAX;
@@ -704,7 +741,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 }
             }, taskName);
         }
-        if (lifter.getCurrentPosition()<LIFT_SAFE_SWING) {
+        if (leftLifter.getCurrentPosition()<LIFT_SAFE_SWING) {
             if (isAuto) {
                 TaskManager.add(new Task() {
                     @Override
@@ -808,7 +845,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     public void grabCapStoneCombo() {
         final String taskName = "Grab Cap Stone Combo";
         if (!TaskManager.isComplete(taskName)) return;
-        boolean isLiftUp = (lifter.getCurrentPosition()>=LIFT_GRAB);
+        boolean isLiftUp = (leftLifter.getCurrentPosition()>=LIFT_GRAB);
         if (!isLiftUp) { // stage-1
             TaskManager.add(new Task() {
                 @Override
@@ -1009,7 +1046,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                     return moveGrabber(true);
                 }
             }, taskName);
-            if (Math.abs(lifter.getCurrentPosition()-LIFT_SAFE_SWING)>400) {
+            if (Math.abs(leftLifter.getCurrentPosition()-LIFT_SAFE_SWING)>400) {
                 TaskManager.add(new Task() {
                     @Override
                     public Progress start() {
@@ -1213,11 +1250,19 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 }
             });
         }
-        if (lifter != null) {
-            line.addData("lifter", "pos=%d", new Func<Integer>() {
+        if (leftLifter != null) {
+            line.addData("leftLifter", "pos=%d", new Func<Integer>() {
                 @Override
                 public Integer value() {
-                    return lifter.getCurrentPosition();
+                    return leftLifter.getCurrentPosition();
+                }
+            });
+        }
+        if (rightLifter != null) {
+            line.addData("rightLifter", "pos=%d", new Func<Integer>() {
+                @Override
+                public Integer value() {
+                    return rightLifter.getCurrentPosition();
                 }
             });
         }
