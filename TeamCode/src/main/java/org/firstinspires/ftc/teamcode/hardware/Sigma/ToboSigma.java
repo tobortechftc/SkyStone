@@ -79,7 +79,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     public double rotateRatio = 0.7; // slow down ratio for rotation
     public double motor_count = 0;
     public double auto_chassis_power = .7;
-    public double auto_chassis_dist = 100;
+    public double auto_chassis_dist = 10;
     public double auto_chassis_power_slow = .5;
     public double auto_chassis_align_power = .22;
 
@@ -631,7 +631,9 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                     if (auto_chassis_power > 1) auto_chassis_power = 1;
 
                 } else {
-                    chassis.universalDriveStraight(auto_chassis_power, auto_chassis_dist, 0, 10000,false);
+                    long iniTime = System.currentTimeMillis();
+                    chassis.driveStraightAuto(auto_chassis_power, auto_chassis_dist, 0, 10000);
+                    telemetry.addLine(System.currentTimeMillis() - iniTime + "");
                 }
             }
         }, new Button[]{Button.Y});
@@ -648,6 +650,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (source.isPressed(Button.BACK)) {
+                    auto_chassis_dist += 1;
+                } else if (source.isPressed(Button.LEFT_BUMPER)) {
                     auto_chassis_dist += 10;
                 }
             }
@@ -656,6 +660,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (source.isPressed(Button.BACK)) {
+                    auto_chassis_dist -= 1;
+                } else if (source.isPressed(Button.LEFT_BUMPER)) {
                     auto_chassis_dist -= 10;
                 }
             }

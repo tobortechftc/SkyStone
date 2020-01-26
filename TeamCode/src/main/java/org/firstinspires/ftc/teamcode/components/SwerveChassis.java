@@ -110,7 +110,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     private boolean setRangeSensorTelemetry = false;//unless debugging, don't set telemetry for range sensor
     private boolean showColor = false;
     private boolean slowMode = false;
-    final double TICKS_PER_CM = 537.6 / (4.0 * 2.54 * Math.PI); // 16.86; //number of encoder ticks per cm of driving
+    final double TICKS_PER_CM = 537.6 / (4.32 * 2.54 * Math.PI); // 16.86; //number of encoder ticks per cm of driving
     public final double DEFAULT_FAST_SCALE = 1.0;
     public final double DEFAULT_SLOW_SCALE = 0.35;
     private double defaultScale = DEFAULT_FAST_SCALE;
@@ -596,7 +596,8 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         if (heading < -90 || heading > 90) {
             throw new IllegalArgumentException("Heading must be between -90 and 90");
         }
-
+        boolean shouldApplyIMU = true;
+        if (cm<20) shouldApplyIMU = false;
         double distance = TICKS_PER_CM * cm;
 
         if (power == 0) {
@@ -644,23 +645,25 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
 
         //waiting loop
         while (true) {
-            // check and correct heading as needed
-            double sensorHeading = orientationSensor.getHeading();
-            headingDeviation = targetHeading - sensorHeading;
-            debug("driveStraight(): target=%+.2f, sensor=%+.2f, adjustment=%+.2f)",
-                    targetHeading, sensorHeading, headingDeviation);
-            if (Math.abs(headingDeviation) > 0.5) {
-                servoCorrection = headingDeviation / 2;
-                applyServoCorrection(octant, servoCorrection);
+            if (shouldApplyIMU) {
+                // check and correct heading as needed
+                double sensorHeading = orientationSensor.getHeading();
+                headingDeviation = targetHeading - sensorHeading;
+                debug("driveStraight(): target=%+.2f, sensor=%+.2f, adjustment=%+.2f)",
+                        targetHeading, sensorHeading, headingDeviation);
+                if (Math.abs(headingDeviation) > 0.5) {
+                    servoCorrection = headingDeviation / 2;
+                    applyServoCorrection(octant, servoCorrection);
 
-            } else {
-                servoCorrection = 0;
-                if (power < 0) {
-                    backLeft.servo.setPosition(frontLeft.servo.getPosition());
-                    backRight.servo.setPosition(frontRight.servo.getPosition());
                 } else {
-                    frontLeft.servo.setPosition(backLeft.servo.getPosition());
-                    frontRight.servo.setPosition(backRight.servo.getPosition());
+                    servoCorrection = 0;
+                    if (power < 0) {
+                        backLeft.servo.setPosition(frontLeft.servo.getPosition());
+                        backRight.servo.setPosition(frontRight.servo.getPosition());
+                    } else {
+                        frontLeft.servo.setPosition(backLeft.servo.getPosition());
+                        frontRight.servo.setPosition(backRight.servo.getPosition());
+                    }
                 }
             }
             //determine if target distance is reached
