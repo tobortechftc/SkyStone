@@ -1676,4 +1676,38 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         chassis.driveStraightAutoRunToPosition(auto_chassis_power, 70, 0, 1500);
         rotateFoundationOnly(isBlue, laneTwo);
     }
+
+    public void tensorTest(int iter, int loc)//loc = 1 left, 2 center, 3 right
+    {
+        int regularstonecount  = 0;
+        int bigstoneleftcount  = 0;
+        int bigstonerightcount = 0;
+        int correctstonecount  = 0;
+        double[][] testresults = new double[iter][2];
+        double stoneloc;
+        for(int i = 0;i<iter;i++)
+        {
+            testresults[i]=cameraStoneDetector.SSLocTest();
+        }
+        for(int i = 0;i<iter;i++)
+        {
+            if(testresults[i][1] - testresults[i][0] <=250)
+            {
+                regularstonecount++;
+                correctstonecount = (((Math.round(((testresults[i][0]+testresults[i][1])/2)/200))*200)==loc)?correctstonecount++:correctstonecount;
+            }
+            else if(testresults[i][1]-testresults[i][0]>250)
+            {
+                if((testresults[i][0]+testresults[i][1])/2<200)
+                {
+                    bigstoneleftcount++;
+                }
+                else if((testresults[i][0]+testresults[i][1])/2>400)
+                {
+                    bigstonerightcount++;
+                }
+            }
+        }
+    }
+
 }

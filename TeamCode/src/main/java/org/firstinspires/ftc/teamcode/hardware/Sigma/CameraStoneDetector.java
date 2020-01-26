@@ -201,38 +201,39 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
         }
         return skystoneLocation;
     }
-    public ToboSigma.SkystoneLocation getSkystonePositionTF2() {
+    public double[] SSLocTest() {
         // The TFObjectDetector uses the camera frames from the VuforiaLocalizer, so we create that
         // first.
 
-        int left_center_border_x = 200;
-        int center_right_border_x = 400;
+        //int left_center_border_x = 200;
+        //int center_right_border_x = 400;
 
-        int min_stone_width = 150;
-        int max_stone_width = 250;
-        int large_stone_width = 320;
+        //int min_stone_width = 150;
+        //int max_stone_width = 250;
+        //int large_stone_width = 320;
 
         logger.verbose("Start getGoldPositionTF()");
 
         ElapsedTime elapsedTime = new ElapsedTime();
         elapsedTime.startTime();
 
-        ToboSigma.SkystoneLocation skystoneLocation = ToboSigma.SkystoneLocation.UNKNOWN;
+        double[] sslocation = new double[2];
         //int goldXCoord = -1;
         //int silverXCoord = -1;
-        if(tfod==null){
-            return ToboSigma.SkystoneLocation.UNKNOWN;
+        if (tfod == null) {
+            sslocation[0] = sslocation[1] = -1;
         }
 
-        while (elapsedTime.seconds() < 2 && skystoneLocation == ToboSigma.SkystoneLocation.UNKNOWN) {
+        while (elapsedTime.seconds() < 0.2 && sslocation[0] == -1) {
             List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
 
-            if (updatedRecognitions== null ||updatedRecognitions.size() < 1) {
+            if (updatedRecognitions == null || updatedRecognitions.size() < 1) {
                 continue;
             }
             //logger.verbose("Starting recognitions");
             //logger.verbose("Recognitions: %d", (int) updatedRecognitions.size());
             int validRecognitions = 0;
+            /*
             for (Recognition recognition :
                     updatedRecognitions) {
                 double width = recognition.getRight() - recognition.getLeft();
@@ -240,6 +241,7 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
                     validRecognitions++;
                 }
             }
+            */
             //logger.verbose("Valid recognitions: %d", validRecognitions);
             if (validRecognitions < 1 || validRecognitions > 3) {
                 continue;
@@ -249,20 +251,11 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
                 if (recognition.getLabel() == "Stone") {
                     continue;
                 }
-                double pos = (recognition.getRight() + recognition.getLeft()) / 2;
-                double skystone_width = recognition.getRight() - recognition.getLeft();
-                if (skystone_width>large_stone_width) { // stone detected is twice as regular, assume the skystone is on the right half
-                    pos = (pos+recognition.getRight())/2;
-                }
-                if (pos < left_center_border_x) {
-                    skystoneLocation = ToboSigma.SkystoneLocation.LEFT;
-                } else if (pos > center_right_border_x) {
-                    skystoneLocation = ToboSigma.SkystoneLocation.RIGHT;
-                } else if (pos >= left_center_border_x && pos <= center_right_border_x) {
-                    skystoneLocation = ToboSigma.SkystoneLocation.CENTER;
-                } else {
-                    skystoneLocation = ToboSigma.SkystoneLocation.UNKNOWN;
-                }
+                //double pos = (recognition.getRight() + recognition.getLeft()) / 2;
+                //double skystone_width = recognition.getRight() - recognition.getLeft();
+                sslocation[0] = recognition.getLeft();
+                sslocation[1] = recognition.getRight();
+
             }
         }
         if (tfod != null) {
@@ -270,7 +263,7 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
             tfod.shutdown();
             logger.verbose("Tfod shutdown", tfod);
         }
-
+        /*
         switch (skystoneLocation) {
             case LEFT:
                 logger.verbose("SampleLocation: Left");
@@ -288,7 +281,8 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
                 logger.verbose("Sample Location: Unknown");
                 break;
         }
-        return skystoneLocation;
+         */
+        return sslocation;
     }
 }
 
