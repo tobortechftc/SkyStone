@@ -79,6 +79,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     public double rotateRatio = 0.7; // slow down ratio for rotation
     public double motor_count = 0;
     public double auto_chassis_power = .7;
+    public double auto_chassis_dist = 100;
     public double auto_chassis_power_slow = .5;
     public double auto_chassis_align_power = .22;
 
@@ -95,6 +96,10 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         this.telemetry = telemetry;
 
         autoPara = new AutoPara();
+        if(autoColor==AutoTeamColor.DIAGNOSIS){
+            chassis.enableImuTelemetry();
+        }
+
         this.core = new CoreSystem();
         info("RoboSigma configure() after new CoreSystem()(run time = %.2f sec)", (runtime.seconds() - ini_time));
         chassis = new SwerveChassis(this.core).configureLogging("Swerve", logLevel); // Log.DEBUG
@@ -594,8 +599,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
     @MenuEntry(label = "Auto Straight", group = "Test Chassis")
     public void testStraightSkyStone(EventManager em) {
-
-        telemetry.addLine().addData(" < (BACK) >", "Power(%.2f)", auto_chassis_power).setRetained(true);
+        telemetry.addLine().addData(" < (BACK) >", "Power=%.2f, dist=%.1f", auto_chassis_power,auto_chassis_dist).setRetained(true);
         chassis.setupTelemetry(telemetry);
         em.updateTelemetry(telemetry, 100);
         em.onButtonDown(new Events.Listener() {
@@ -605,13 +609,37 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                     auto_chassis_power += 0.1;
                     if (auto_chassis_power > 1) auto_chassis_power = 1;
                 } else {
-                    chassis.driveStraightAuto(auto_chassis_power, 100, 0, 10000);
-                    //chassis.driveStraightAuto(auto_chassis_power, -7, 0, 10000);
-                    //chassis.driveStraightAuto(auto_chassis_power, 220, -90, 15000);
-                    //chassis.driveStraightAuto(auto_chassis_power, 260, 90, 15000);
-                    //chassis.driveStraightAuto(auto_chassis_power, 20, 0, 10000);
-                    //chassis.driveStraightAuto(auto_chassis_power, -5, 0, 10000);
-                    //chassis.driveStraightAuto(auto_chassis_power, 243, -90, 15000);//245?
+                    chassis.universalDriveStraight(auto_chassis_power, auto_chassis_dist, 0, 10000,false);
+                }
+            }
+        }, new Button[]{Button.Y});
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.BACK)) {
+                    auto_chassis_power -= 0.1;
+                    if (auto_chassis_power < 0.1) auto_chassis_power = 0.1;
+                }
+            }
+        }, new Button[]{Button.A});
+
+
+    }
+
+    public double auto_rotate_degree = 90;
+    @MenuEntry(label = "Auto Rotation", group = "Test Chassis")
+    public void testRotationSkyStone(EventManager em) {
+        telemetry.addLine().addData(" < (BACK) >", "Power=%.2f, dist=%.1f", auto_chassis_power,auto_chassis_dist).setRetained(true);
+        chassis.setupTelemetry(telemetry);
+        em.updateTelemetry(telemetry, 100);
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.BACK)) {
+                    auto_chassis_power += 0.1;
+                    if (auto_chassis_power > 1) auto_chassis_power = 1;
+                } else {
+                    chassis.rotateTo(auto_chassis_power,chassis.orientationSensor.getHeading()+auto_rotate_degree);
                 }
             }
         }, new Button[]{Button.Y});
