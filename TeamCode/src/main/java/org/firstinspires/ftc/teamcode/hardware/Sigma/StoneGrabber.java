@@ -33,27 +33,27 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private ElapsedTime SGTimer = new ElapsedTime();
     private double waitSec;
 
-
-    private final double ARM_UP = 0.06;
-    private final double ARM_READY_GRAB = 0.98;
-    private final double ARM_DOWN = 0.88;  // right position to grab stone inside
-    private final double ARM_DOWN_MORE = ARM_DOWN+0.06;  // right position to grab stone inside
-    private final double ARM_DOWN_MORE_CAP = ARM_DOWN+0.09;  // right position to grab stone inside
-    private final double ARM_DOWN_SAFE = 0.88;
-    private final double ARM_INITIAL = 0.84;
-    private final double ARM_OUT_INIT = 0.47;
-    private final double ARM_IN = 0.65;
-    private final double ARM_LOW = 0.58;
-    private final double ARM_OUT = 0.35;
-    private final double ARM_OUT_MORE = 0.27;
-    private final double ARM_OUT_AUTO = 0.43;
-    private final double ARM_DOWN_FOR_CAP = 0.76;
-    private final double ARM_CAPSTONE = 0.78;
-    private final double ARM_CAPSTONE_MORE = 0.89;
-    private final double ARM_DELIVER = 0.28;
-    private final double ARM_DELIVER_HIGHER = 0.24;
-    private final double ARM_DELIVER_THROW = 0.14;
-    private final double ARM_MIN = 0.12;
+    private final double ARM_OFFSET = -.04; // must > -.04 and < .04)
+    private final double ARM_UP = 0.06+ARM_OFFSET;
+    private final double ARM_READY_GRAB = 0.96+ARM_OFFSET;
+    private final double ARM_DOWN = 0.84+ARM_OFFSET;  // right position to grab stone inside
+    private final double ARM_DOWN_MORE = ARM_DOWN+ARM_OFFSET+0.06;  // right position to grab stone inside
+    private final double ARM_DOWN_MORE_CAP = ARM_DOWN+ARM_OFFSET+0.09;  // right position to grab stone inside
+    private final double ARM_DOWN_SAFE = 0.88+ARM_OFFSET;
+    private final double ARM_INITIAL = 0.84+ARM_OFFSET;
+    private final double ARM_OUT_INIT = 0.47+ARM_OFFSET;
+    private final double ARM_IN = 0.65+ARM_OFFSET;
+    private final double ARM_LOW = 0.58+ARM_OFFSET;
+    private final double ARM_OUT = 0.37+ARM_OFFSET;
+    private final double ARM_OUT_MORE = 0.27+ARM_OFFSET;
+    private final double ARM_OUT_AUTO = 0.45+ARM_OFFSET;
+    private final double ARM_DOWN_FOR_CAP = 0.76+ARM_OFFSET;
+    private final double ARM_CAPSTONE = 0.78+ARM_OFFSET;
+    private final double ARM_CAPSTONE_MORE = 0.89+ARM_OFFSET;
+    private final double ARM_DELIVER = 0.28+ARM_OFFSET;
+    private final double ARM_DELIVER_HIGHER = 0.24+ARM_OFFSET;
+    private final double ARM_DELIVER_THROW = 0.14+ARM_OFFSET;
+    private final double ARM_MIN = 0.12+ARM_OFFSET;
     private final double ARM_INC_UNIT = 0.02;
 
     private final double WRIST_PARALLEL = 0.57;
@@ -63,32 +63,32 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double WRIST_CAPSTONE = WRIST_PARALLEL - 0.01;
 
     private final double GRABBER_INIT = 0.29;
-    private final double GRABBER_OPEN_IN = 0.52;
+    private final double GRABBER_OPEN_IN = 0.59;
     private final double GRABBER_OPEN = 0.9;
     private final double GRABBER_CLOSE = 0.29;
 
     private final int LIFT_THRESHOLD = 15;
-    private final int LIFT_RUN_TO_POSITION_OFFSET = 70;  // V5.3, new control for goBilda 5205 motor
-    private final int LIFT_DOWN_GRAB = 10;
-    private final int LIFT_DOWN = 10;
-    private final int LIFT_GRAB_READY_CAPSTONE = 160;
-    private final int LIFT_GRAB = 170;
+    private final int LIFT_RUN_TO_POSITION_OFFSET = 100;  // V5.3, new control for goBilda 5205 motor
+    private final int LIFT_DOWN_GRAB = 0;
+    private final int LIFT_DOWN = 0;
+    private final int LIFT_GRAB_READY_CAPSTONE = 220;
+    private final int LIFT_GRAB = 180;
     private final int LIFT_GRAB_AUTO = 230;
     private final int LIFT_MIN = 0;
-    private final int LIFT_MAX = 2300;
-    private final int LIFT_SAFE_SWING_AUTO = 360;
-    private final int LIFT_SAFE_SWING = 360;
-    private final int LIFT_SAFE_BRIDGE = 390;
-    private final int LIFT_SAFE_SWING_IN = 430;
-    private final int LIFT_SAFE_DELIVERY = 285;
-    private final int LIFT_UP_FOR_REGRAB = 154;
-    private final int LIFT_UP_FOR_CAP = 460;
-    private final int LIFT_UP_BEFORE_CAP = 430;
-    private final int LIFT_UP_FINAL_CAP = 750;
+    private final int LIFT_MAX = 3200;
+    private final int LIFT_SAFE_SWING_AUTO = 500;
+    private final int LIFT_SAFE_SWING = 500;
+    private final int LIFT_SAFE_BRIDGE = 540;
+    private final int LIFT_SAFE_SWING_IN = 600;
+    private final int LIFT_SAFE_DELIVERY = 400;
+    private final int LIFT_UP_FOR_REGRAB = 215;
+    private final int LIFT_UP_FOR_CAP = 640;
+    private final int LIFT_UP_BEFORE_CAP = 600;
+    private final int LIFT_UP_FINAL_CAP = 1050;
     //private final double LIFT_POWER = 0.5;   // V5.2
-    private final double LIFT_POWER = 1.0;  // V5.3
-    private final double LIFT_POWER_COMBO = 0.8;
-    private final double LIFT_POWER_HOLD = 0.5;
+    private final double LIFT_POWER = 0.8;  // V5.3
+    private final double LIFT_POWER_COMBO = 0.6;
+    private final double LIFT_POWER_HOLD = 0.3;
     private final double LIFT_POWER_SLOW = 0.6;
     private final double LIFT_POWER_SLOW_DOWN = 0.3;
     private final int LIFT_DELIVER = 1000;
@@ -523,12 +523,16 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         // leftLifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         leftLifter.setPower(0);
         rightLifter.setPower(0);
-        int posR = leftLifter.getCurrentPosition();
+        int posL = leftLifter.getCurrentPosition();
+        int posR = rightLifter.getCurrentPosition();
         //int posL = rightLifter.getCurrentPosition();
         // liftToPosition(pos, true);
-        leftLifter.setTargetPosition(posR);
+        leftLifter.setTargetPosition(posL);
+        rightLifter.setTargetPosition(posR);
         leftLifter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightLifter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         leftLifter.setPower(LIFT_POWER_HOLD);
+        rightLifter.setPower(LIFT_POWER_HOLD);
 
 //        rightLifter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 //        rightLifter.setTargetPosition(posL);
@@ -545,10 +549,47 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
 
         leftLifter.setPower(0);
         rightLifter.setPower(0);
+        leftLifter.setTargetPosition(pos);
+        leftLifter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightLifter.setTargetPosition(pos);
+        rightLifter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        // leftLifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        // rightLifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        // leftLifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        // rightLifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        lift_target_pos = pos;
+
+        leftLifter.setPower((slow ? LIFT_POWER_SLOW : LIFT_POWER_COMBO));
+        rightLifter.setPower((slow ? LIFT_POWER_SLOW : LIFT_POWER_COMBO));
+
+        return new Progress() {
+            public boolean isDone() {
+                int lpos = leftLifter.getCurrentPosition();
+                if (Math.abs(leftLifter.getCurrentPosition()-lift_target_pos)<LIFT_RUN_TO_POSITION_OFFSET) {
+                    if (lpos>200) {
+                        leftLifter.setPower(0);
+                        rightLifter.setPower(0);
+                        liftHold();
+                    }
+                    return true;
+                }
+                return !leftLifter.isBusy();
+            }
+        };
+    }
+
+    public Progress liftToPositionQuick(int pos, boolean slow) {
+        if (leftLifter ==null || rightLifter == null) return null;
+        // if (Math.abs(leftLifter.getCurrentPosition()-pos)<20) return null;
+
+        leftLifter.setPower(0);
+        rightLifter.setPower(0);
         // leftLifter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         // leftLifter.setTargetPosition(pos);
-        leftLifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        rightLifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        // leftLifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        // rightLifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        leftLifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rightLifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         lift_target_pos = pos;
         //if (Math.abs(leftLifter.getCurrentPosition()-lift_target_pos)<LIFT_THRESHOLD || Math.abs(rightLifter.getCurrentPosition()-lift_target_pos)<LIFT_THRESHOLD){
         if (Math.abs(leftLifter.getCurrentPosition()-lift_target_pos)<LIFT_THRESHOLD){
@@ -569,14 +610,18 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                 if (Math.abs(lpos-lift_target_pos)<LIFT_THRESHOLD) {
                     leftLifter.setPower(0);
                     rightLifter.setPower(0);
-                    // liftStop();
+                    liftHold();
                     return true;
                 } else if ((lpos<lift_target_pos && leftLifter.getPower()<0)||
                         lpos>lift_target_pos && leftLifter.getPower()>0) { // over shoot
                     leftLifter.setPower(0);
                     rightLifter.setPower(0);
+                    liftHold();
                     return true;
-                } else if (lpos>LIFT_MAX||lpos<(LIFT_MIN-10)) {
+                } else if (lpos>LIFT_MAX-200||lpos<(LIFT_MIN-10)) {
+                    leftLifter.setPower(0);
+                    rightLifter.setPower(0);
+                    liftHold();
                     return true;
                 }
                 return false;

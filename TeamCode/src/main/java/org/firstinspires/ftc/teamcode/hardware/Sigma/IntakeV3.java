@@ -44,7 +44,7 @@ public class IntakeV3 extends Logger<IntakeV3> implements Configurable {
 
     private final double GATE_SERVO_INIT = 0.543;
     private final double GATE_SERVO_OPEN = 0.543;
-    private final double GATE_SERVO_CLOSE = 0.12;
+    private final double GATE_SERVO_CLOSE = 0.1;
 
     private boolean isGateOpen = true;
 

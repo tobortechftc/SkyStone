@@ -661,7 +661,6 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             }
         }, new Button[]{Button.B});
 
-
     }
 
     public double auto_rotate_degree = 90;
