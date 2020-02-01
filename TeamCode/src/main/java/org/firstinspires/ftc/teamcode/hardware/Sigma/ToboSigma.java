@@ -56,9 +56,18 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         }
     }
 
-    ;
+    public class TensorPara {
+        int iter = 2;
+        int correctloc = 2; //1 = left; 2 = center; 3 = right
+        boolean isDone = false;
+
+        public int getIter(){return iter*50;}
+        public int correctLoc(){return correctloc;}
+        public boolean isDone(){return isDone;}
+    }
 
     public AutoPara autoPara = null;
+    public TensorPara tensorPara = null;
 
     public enum SkystoneLocation {
         LEFT, CENTER, RIGHT, UNKNOWN
@@ -95,6 +104,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         this.telemetry = telemetry;
 
         autoPara = new AutoPara();
+        tensorPara = new TensorPara();
 
         this.core = new CoreSystem();
         info("RoboSigma configure() after new CoreSystem()(run time = %.2f sec)", (runtime.seconds() - ini_time));
@@ -1538,29 +1548,94 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         rotateFoundationOnly(isBlue, laneTwo);
     }
 
+    public void setupTelemetryTensor(Telemetry telemetry) {
+        if (Thread.currentThread().isInterrupted()) return;
+        Telemetry.Line line = telemetry.addLine();
+        line.addData(" | <A> Iterations", new Func<String>() {
+            @Override
+            public String value() {
+                return String.format("%s\n",tensorPara.getIter());
+            }
+        });
+        line.addData("| <B> Correct Stone Config", new Func<String>(){
+            public String value(){
+                return String.format("%s\n",tensorPara.correctLoc()==1?"LEFT":tensorPara.correctLoc()==2?"CENTER":"RIGHT");
+            }
+        });
+    }
+
     public void tensorTest(int iter, int loc)//loc = 1 left, 2 center, 3 right
     {
-        int regularstonecount = 0;
-        int bigstoneleftcount = 0;
+        int normalsizestonecount  = 0;
+        int bigstoneleftcount  = 0;
         int bigstonerightcount = 0;
         int correctstonecount = 0;
         double[][] testresults = new double[iter][2];
         double stoneloc;
-        for (int i = 0; i < iter; i++) {
-            testresults[i] = cameraStoneDetector.SSLocTest();
+        double[] sslocation = new double[2];
+
+        for(int i = 0;i<iter;i++)
+        {
+            cameraStoneDetector.SSLocTest(sslocation);
+            for(int j = 0;i<2;j++)
+            {
+                testresults[i][j] = sslocation[j];
+            }
         }
-        for (int i = 0; i < iter; i++) {
-            if (testresults[i][1] - testresults[i][0] <= 250) {
-                regularstonecount++;
-                correctstonecount = (((Math.round(((testresults[i][0] + testresults[i][1]) / 2) / 200)) * 200) == loc) ? correctstonecount++ : correctstonecount;
-            } else if (testresults[i][1] - testresults[i][0] > 250) {
-                if ((testresults[i][0] + testresults[i][1]) / 2 < 200) {
+        for(int i = 0;i<iter;i++)
+        {
+            if(testresults[i][1] - testresults[i][0] <=250)
+            {
+                normalsizestonecount++;
+                correctstonecount = (((Math.round(((testresults[i][0]+testresults[i][1])/2)/200))*200)==loc)?correctstonecount++:correctstonecount;
+            }
+            else if(testresults[i][1]-testresults[i][0]>250)
+            {
+                if((testresults[i][0]+testresults[i][1])/2<200)
+                {
                     bigstoneleftcount++;
                 } else if ((testresults[i][0] + testresults[i][1]) / 2 > 400) {
                     bigstonerightcount++;
                 }
             }
         }
+
+        telemetry.addLine().addData("TFOD:", "Normal/Correct=%1d/%1d, BigL=%1d,BigR=%1d",
+                normalsizestonecount, correctstonecount, bigstoneleftcount, bigstonerightcount).setRetained(true);
+        telemetry.update();
+
+    }
+
+    @MenuEntry(label = "TensorTest", group = "Competition-Auto")
+    public void tensorTestFunc(Configuration configuration, EventManager em)
+    {
+        telemetry.addLine().addData(" | <X>", "Done").setRetained(true);
+        setupTelemetryTensor(telemetry);
+
+        cameraStoneDetector = new CameraStoneDetector().configureLogging("CameraStoneDetector", logLevel);
+        cameraStoneDetector.configure(configuration, CameraSource.WEBCAM_LEFT);
+
+        em.updateTelemetry(telemetry, 100);
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                tensorPara.iter = tensorPara.iter<=4?tensorPara.iter++:1;
+            }
+        }, new Button[]{Button.A});
+
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                tensorPara.correctloc = tensorPara.correctloc<3?tensorPara.correctloc++:1;
+            }
+        }, new Button[]{Button.B});
+
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                tensorTest(tensorPara.getIter(),tensorPara.correctLoc());
+            }
+        }, new Button[]{Button.X});
     }
 
 }

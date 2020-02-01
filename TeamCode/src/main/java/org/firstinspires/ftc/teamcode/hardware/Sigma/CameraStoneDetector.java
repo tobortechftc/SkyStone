@@ -201,7 +201,7 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
         }
         return skystoneLocation;
     }
-    public double[] SSLocTest() {
+    public void SSLocTest(double[] sslocation) {
         // The TFObjectDetector uses the camera frames from the VuforiaLocalizer, so we create that
         // first.
 
@@ -217,12 +217,9 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
         ElapsedTime elapsedTime = new ElapsedTime();
         elapsedTime.startTime();
 
-        double[] sslocation = new double[2];
         //int goldXCoord = -1;
         //int silverXCoord = -1;
-        if (tfod == null) {
-            sslocation[0] = sslocation[1] = -1;
-        }
+        sslocation[0] = sslocation[1] = -1;
 
         while (elapsedTime.seconds() < 0.2 && sslocation[0] == -1) {
             List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
@@ -282,7 +279,6 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
                 break;
         }
          */
-        return sslocation;
     }
 }
 
