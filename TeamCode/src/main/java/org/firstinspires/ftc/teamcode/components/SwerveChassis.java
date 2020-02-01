@@ -598,7 +598,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         if (heading < -90 || heading > 90) {
             throw new IllegalArgumentException("Heading must be between -90 and 90");
         }
-        boolean shouldApplyIMU = true;
+        boolean shouldApplyIMU = false;
         if (Math.abs(cm) < 20) shouldApplyIMU = false;
         double distance = TICKS_PER_CM * cm;
 
@@ -706,7 +706,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             if (System.currentTimeMillis() - iniTime > timeout)
                 break;
             if (Thread.interrupted()) return;
-
+            TaskManager.processTasks();
             // yield handler
             // this.core.yield();
         }
@@ -1437,7 +1437,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
 
     public void rotateTo(double power, double finalHeading, int timeout) throws InterruptedException {
         if (Thread.interrupted()) return;
-
+        if (power < 0.3) rawRotateTo(power, finalHeading, false, timeout);
         double iniHeading = orientationSensor.getHeading();
         double iniAbsDiff = abs(finalHeading - iniHeading) > 180 ? 360 - abs(finalHeading - iniHeading) : abs(finalHeading - iniHeading);
         if (iniAbsDiff < 0.5)//if within 0.5 degree of target, don't rotate

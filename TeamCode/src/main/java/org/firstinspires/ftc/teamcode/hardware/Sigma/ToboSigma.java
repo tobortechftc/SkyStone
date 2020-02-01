@@ -1173,7 +1173,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         stoneGrabber.armOutCombo();
         chassis.driveAuto(.6, 56, 0, 10000);
         stoneGrabber.grabberOpenAuto();
-        double dist = Math.min(chassis.getDistance(SwerveChassis.Direction.FRONT_RIGHT), chassis.getDistance(SwerveChassis.Direction.FRONT_LEFT)) - 16;
+        double dist = Math.min(chassis.getDistance(SwerveChassis.Direction.FRONT_RIGHT), chassis.getDistance(SwerveChassis.Direction.FRONT_LEFT)) - 14;
         if (skyStonePosition != SkystoneLocation.UNKNOWN)
             dist -= 2;
         if (dist > 29) dist = 29;
@@ -1238,9 +1238,9 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
 
         //=================================Parallelized region=======================================
-        //        stoneGrabber.armInComboAuto(true);
+        //stoneGrabber.armInComboAuto(true);
         stoneGrabber.armInCombo(true, true);
-        chassis.driveAuto(.7, -10, 0, 1000);
+        chassis.driveAuto(.7, -5, 0, 1000);
         chassis.rotateTo(auto_chassis_align_power, 0);
         if (ss_pos == 1) {
             long iniTime = System.currentTimeMillis();
@@ -1254,22 +1254,21 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             }
         }
         // the following step crossing the bridge
-        chassis.driveAuto(.7, 110 + 20 * ss_pos, -90 * side, 15000);
+        chassis.driveAuto(.7, 160 + 20 * ss_pos, -90 * side, 15000);
         while (!TaskManager.isComplete("Arm In Combo")) {
             TaskManager.processTasks();
         }
-        chassis.rotateTo(auto_chassis_align_power, 0);
+ //       chassis.rotateTo(auto_chassis_align_power, 0);
         dist = chassis.getDistance(isBlue ? SwerveChassis.Direction.LEFT : SwerveChassis.Direction.RIGHT);
-        if (safe) {
-            chassis.driveAuto(auto_chassis_power, -10, 0, 2000);
-        }
         int dForward = 0;
         if (safe) {
+            chassis.driveAuto(auto_chassis_power, -10, 0, 2000);
             dForward = 10;
-        }
-        if (dist < 40) {
-            dForward = findFoundtaion(isBlue);
-            dist = chassis.getDistance(isBlue ? SwerveChassis.Direction.LEFT : SwerveChassis.Direction.RIGHT);
+
+            if (dist < 40) {
+                dForward = findFoundtaion(isBlue);
+                dist = chassis.getDistance(isBlue ? SwerveChassis.Direction.LEFT : SwerveChassis.Direction.RIGHT);
+            }
         }
         dist = Math.min(dist - 20, 55); // min for 55 cm as the range sensor is not accurate for long distance (over 50 cm) here.
         if (dist > 3) {
