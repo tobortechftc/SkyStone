@@ -549,7 +549,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         line.addData("Test ", new Func<String>() {
             @Override
             public String value() {
-                return String.format("Power=%.2f, dist=%.1f\n", auto_chassis_power,auto_chassis_dist);
+                return String.format("Power=%.2f, dist=%.1f, rotate_degree=%.1f\n",
+                        auto_chassis_power,auto_chassis_dist,auto_rotate_degree);
             }
         });
     }
@@ -620,9 +621,11 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
     }
 
-    @MenuEntry(label = "TEST drive straight", group = "Test Chassis")
+    @MenuEntry(label = "Auto drive straight", group = "Test Chassis")
     public void testStraightSkyStone(EventManager em) {
-        chassis.setupTelemetry(telemetry);
+        // chassis.setupTelemetry(telemetry);
+        telemetry.addLine().addData("(BACK) Y/A", "+/- Power(%.2f)", auto_chassis_power).setRetained(true);
+        telemetry.addLine().addData("(BACK)(L-BUMP) X/B", "+/- dist(%.2f)", auto_chassis_dist).setRetained(true);
         setupTelemetryDiagnostics(telemetry);
         em.updateTelemetry(telemetry, 100);
         em.onButtonDown(new Events.Listener() {
@@ -674,8 +677,10 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     public double auto_rotate_degree = 90;
     @MenuEntry(label = "Auto Rotation", group = "Test Chassis")
     public void testRotationSkyStone(EventManager em) {
-        telemetry.addLine().addData(" < (BACK) >", "Power=%.2f, dist=%.1f", auto_chassis_power,auto_chassis_dist).setRetained(true);
+        telemetry.addLine().addData("(BACK) Y/A", "+/- Power(%.2f)", auto_chassis_power).setRetained(true);
+        telemetry.addLine().addData("(BACK) X/B", "+/- degree(%.2f)", auto_rotate_degree).setRetained(true);
         chassis.setupTelemetry(telemetry);
+        setupTelemetryDiagnostics(telemetry);
         em.updateTelemetry(telemetry, 100);
         em.onButtonDown(new Events.Listener() {
             @Override
@@ -684,7 +689,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                     auto_chassis_power += 0.1;
                     if (auto_chassis_power > 1) auto_chassis_power = 1;
                 } else {
-                    chassis.rotateTo(auto_chassis_power,chassis.orientationSensor.getHeading()+auto_rotate_degree);
+                    chassis.rotateTo(auto_chassis_power,auto_rotate_degree);
                 }
             }
         }, new Button[]{Button.Y});
@@ -697,11 +702,28 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 }
             }
         }, new Button[]{Button.A});
-
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.BACK)) {
+                    auto_rotate_degree += 10;
+                    if (auto_rotate_degree > 150) auto_rotate_degree = 150;
+                }
+            }
+        }, new Button[]{Button.X});
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.BACK)) {
+                    auto_rotate_degree -= 10;
+                    if (auto_rotate_degree < -150) auto_rotate_degree = -150;
+                }
+            }
+        }, new Button[]{Button.B});
 
     }
 
-    @MenuEntry(label = "New Auto Straight", group = "Test Chassis")
+    // @MenuEntry(label = "New Auto Straight", group = "Test Chassis")
     public void testStraightNewSkyStone(EventManager em) {
 
         try {
@@ -749,7 +771,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
          */
     }
 
-    @MenuEntry(label = "Drive Straight", group = "Test Chassis")
+    //@MenuEntry(label = "Drive Straight", group = "Test Chassis")
     public void testStraight(EventManager em) {
         telemetry.addLine().addData("(LS)", "Drive").setRetained(true)
                 .addData("Hold [LB]/[RB]", "45 degree").setRetained(true);
@@ -783,7 +805,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         }, Events.Axis.BOTH, Events.Side.LEFT);
     }
 
-    @MenuEntry(label = "Rotate in Place", group = "Test Chassis")
+    // @MenuEntry(label = "Rotate in Place", group = "Test Chassis")
     public void testRotate(EventManager em) {
         telemetry.addLine().addData(" < (LS) >", "Power").setRetained(true);
         chassis.setupTelemetry(telemetry);
