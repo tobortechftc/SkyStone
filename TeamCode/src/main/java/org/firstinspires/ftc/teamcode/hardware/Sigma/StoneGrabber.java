@@ -170,19 +170,22 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
 
         leftLifter = configuration.getHardwareMap().tryGet(DcMotor.class, "leftLifter");
         //if (leftLifter != null) leftLifter.setDirection(DcMotorSimple.Direction.REVERSE);
-        if (leftLifter != null) leftLifter.setDirection(DcMotorSimple.Direction.REVERSE);
-        leftLifter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        //leftLifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        leftLifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        leftLifter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        if (leftLifter != null) {
+            leftLifter.setDirection(DcMotorSimple.Direction.REVERSE);
+            leftLifter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            //leftLifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            leftLifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            leftLifter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        }
         // register hanging as configurable component
         // configuration.register(this);
 
         rightLifter = configuration.getHardwareMap().tryGet(DcMotor.class, "rightLifter");
-        //if (rightLifter != null) rightLifter.setDirection(DcMotorSimple.Direction.REVERSE);
-        rightLifter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightLifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        rightLifter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        if (rightLifter != null) {
+            // rightLifter.setDirection(DcMotorSimple.Direction.REVERSE);
+            rightLifter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            rightLifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+            rightLifter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);}
     }
 
     public boolean isArmInside() {
