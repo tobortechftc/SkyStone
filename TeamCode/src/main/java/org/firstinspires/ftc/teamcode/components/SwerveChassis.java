@@ -597,7 +597,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             throw new IllegalArgumentException("Heading must be between -90 and 90");
         }
         boolean shouldApplyIMU = true;
-        if (cm<20) shouldApplyIMU = false;
+        if (Math.abs(cm)<20) shouldApplyIMU = false;
         double distance = TICKS_PER_CM * cm;
 
         if (power == 0) {
@@ -642,6 +642,11 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
 
         //record time
         long iniTime = System.currentTimeMillis();
+        double slowDownPercent = .8;
+        if (power > .7 && cm < 100)
+            slowDownPercent = .7;
+        else if (power > .5 && cm < 100)
+            slowDownPercent = .75;
 
         //waiting loop
         while (true) {
@@ -652,7 +657,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                 debug("driveStraight(): target=%+.2f, sensor=%+.2f, adjustment=%+.2f)",
                         targetHeading, sensorHeading, headingDeviation);
                 if (Math.abs(headingDeviation) > 0.5) {
-                    servoCorrection = headingDeviation / 2;
+                    servoCorrection = headingDeviation / 3;
                     applyServoCorrection(octant, servoCorrection);
 
                 } else {
@@ -671,8 +676,28 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             for (int i = 0; i < 4; i++) {
                 maxTraveled = Math.abs(Math.max(maxTraveled, wheels[i].motor.getCurrentPosition() - startingCount[i]));
             }
-            if (distance - maxTraveled < 10)
-                break;
+            double traveledPercent = maxTraveled / Math.abs(distance);
+
+            if (traveledPercent > slowDownPercent) {
+                if (traveledPercent >= 0.99)
+                    break;
+                double apower = Math.abs(power);
+
+                double pow = .25 * minPower + .75 * apower;
+                if (traveledPercent < .25 + .75 * slowDownPercent)pow = .5 * minPower + .5 * apower;
+                else if (traveledPercent < .5 + .5 * slowDownPercent) pow = .75 * minPower + .25 * apower;
+                else if (traveledPercent < .75 + .25 * slowDownPercent) pow = minPower;
+
+                if (pow < minPower) pow = minPower;
+                pow = pow * Math.signum(power);
+
+                for (WheelAssembly wheel : wheels) wheel.motor.setPower(pow);
+                //tl.addLine("in the last 20%");
+                //tl.addData("power output %f", pow);
+            }
+
+            //if (distance - maxTraveled < 10)
+               //break;
             //determine if time limit is reached
             if (System.currentTimeMillis() - iniTime > timeout)
                 break;
@@ -689,7 +714,35 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     public void driveStraightAutoRunToPosition(double power, double cm, double heading, int timeout) throws InterruptedException {
         driveStraightAutoRunToPosition(power, cm, heading, 0.0, timeout);
     }
-
+    public void driveAuto(double power, double cm, double heading, int timeout) throws InterruptedException{
+        double overshoot = 1;
+        if (cm > 0) {
+            if (cm <= 10) {
+                overshoot = 1.4;
+            } else if (cm <= 20) {
+                overshoot = 1.2;
+            } else if ((cm <= 35)) {
+                overshoot = 1.15;
+            } else if ((cm <= 100)) {
+                overshoot = 1 + (power - .2) / 2.5;
+            } else if (power >= .7 && cm < 150) {
+                overshoot = 1.1;
+            }
+        } else{
+            if (Math.abs(cm) <= 10){
+                overshoot = 1.3;
+            } else if (Math.abs(cm) <= 20){
+                overshoot = 1.2;
+            } else if ((Math.abs(cm) <= 35)) {
+                overshoot = 1.15;
+            }else if ((Math.abs(cm) <= 100)) {
+                overshoot = 1 + (power - .2) / 3.1;
+            } else if (power >= .7 && Math.abs(cm) < 150){
+               overshoot = 1.1;
+            }
+        }
+        driveStraightAuto(power, cm/overshoot, heading, timeout);
+    }
     public void driveStraightAutoRunToPosition(double power, double cm, double heading, double beginTaskPercent, int timeout) throws InterruptedException {
         if (Thread.interrupted()) return;
         debug("driveStraight(pwr: %.3f, head: %.1f)", power, heading);

@@ -69,7 +69,7 @@ public class BlueSingle extends LinearOpMode {
         try {
             boolean isBlue = true;
             StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF(false);
-            robot.getFirstSkyStoneDefense(StoneLoc, isBlue, true);
+            robot.getFirstSkyStoneDefense(StoneLoc, isBlue, false);
             int count = 1;
             robot.rotateFoundationNew(isBlue);
             robot.parkAfterRotateNew(isBlue);

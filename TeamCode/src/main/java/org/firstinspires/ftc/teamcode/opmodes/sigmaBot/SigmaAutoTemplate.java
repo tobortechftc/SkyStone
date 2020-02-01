@@ -81,7 +81,7 @@ public class SigmaAutoTemplate extends LinearOpMode implements YieldHandler {
                 // sleep(10000); // 10 sec
 
                 // step-2: go to grab the first skystone and deliver
-                robot.getFirstSkyStone(StoneLoc, isBlue, isLeft);
+                // robot.getFirstSkyStone(StoneLoc, isBlue, isLeft);
                 int count = 1;
 
                 // step-3: grab and deliver the next skystone/stone
