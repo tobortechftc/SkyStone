@@ -39,7 +39,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double ARM_DOWN = 0.84+ARM_OFFSET;  // right position to grab stone inside
     private final double ARM_DOWN_MORE = ARM_DOWN+ARM_OFFSET+0.06;  // right position to grab stone inside
     private final double ARM_DOWN_MORE_CAP = ARM_DOWN+ARM_OFFSET+0.09;  // right position to grab stone inside
-    private final double ARM_DOWN_SAFE = 0.88+ARM_OFFSET;
+    private final double ARM_DOWN_SAFE = 0.84+ARM_OFFSET;
     private final double ARM_INITIAL = 0.84+ARM_OFFSET;
     private final double ARM_OUT_INIT = 0.47+ARM_OFFSET;
     private final double ARM_IN = 0.65+ARM_OFFSET;
@@ -87,6 +87,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final int LIFT_UP_FINAL_CAP = 1050;
     //private final double LIFT_POWER = 0.5;   // V5.2
     private final double LIFT_POWER = 0.8;  // V5.3
+    private final double LIFT_POWER_DOWN = 0.6;
     private final double LIFT_POWER_COMBO = 0.6;
     private final double LIFT_POWER_HOLD = 0.3;
     private final double LIFT_POWER_SLOW = 0.6;
@@ -492,7 +493,8 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         leftLifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightLifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         if (!force) {
-            if (leftLifter.getCurrentPosition() < LIFT_MIN || rightLifter.getCurrentPosition() < LIFT_MIN) {
+            int bufferOffset = (slow?0:100);
+            if (leftLifter.getCurrentPosition() < LIFT_MIN + bufferOffset|| rightLifter.getCurrentPosition() < LIFT_MIN + bufferOffset) {
                 liftStop();
                 return;
             }
@@ -502,8 +504,8 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             rightLifter.setPower(-LIFT_POWER_SLOW_DOWN);
         }
         else{
-            leftLifter.setPower(-LIFT_POWER);
-            rightLifter.setPower(-LIFT_POWER);
+            leftLifter.setPower(-LIFT_POWER_DOWN);
+            rightLifter.setPower(-LIFT_POWER_DOWN);
         }
     }
 
