@@ -47,9 +47,9 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double ARM_OUT = 0.37+ARM_OFFSET;
     private final double ARM_OUT_MORE = 0.27+ARM_OFFSET;
     private final double ARM_OUT_AUTO = 0.45+ARM_OFFSET;
-    private final double ARM_DOWN_FOR_CAP = 0.76+ARM_OFFSET;
+    private final double ARM_DOWN_FOR_CAP = 0.72+ARM_OFFSET;
     private final double ARM_CAPSTONE = 0.78+ARM_OFFSET;
-    private final double ARM_CAPSTONE_MORE = 0.89+ARM_OFFSET;
+    private final double ARM_CAPSTONE_MORE = 0.9+ARM_OFFSET;
     private final double ARM_DELIVER = 0.28+ARM_OFFSET;
     private final double ARM_DELIVER_HIGHER = 0.24+ARM_OFFSET;
     private final double ARM_DELIVER_THROW = 0.14+ARM_OFFSET;
@@ -71,7 +71,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final int LIFT_RUN_TO_POSITION_OFFSET = 100;  // V5.3, new control for goBilda 5205 motor
     private final int LIFT_DOWN_GRAB = 0;
     private final int LIFT_DOWN = 0;
-    private final int LIFT_GRAB_READY_CAPSTONE = 220;
+    private final int LIFT_GRAB_READY_CAPSTONE = 280;
     private final int LIFT_GRAB = 180;
     private final int LIFT_GRAB_AUTO = 230;
     private final int LIFT_MIN = 0;
@@ -83,7 +83,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final int LIFT_SAFE_DELIVERY = 400;
     private final int LIFT_UP_FOR_REGRAB = 215;
     private final int LIFT_UP_FOR_CAP = 640;
-    private final int LIFT_UP_BEFORE_CAP = 600;
+    private final int LIFT_UP_BEFORE_CAP = 500;
     private final int LIFT_UP_FINAL_CAP = 1050;
     //private final double LIFT_POWER = 0.5;   // V5.2
     private final double LIFT_POWER = 0.8;  // V5.3
