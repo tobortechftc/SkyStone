@@ -1386,16 +1386,13 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             finalHeading += 360;
         rotateTo(power, finalHeading);
     }
-
-    public void rotateTo(double power, double finalHeading) throws InterruptedException {
+    @Deprecated
+    public void rotateToOld(double power, double finalHeading) throws InterruptedException {
         rotateTo(power,finalHeading,3000);
     }
 
-    static final double degreeToRad = PI / 180;
-    static final double radToDegree = 180 / PI;
-
     @Deprecated
-    public void rotateTo(double power, double finalHeading, int timeout) throws InterruptedException {
+    public void rotateToOld(double power, double finalHeading, int timeout) throws InterruptedException {
         if (Thread.interrupted()) return;
         if (power < 0.3) {//when power is small, use a flat power output
             rawRotateTo(power, finalHeading, true, timeout);
@@ -1426,7 +1423,9 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         rawRotateTo(0.22, finalHeading, false, 1000);
     }
 
-    public void bufferedRotateTo(double power, double finalHeading, int timeout) throws InterruptedException {
+    static final double degreeToRad = PI / 180;
+    static final double radToDegree = 180 / PI;
+    public void rotateTo(double power, double finalHeading, int timeout) throws InterruptedException {
         if (Thread.interrupted()) return;
 
         double iniHeading = orientationSensor.getHeading();
