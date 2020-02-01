@@ -121,7 +121,9 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         setRangeSensorTelemetry = true;
     }
 
-    public boolean isTankDrive() { return isTankDrive; }
+    public boolean isTankDrive() {
+        return isTankDrive;
+    }
 
     public void enableImuTelemetry() {
         setImuTelemetry = true;
@@ -906,7 +908,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         changeServoPositions(newServoPositions);
 
         //imu initialization
-        if (orientationSensor!=null) {
+        if (orientationSensor != null) {
             orientationSensor.enableCorrections(true);
             targetHeading = orientationSensor.getHeading();
         }
@@ -925,7 +927,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                 break;//when using RUN_TO_POSITION and one motor has reached target
             }
 
-            if (imuCorrection && (orientationSensor!=null)) {
+            if (imuCorrection && (orientationSensor != null)) {
                 double sensorHeading = orientationSensor.getHeading();
                 headingDeviation = targetHeading - sensorHeading;
                 if (Math.abs(headingDeviation) > 0.5) {//was 0.5
@@ -1386,32 +1388,13 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     }
 
     public void rotateTo(double power, double finalHeading) throws InterruptedException {
-        if (Thread.interrupted()) return;
-        if (power < 0.3) {//when power is small, use a flat power output
-            rawRotateTo(power, finalHeading, true, 3000);//!!! A very bold move
-            return;
-        }
-        //when power is big, use a piecewise power output
-        double iniHeading = orientationSensor.getHeading();
-        double iniHeading_P = -iniHeading;
-        double finalHeading_P = -finalHeading;
-        double absDiff = min(abs(finalHeading - iniHeading_P), 180 - abs(finalHeading - iniHeading_P));
-        double firstTarget;
-        if (cos(iniHeading_P * PI / 180) * sin(finalHeading_P * PI / 180) - cos(finalHeading_P * PI / 180) * sin(iniHeading_P * PI / 180) >= 0) {//rotating ccw
-            firstTarget = iniHeading - 0.8 * absDiff;
-        } else {
-            firstTarget = iniHeading - 0.8 * absDiff;
-        }
-        //make sure first target stay in [-180,+180] range
-        if (firstTarget > 180) firstTarget -= 360;
-        if (firstTarget < -180) firstTarget += 360;
-        rawRotateTo(power, firstTarget, true, 3000);//!!! A very bold move
-        sleep(100);
-        if (Thread.interrupted()) return;
-        rawRotateTo(0.22, finalHeading, false, 3000);
-
+        rotateTo(power,finalHeading,3000);
     }
 
+    static final double degreeToRad = PI / 180;
+    static final double radToDegree = 180 / PI;
+
+    @Deprecated
     public void rotateTo(double power, double finalHeading, int timeout) throws InterruptedException {
         if (Thread.interrupted()) return;
         if (power < 0.3) {//when power is small, use a flat power output
@@ -1424,18 +1407,78 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         double finalHeading_P = -finalHeading;
         double absDiff = min(abs(finalHeading - iniHeading_P), 180 - abs(finalHeading - iniHeading_P));
         double firstTarget;
-        if (cos(iniHeading_P * PI / 180) * sin(finalHeading_P * PI / 180) - cos(finalHeading_P * PI / 180) * sin(iniHeading_P * PI / 180) >= 0) {//rotating ccw
+        if (cos(iniHeading_P * degreeToRad) * sin(finalHeading_P * degreeToRad) - cos(finalHeading_P * degreeToRad) * sin(iniHeading_P * degreeToRad) >= 0) {//rotating ccw
             firstTarget = iniHeading - 0.8 * absDiff;
         } else {
-            firstTarget = iniHeading - 0.8 * absDiff;
+            firstTarget = iniHeading + 0.8 * absDiff;
         }
         //make sure first target stay in [-180,+180] range
         if (firstTarget > 180) firstTarget -= 360;
         if (firstTarget < -180) firstTarget += 360;
+        //for debug use
+        tl.addData("iniHeading", iniHeading);
+        tl.addData("finalHeading", finalHeading);
+        tl.addData("firstTarget", firstTarget);
+        tl.update();
         rawRotateTo(power, firstTarget, true, timeout);
-        sleep(100);
+        //sleep(100);
         if (Thread.interrupted()) return;
         rawRotateTo(0.22, finalHeading, false, 1000);
+    }
+
+    public void bufferedRotateTo(double power, double finalHeading, int timeout) throws InterruptedException {
+        if (Thread.interrupted()) return;
+
+        double iniHeading = orientationSensor.getHeading();
+        double iniAbsDiff = abs(finalHeading - iniHeading) > 180 ? 360 - abs(finalHeading - iniHeading) : abs(finalHeading - iniHeading);
+        if (iniAbsDiff < 0.5)//if within 0.5 degree of target, don't rotate
+            return;
+
+        int direction;
+        if (cross(-iniHeading, -finalHeading) >= 0) {//revert sign and take cross product
+            direction = -1;//rotating ccw
+        } else {
+            direction = +1;//rotating cw
+        }
+        //break on reaching the target
+        for (WheelAssembly wheel : wheels)
+            wheel.motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        //ensure the condition before calling rotate()
+        driveMode = DriveMode.STOP;
+        useScalePower = false;
+        //power the wheels
+        rotate(direction * power);
+        double currentHeading;
+        double crossProduct;
+        double currentAbsDiff;
+        boolean lowerPowerApplied = false;
+        long iniTime = System.currentTimeMillis();
+        while (true) {
+            currentHeading = orientationSensor.getHeading();
+            crossProduct = cross(-currentHeading, -finalHeading);
+            //break if target reached or exceeded
+            if (direction == -1) {//rotating ccw
+                if (crossProduct <= 0) break;
+            } else {//rotating cw
+                if (crossProduct >= 0) break;
+            }
+            currentAbsDiff = abs(finalHeading - currentHeading) > 180 ? 360 - abs(finalHeading - currentHeading) : abs(finalHeading - currentHeading);
+            if (!lowerPowerApplied && currentAbsDiff / iniAbsDiff < 0.50) {//damp power to 0.22 if in last 20%
+                rotate(0.0);
+                sleep(100);
+                rotate(direction * 0.20);
+                lowerPowerApplied = true;
+            }
+            if (currentAbsDiff / iniAbsDiff < 0.20 && abs(crossProduct) * radToDegree < 0.5)
+                break;//stop is really close to target
+            if (Thread.interrupted()) break;
+            if (System.currentTimeMillis() - iniTime > timeout) break;
+            TaskManager.processTasks();
+        }
+        for (WheelAssembly wheel : wheels)
+            wheel.motor.setPower(0);
+        driveMode = DriveMode.STOP;
+        useScalePower = true;
     }
 
     //final heading needs to be with in range(-180,180]
@@ -1496,6 +1539,64 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         driveMode = DriveMode.STOP;
         useScalePower = true;
     }
+
+    //cross two unit vectors whose argument angle is given in degree
+    public static double cross(double theta, double phi) {
+        return cos(theta * degreeToRad) * sin(phi * degreeToRad) - sin(theta * degreeToRad) * cos(phi * degreeToRad);
+    }
+
+    public void rawRotateToSimplified(double power, double finalHeading, boolean ccw, boolean stopEarly, int timeout) throws InterruptedException {
+        if (Thread.interrupted()) return;
+        debug("rotateT0(pwr: %.3f, finalHeading: %.1f)", power, finalHeading);
+        double iniHeading = orientationSensor.getHeading();
+        double deltaD = finalHeading - iniHeading;
+        debug("iniHeading: %.1f, deltaD: %.1f)", iniHeading, deltaD);
+        //do not turn if the heading is close enough the target
+        if (Math.abs(deltaD) < 0.5)
+            return;
+
+        //break on reaching the target
+        for (WheelAssembly wheel : wheels)
+            wheel.motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        //ensure the condition before calling rotate()
+        driveMode = DriveMode.STOP;
+        useScalePower = false;
+        //***** routine to start the wheels ******//
+        rotate(ccw ? -power : power);
+        //***** End routine to start the wheels ******//
+        //record heading for checking in while loop
+        double lastReading = orientationSensor.getHeading();
+        long iniTime = System.currentTimeMillis();
+        while (true) {
+            double currentHeading = orientationSensor.getHeading();
+            //we cross the +-180 mark if and only if the product below is a very negative number
+            if ((currentHeading * lastReading < -100.0) || (Math.abs(currentHeading - lastReading) > 180.0)) {
+                //deltaD>0 => cross the mark clockwise; deltaD<0 => cross the mark anticlockwise
+                finalHeading = finalHeading + (deltaD > 0 ? -360.0 : +360.0);
+                debug("Crossing180, finalHeading: %.1f, deltaD:%.1f)", finalHeading, deltaD);
+            }
+            debug("currentHeading: %.1f, finalHeading: %.1f)", currentHeading, finalHeading);
+            //if within acceptable range, terminate
+            if (Math.abs(finalHeading - currentHeading) < (stopEarly ? power * 10.0 : 0.5)) break;
+            //if overshoot, terminate
+            if (deltaD > 0 && currentHeading - finalHeading > 0) break;
+            if (deltaD < 0 && currentHeading - finalHeading < 0) break;
+            //timeout, break. default timeout: 3s
+            if (System.currentTimeMillis() - iniTime > timeout) break;
+            //stop pressed, break
+            if (Thread.interrupted()) return;
+            lastReading = currentHeading;
+//            sleep(0);
+            // yield handler
+            TaskManager.processTasks();
+            this.core.yield();
+        }
+        for (WheelAssembly wheel : wheels)
+            wheel.motor.setPower(0);
+        driveMode = DriveMode.STOP;
+        useScalePower = true;
+    }
+
 
     /**
      * Scales power according to <code>minPower</code> and <code>maxPower</code> settings

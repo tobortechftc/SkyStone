@@ -51,8 +51,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             return offensive;
         }
 
-        public boolean isParkOnly()
-        {
+        public boolean isParkOnly() {
             return parkOnly;
         }
     }
@@ -100,7 +99,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         this.core = new CoreSystem();
         info("RoboSigma configure() after new CoreSystem()(run time = %.2f sec)", (runtime.seconds() - ini_time));
         chassis = new SwerveChassis(this.core).configureLogging("Swerve", logLevel); // Log.DEBUG
-        if(autoColor==AutoTeamColor.DIAGNOSIS){
+        if (autoColor == AutoTeamColor.DIAGNOSIS) {
             chassis.enableImuTelemetry();
         }
         // Warning: MUST disable the following line during competition
@@ -190,8 +189,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                                    float currentY, float changeY) throws InterruptedException {
                 if (chassis.isTankDrive()) {
                     chassis.tankDrive(source.getStick(Events.Side.LEFT, Events.Axis.Y_ONLY), currentY);
-                }
-                else if (Math.abs(source.getStick(Events.Side.LEFT, Events.Axis.BOTH)) < 0.1) {
+                } else if (Math.abs(source.getStick(Events.Side.LEFT, Events.Axis.BOTH)) < 0.1) {
                     // right stick with idle left stick operates robot in "crab" mode
                     double power = Math.abs(source.getStick(Events.Side.RIGHT, Events.Axis.X_ONLY));
                     power = Math.max(power, Math.abs(source.getStick(Events.Side.RIGHT, Events.Axis.Y_ONLY)));
@@ -241,8 +239,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                                    float currentY, float changeY) throws InterruptedException {
                 if (chassis.isTankDrive()) {
                     ; // do nothing
-                }
-                else if (Math.abs(source.getStick(Events.Side.RIGHT, Events.Axis.BOTH)) < 0.2) {
+                } else if (Math.abs(source.getStick(Events.Side.RIGHT, Events.Axis.BOTH)) < 0.2) {
                     if (Math.abs(currentX) > 0.1) {
                         // left stick with idle right stick rotates robot in place
                         chassis.rotate(currentX * Math.abs(currentX) * powerAdjustment(source) * rotateRatio);
@@ -421,11 +418,10 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         em2.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
-                if (source.isPressed(Button.LEFT_BUMPER)){
+                if (source.isPressed(Button.LEFT_BUMPER)) {
                     intake.gateServoOpen();
                     stoneGrabber.armInReadyGrabCombo();
-                }
-                else if (source.isPressed(Button.X))
+                } else if (source.isPressed(Button.X))
                     stoneGrabber.releaseStoneCombo();
             }
         }, new Button[]{Button.Y});
@@ -479,8 +475,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                     } else {
                         stoneGrabber.liftHold();
                     }
-                }
-                else if (Math.abs(source.getStick(Events.Side.RIGHT, Events.Axis.Y_ONLY)) > 0.2 &&
+                } else if (Math.abs(source.getStick(Events.Side.RIGHT, Events.Axis.Y_ONLY)) > 0.2 &&
                         (!source.isPressed(Button.LEFT_BUMPER))) {
                     // left stick with idle right stick rotates robot in place
                     if (source.getStick(Events.Side.RIGHT, Events.Axis.Y_ONLY) > 0)
@@ -544,29 +539,31 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             }
         }, new Button[]{Button.DPAD_UP});
     }
+
     public void setupTelemetryDiagnostics(Telemetry telemetry) {
         Telemetry.Line line = telemetry.addLine();
         line.addData("Test ", new Func<String>() {
             @Override
             public String value() {
                 return String.format("Power=%.2f, dist=%.1f, rotate_degree=%.1f\n",
-                        auto_chassis_power,auto_chassis_dist,auto_rotate_degree);
+                        auto_chassis_power, auto_chassis_dist, auto_rotate_degree);
             }
         });
     }
+
     public void setupTelemetry(Telemetry telemetry) {
         if (Thread.currentThread().isInterrupted()) return;
         Telemetry.Line line = telemetry.addLine();
         line.addData(" | <B> Team", new Func<String>() {
             @Override
             public String value() {
-                return String.format("%s\n",  (autoPara.isBlue() ? "Blue" : "Red"));
+                return String.format("%s\n", (autoPara.isBlue() ? "Blue" : "Red"));
             }
         });
         line.addData("<A> Lane", new Func<String>() {
             @Override
             public String value() {
-                return String.format("%s\n",  (autoPara.isLaneFront() ? "Front" : "Back"));
+                return String.format("%s\n", (autoPara.isLaneFront() ? "Front" : "Back"));
             }
         });
         /*
@@ -580,7 +577,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         line.addData("<Y> Mode", new Func<String>() {
             @Override
             public String value() {
-                return String.format("%s\n",  (autoPara.isParkOnly() ? "Park Only" : "Foundation and PArk"));
+                return String.format("%s\n", (autoPara.isParkOnly() ? "Park Only" : "Foundation and PArk"));
             }
         });
     }
@@ -675,6 +672,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     }
 
     public double auto_rotate_degree = 90;
+
     @MenuEntry(label = "Auto Rotation", group = "Test Chassis")
     public void testRotationSkyStone(EventManager em) {
         telemetry.addLine().addData("(BACK) Y/A", "+/- Power(%.2f)", auto_chassis_power).setRetained(true);
@@ -689,10 +687,11 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                     auto_chassis_power += 0.1;
                     if (auto_chassis_power > 1) auto_chassis_power = 1;
                 } else {
-                    chassis.rotateTo(auto_chassis_power,auto_rotate_degree);
+                    chassis.bufferedRotateTo(auto_chassis_power, auto_rotate_degree, 5000);
                 }
             }
         }, new Button[]{Button.Y});
+
         em.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
@@ -934,7 +933,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         return adjustment;
     }
 
-    public void waitAndProcessTask(long timeMillis){
+    public void waitAndProcessTask(long timeMillis) {
         long iniTime = System.currentTimeMillis();
         while (System.currentTimeMillis() - iniTime < timeMillis) {
             TaskManager.processTasks();
@@ -954,7 +953,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 //            chassis.driveStraightAuto(.35, isBlue ? -7 : -7, 0, 1000);
         } else {
 
-            double dist = Math.min(chassis.getDistance(SwerveChassis.Direction.FRONT_LEFT),chassis.getDistance(SwerveChassis.Direction.FRONT_RIGHT));
+            double dist = Math.min(chassis.getDistance(SwerveChassis.Direction.FRONT_LEFT), chassis.getDistance(SwerveChassis.Direction.FRONT_RIGHT));
             if (dist - 14 > 1) {
                 chassis.driveStraightAuto(.35, dist - 14, 0, 1000);////?
             } else if (dist - 14 < -1) {
@@ -976,7 +975,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         waitAndProcessTask(200);
         chassis.driveStraightAutoRunToPositionNoIMU(0.75, 135 - stoneX, 0, 5000);//used to use IMU
         //==========================arriving before foundation=================================
-        
+
         double disLeft = chassis.getDistance(SwerveChassis.Direction.FRONT_LEFT);
         double disRight = chassis.getDistance(SwerveChassis.Direction.FRONT_RIGHT);
         double distanceToFoundation = Math.min(disLeft, disRight) > 70 ? 0 : Math.min(disLeft, disRight);
@@ -992,11 +991,11 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         if (firstStone) {
             stoneGrabber.deliverStoneThrowComboAuto();//throw if first stone
             //stoneGrabber.armInComboAuto(false);//no para
-            stoneGrabber.armInCombo(false,true);
+            stoneGrabber.armInCombo(false, true);
             waitAndProcessTask(1000);
         } else {
             stoneGrabber.deliverStoneComboAuto();//don't throw if second stone
-            stoneGrabber.armInCombo(false,true);
+            stoneGrabber.armInCombo(false, true);
         }
 
         //let it finish
@@ -1272,7 +1271,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             dForward = findFoundtaion(isBlue);
             dist = chassis.getDistance(isBlue ? SwerveChassis.Direction.LEFT : SwerveChassis.Direction.RIGHT);
         }
-        dist = Math.min(dist-20, 55); // min for 55 cm as the range sensor is not accurate for long distance (over 50 cm) here.
+        dist = Math.min(dist - 20, 55); // min for 55 cm as the range sensor is not accurate for long distance (over 50 cm) here.
         if (dist > 3) {
             chassis.driveAuto(auto_chassis_power, dist, -90 * side, 3000);
         }
@@ -1387,9 +1386,9 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         //chassis.driveStraightAutoRunToPosition(.9, -40, 0, 15000);
 
     }
+    
     public void park2SS() throws InterruptedException{
         chassis.driveAuto(.9, -40, 0, 15000);
-
     }
 
     public void rotateFoundationNew(boolean isBlue) throws InterruptedException {
@@ -1503,19 +1502,16 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
     public void autoBackupProgram(boolean isBlue, boolean laneFront, boolean offensive, boolean parkOnly) throws InterruptedException {
         int side = isBlue ? 1 : -1;
-        if(parkOnly)
-        {
-            chassis.driveStraightAutoRunToPosition(.4,82,90*side,5000);
-            if(laneFront)
-            {
-                chassis.driveStraightAutoRunToPosition(.4,60,0,4000);
+        if (parkOnly) {
+            chassis.driveStraightAutoRunToPosition(.4, 82, 90 * side, 5000);
+            if (laneFront) {
+                chassis.driveStraightAutoRunToPosition(.4, 60, 0, 4000);
             }
             return;
         }
-        chassis.driveStraightAutoRunToPosition(auto_chassis_power,10,-90*side,1500);
+        chassis.driveStraightAutoRunToPosition(auto_chassis_power, 10, -90 * side, 1500);
         chassis.driveStraightAutoRunToPosition(auto_chassis_power, 70, 0, 1500);
-        if (offensive)
-        {
+        if (offensive) {
             foundationHook.hookDown();
             chassis.driveStraightAutoRunToPosition(auto_chassis_power, 70, 0, 1500);
             chassis.driveStraightAutoRunToPosition(auto_chassis_power, -70, 0, 1500);
@@ -1526,7 +1522,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         }
 
         rotateFoundation(isBlue, false);
-        chassis.rotateTo(0.25, -90*side);
+        chassis.rotateTo(0.25, -90 * side);
         double dist = chassis.getDistance(isBlue ? SwerveChassis.Direction.LEFT : SwerveChassis.Direction.RIGHT);
         if (dist > 45) dist = 45;
         if (laneFront) {
@@ -1545,31 +1541,23 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
     public void tensorTest(int iter, int loc)//loc = 1 left, 2 center, 3 right
     {
-        int regularstonecount  = 0;
-        int bigstoneleftcount  = 0;
+        int regularstonecount = 0;
+        int bigstoneleftcount = 0;
         int bigstonerightcount = 0;
-        int correctstonecount  = 0;
+        int correctstonecount = 0;
         double[][] testresults = new double[iter][2];
         double stoneloc;
-        for(int i = 0;i<iter;i++)
-        {
-            testresults[i]=cameraStoneDetector.SSLocTest();
+        for (int i = 0; i < iter; i++) {
+            testresults[i] = cameraStoneDetector.SSLocTest();
         }
-        for(int i = 0;i<iter;i++)
-        {
-            if(testresults[i][1] - testresults[i][0] <=250)
-            {
+        for (int i = 0; i < iter; i++) {
+            if (testresults[i][1] - testresults[i][0] <= 250) {
                 regularstonecount++;
-                correctstonecount = (((Math.round(((testresults[i][0]+testresults[i][1])/2)/200))*200)==loc)?correctstonecount++:correctstonecount;
-            }
-            else if(testresults[i][1]-testresults[i][0]>250)
-            {
-                if((testresults[i][0]+testresults[i][1])/2<200)
-                {
+                correctstonecount = (((Math.round(((testresults[i][0] + testresults[i][1]) / 2) / 200)) * 200) == loc) ? correctstonecount++ : correctstonecount;
+            } else if (testresults[i][1] - testresults[i][0] > 250) {
+                if ((testresults[i][0] + testresults[i][1]) / 2 < 200) {
                     bigstoneleftcount++;
-                }
-                else if((testresults[i][0]+testresults[i][1])/2>400)
-                {
+                } else if ((testresults[i][0] + testresults[i][1]) / 2 > 400) {
                     bigstonerightcount++;
                 }
             }
