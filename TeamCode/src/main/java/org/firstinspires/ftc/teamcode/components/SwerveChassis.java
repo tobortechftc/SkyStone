@@ -599,7 +599,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             throw new IllegalArgumentException("Heading must be between -90 and 90");
         }
         boolean shouldApplyIMU = true;
-        if (Math.abs(cm)<20) shouldApplyIMU = false;
+        if (Math.abs(cm) < 20) shouldApplyIMU = false;
         double distance = TICKS_PER_CM * cm;
 
         if (power == 0) {
@@ -686,8 +686,10 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                 double apower = Math.abs(power);
 
                 double pow = .25 * minPower + .75 * apower;
-                if (traveledPercent < .25 + .75 * slowDownPercent)pow = .5 * minPower + .5 * apower;
-                else if (traveledPercent < .5 + .5 * slowDownPercent) pow = .75 * minPower + .25 * apower;
+                if (traveledPercent < .25 + .75 * slowDownPercent)
+                    pow = .5 * minPower + .5 * apower;
+                else if (traveledPercent < .5 + .5 * slowDownPercent)
+                    pow = .75 * minPower + .25 * apower;
                 else if (traveledPercent < .75 + .25 * slowDownPercent) pow = minPower;
 
                 if (pow < minPower) pow = minPower;
@@ -699,7 +701,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             }
 
             //if (distance - maxTraveled < 10)
-               //break;
+            //break;
             //determine if time limit is reached
             if (System.currentTimeMillis() - iniTime > timeout)
                 break;
@@ -716,7 +718,8 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     public void driveStraightAutoRunToPosition(double power, double cm, double heading, int timeout) throws InterruptedException {
         driveStraightAutoRunToPosition(power, cm, heading, 0.0, timeout);
     }
-    public void driveAuto(double power, double cm, double heading, int timeout) throws InterruptedException{
+
+    public void driveAuto(double power, double cm, double heading, int timeout) throws InterruptedException {
         double overshoot = 1;
         if (cm > 0) {
             if (cm <= 10) {
@@ -730,21 +733,22 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             } else if (power >= .7 && cm < 150) {
                 overshoot = 1.1;
             }
-        } else{
-            if (Math.abs(cm) <= 10){
+        } else {
+            if (Math.abs(cm) <= 10) {
                 overshoot = 1.3;
-            } else if (Math.abs(cm) <= 20){
+            } else if (Math.abs(cm) <= 20) {
                 overshoot = 1.2;
             } else if ((Math.abs(cm) <= 35)) {
                 overshoot = 1.15;
-            }else if ((Math.abs(cm) <= 100)) {
+            } else if ((Math.abs(cm) <= 100)) {
                 overshoot = 1 + (power - .2) / 3.1;
-            } else if (power >= .7 && Math.abs(cm) < 150){
-               overshoot = 1.1;
+            } else if (power >= .7 && Math.abs(cm) < 150) {
+                overshoot = 1.1;
             }
         }
-        driveStraightAuto(power, cm/overshoot, heading, timeout);
+        driveStraightAuto(power, cm / overshoot, heading, timeout);
     }
+
     public void driveStraightAutoRunToPosition(double power, double cm, double heading, double beginTaskPercent, int timeout) throws InterruptedException {
         if (Thread.interrupted()) return;
         debug("driveStraight(pwr: %.3f, head: %.1f)", power, heading);
@@ -1386,9 +1390,10 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             finalHeading += 360;
         rotateTo(power, finalHeading);
     }
+
     @Deprecated
     public void rotateToOld(double power, double finalHeading) throws InterruptedException {
-        rotateTo(power,finalHeading,3000);
+        rotateTo(power, finalHeading, 3000);
     }
 
     @Deprecated
@@ -1425,6 +1430,11 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
 
     static final double degreeToRad = PI / 180;
     static final double radToDegree = 180 / PI;
+
+    public void rotateTo(double power, double finalHeading) throws InterruptedException {
+        rotateTo(power, finalHeading, 4000);
+    }
+
     public void rotateTo(double power, double finalHeading, int timeout) throws InterruptedException {
         if (Thread.interrupted()) return;
 

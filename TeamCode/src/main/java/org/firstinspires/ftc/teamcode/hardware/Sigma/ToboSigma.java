@@ -687,7 +687,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                     auto_chassis_power += 0.1;
                     if (auto_chassis_power > 1) auto_chassis_power = 1;
                 } else {
-                    chassis.bufferedRotateTo(auto_chassis_power, auto_rotate_degree, 5000);
+                    chassis.rotateTo(auto_chassis_power, auto_rotate_degree, 5000);
                 }
             }
         }, new Button[]{Button.Y});
