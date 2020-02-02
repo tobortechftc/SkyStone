@@ -29,6 +29,8 @@
 
 package org.firstinspires.ftc.teamcode.opmodes.sigmaBot;
 
+import android.util.Log;
+
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -39,6 +41,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 import org.firstinspires.ftc.teamcode.hardware.Sigma.ToboSigma;
+import org.firstinspires.ftc.teamcode.support.Logger;
+import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
 
 import java.util.List;
 
@@ -52,7 +56,6 @@ import java.util.List;
  * IMPORTANT: In order to use this OpMode, you need to obtain your own Vuforia license key as
  * is explained below.
  */
-@Disabled
 @TeleOp(name = "TFOD:WebcamRight", group = "Test")
 public class TFOD_WebcamRight extends LinearOpMode {
     private static final String TFOD_MODEL_ASSET = "Skystone.tflite";
@@ -86,6 +89,11 @@ public class TFOD_WebcamRight extends LinearOpMode {
      * Detection engine.
      */
     private TFObjectDetector tfod;
+    protected static int LOG_LEVEL = Log.INFO;
+
+    private Configuration configuration;
+    private Logger<Logger> log = new Logger<Logger>().configureLogging(getClass().getSimpleName(), LOG_LEVEL);
+
 
     @Override
     public void runOpMode() {
@@ -106,13 +114,24 @@ public class TFOD_WebcamRight extends LinearOpMode {
         if (tfod != null) {
             tfod.activate();
         }
+        ToboSigma robot = new ToboSigma();
+        robot.configureLogging("ToboSigma",LOG_LEVEL);
+        configuration = new Configuration(hardwareMap, robot.getName()).configureLogging("Config", LOG_LEVEL);
+        log.info("RoboSigma TeleOp finished configuration (CPU_time = %.2f sec)", getRuntime());
+
 
         /** Wait for the game to begin */
         telemetry.addData(">", "Press Play to start op mode");
         telemetry.update();
         waitForStart();
 
-
+        int total_stones = 0;
+        int big_ss = 0;
+        int good_ss = 0;
+        int ns = 0;
+        int ss_left = 0;
+        int ss_cener = 0;
+        int ss_right = 0;
         while (opModeIsActive()) {
             if (tfod == null) {
                 continue;
@@ -161,31 +180,42 @@ public class TFOD_WebcamRight extends LinearOpMode {
             }
             for (Recognition recognition :
                     updatedRecognitions) {
+                total_stones++;
                 if (recognition.getLabel() == "Stone") {
+                    ns++;
                     continue;
                 }
                 double pos = (recognition.getRight() + recognition.getLeft()) / 2;
                 double skystone_width = recognition.getRight() - recognition.getLeft();
                 if (skystone_width>320) { // stone detected is twice as regular, assume the skystone is on the right half
-                    pos = (pos+recognition.getRight())/2;
+                    // pos = (pos+recognition.getRight())/2;
+                    big_ss++;
+                } else {
+                    good_ss++;
                 }
                 if (redSide) {
                     if (pos < left_center_border_x) {
                         skystoneLocation = ToboSigma.SkystoneLocation.RIGHT;
+                        ss_right++;
                     } else if (pos > center_right_border_x) {
                         skystoneLocation = ToboSigma.SkystoneLocation.CENTER;
+                        ss_cener++;
                     } else if (pos >= left_center_border_x && pos <= center_right_border_x) {
                         skystoneLocation = ToboSigma.SkystoneLocation.LEFT;
+                        ss_left++;
                     } else {
                         skystoneLocation = ToboSigma.SkystoneLocation.UNKNOWN;
                     }
                 } else {
                     if (pos < left_center_border_x) {
                         skystoneLocation = ToboSigma.SkystoneLocation.CENTER;
+                        ss_cener++;
                     } else if (pos > center_right_border_x) {
                         skystoneLocation = ToboSigma.SkystoneLocation.LEFT;
+                        ss_left++;
                     } else if (pos >= left_center_border_x && pos <= center_right_border_x) {
                         skystoneLocation = ToboSigma.SkystoneLocation.RIGHT;//big stone
+                        ss_right++;
                     } else {
                         skystoneLocation = ToboSigma.SkystoneLocation.UNKNOWN;
                     }
@@ -195,9 +225,16 @@ public class TFOD_WebcamRight extends LinearOpMode {
 
             }
             telemetry.update();
+            if (big_ss+good_ss>=1000) {
+                break;
+            }
         }
 
+        telemetry.addLine().addData("Result", "L=%d,C=%d,R=%d,good=%d,big=%d,total=%d",
+                ss_left,ss_cener,ss_right,good_ss,big_ss,total_stones);
+        telemetry.update();
 
+        sleep(10000);
         if (tfod != null) {
             tfod.shutdown();
         }

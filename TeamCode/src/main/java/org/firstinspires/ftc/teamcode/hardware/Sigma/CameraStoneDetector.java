@@ -134,13 +134,16 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
             int validRecognitions = 0;
             for (Recognition recognition :
                     updatedRecognitions) {
+                if (recognition.getLabel() == "Stone") {
+                    continue;
+                }
                 double width = recognition.getRight() - recognition.getLeft();
                 if (width < max_stone_width && width > min_stone_width) {
                     validRecognitions++;
                 }
             }
             //logger.verbose("Valid recognitions: %d", validRecognitions);
-            if (validRecognitions < 1 || validRecognitions > 3) {
+            if (validRecognitions !=1) {
                 continue;
             }
             for (Recognition recognition :
