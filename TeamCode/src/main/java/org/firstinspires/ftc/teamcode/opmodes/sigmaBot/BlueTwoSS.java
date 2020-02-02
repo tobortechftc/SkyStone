@@ -16,7 +16,7 @@ import java.util.List;
 /**
  * Created by 28761 on 6/29/2019.
  */
-@Autonomous(name="Blue 2SS", group="Sigma")
+@Autonomous(name = "Blue 2SS", group = "Sigma")
 public class BlueTwoSS extends LinearOpMode {
     private ToboSigma.SkystoneLocation StoneLoc;
 
@@ -34,7 +34,7 @@ public class BlueTwoSS extends LinearOpMode {
         telemetry.update();
 
         ToboSigma robot = new ToboSigma();
-        robot.configureLogging("ToboSigma",LOG_LEVEL);
+        robot.configureLogging("ToboSigma", LOG_LEVEL);
         configuration = new Configuration(hardwareMap, robot.getName()).configureLogging("Config", LOG_LEVEL);
         log.info("RoboSigma Autonomous finished log configuration (CPU_time = %.2f sec)", getRuntime());
 
@@ -56,7 +56,7 @@ public class BlueTwoSS extends LinearOpMode {
 //            updatedRecognitions = robot.cameraStoneDetector.getTfod().getUpdatedRecognitions();
 //        }
         int robot_pos = 1;
-        if (robot.intake!=null)
+        if (robot.intake != null)
             robot.intake.intakeDropInit();
         waitForStart();
         robot.runtime.reset();
@@ -67,15 +67,16 @@ public class BlueTwoSS extends LinearOpMode {
             try {
                 boolean isBlue = true;
                 StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF(false);
-                int ss_pos = robot.getFirstSkyStoneDefense(StoneLoc, isBlue, false );
+                int ss_pos = robot.getFirstSkyStoneDefense(StoneLoc, isBlue, false);
                 robot.rotateFoundationNew(isBlue);
                 int count = 2;
-                if (robot.runtimeAuto.seconds() < 18.5){//may be too large - TYPICALLY AROUND 17-18
-                    robot.getAnotherSkyStoneNew(ss_pos, count, isBlue);
-                    if(robot.runtimeAuto.seconds() < 29.0){
-                        robot.park2SS();
+                if (robot.runtimeAuto.seconds() < 18.5) {//may be too large - TYPICALLY AROUND 17-18
+                    boolean place2ndSS = robot.runtimeAuto.seconds() < 17;
+                    robot.getAnotherSkyStoneNew(ss_pos, count, isBlue, place2ndSS);
+                    if (robot.runtimeAuto.seconds() < 29.0) {
+                        robot.park2SS(place2ndSS);
                     }
-                } else{
+                } else {
                     robot.parkAfterRotateNew(isBlue);
                 }
 
@@ -90,7 +91,7 @@ public class BlueTwoSS extends LinearOpMode {
     protected void handleException(Throwable T) {
         log.error(T.getMessage(), T);
         int linesToShow = 5;
-        for(StackTraceElement line : T.getStackTrace()) {
+        for (StackTraceElement line : T.getStackTrace()) {
             telemetry.log().add("%s.%s():%d", line.getClassName(), line.getMethodName(), line.getLineNumber());
             if (--linesToShow == 0) break;
         }

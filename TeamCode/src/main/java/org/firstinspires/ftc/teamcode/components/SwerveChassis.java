@@ -1472,14 +1472,14 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                 if (crossProduct >= 0) break;
             }
             currentAbsDiff = abs(finalHeading - currentHeading) > 180 ? 360 - abs(finalHeading - currentHeading) : abs(finalHeading - currentHeading);
-            if (!lowerPowerApplied && currentAbsDiff / iniAbsDiff < 0.50) {//damp power to 0.22 if in last 20%
+            if (!lowerPowerApplied && currentAbsDiff / iniAbsDiff < 0.40) {//damp power to 0.22 if in last 40%
                 rotate(0.0);
                 sleep(100);
                 rotate(direction * 0.20);
                 lowerPowerApplied = true;
             }
-            if (currentAbsDiff / iniAbsDiff < 0.20 && abs(crossProduct) * radToDegree < 0.5)
-                break;//stop is really close to target
+            if (currentAbsDiff / iniAbsDiff < 0.20 && abs(crossProduct) * radToDegree < 0.5)//assume sinx=x
+                break;//stop if really close to target
             if (Thread.interrupted()) break;
             if (System.currentTimeMillis() - iniTime > timeout) break;
             TaskManager.processTasks();
