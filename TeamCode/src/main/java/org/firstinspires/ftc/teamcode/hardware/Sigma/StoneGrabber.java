@@ -44,7 +44,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double ARM_OUT_INIT = 0.47+ARM_OFFSET;
     private final double ARM_IN = 0.65+ARM_OFFSET;
     private final double ARM_LOW = 0.58+ARM_OFFSET;
-    private final double ARM_OUT = 0.37+ARM_OFFSET;
+    private final double ARM_OUT = 0.35+ARM_OFFSET;
     private final double ARM_OUT_MORE = 0.27+ARM_OFFSET;
     private final double ARM_OUT_AUTO = 0.45+ARM_OFFSET;
     private final double ARM_DOWN_FOR_CAP = 0.72+ARM_OFFSET;
@@ -63,9 +63,10 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double WRIST_CAPSTONE = WRIST_PARALLEL - 0.01;
 
     private final double GRABBER_INIT = 0.29;
-    private final double GRABBER_OPEN_IN = 0.59;
-    private final double GRABBER_OPEN = 0.9;
     private final double GRABBER_CLOSE = 0.29;
+    private final double GRABBER_OPEN_IN = 0.59;
+    private final double GRABBER_VERTICAL = 0.5;
+    private final double GRABBER_OPEN = 0.9;
 
     private final int LIFT_THRESHOLD = 15;
     private final int LIFT_RUN_TO_POSITION_OFFSET = 100;  // V5.3, new control for goBilda 5205 motor
@@ -384,6 +385,21 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             grabberClose();
         else
             grabberOpen();
+    }
+
+    public Progress moveGrabberPos(double target) {
+        isGrabberOpened = (target>GRABBER_VERTICAL+0.05);
+        double adjustment = Math.abs(grabber.getPosition() - target);
+        debug("moveGrabber(): target=%.2f, adjustment=%.2f", target, adjustment);
+        // entire move from up to down takes 1 seconds
+        final long doneBy = System.currentTimeMillis() + Math.round(500 * adjustment);
+        grabber.setPosition(target);
+        return new Progress() {
+            @Override
+            public boolean isDone() {
+                return System.currentTimeMillis() >= doneBy;
+            }
+        };
     }
 
     public Progress moveGrabber(boolean closed) {
@@ -1104,14 +1120,14 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             TaskManager.add(new Task() {
                 @Override
                 public Progress start() {
-                    return moveGrabber(true);
+                    return moveGrabberPos(GRABBER_VERTICAL);
                 }
             }, taskName);
-            if (Math.abs(leftLifter.getCurrentPosition()-LIFT_SAFE_SWING)>140) {
+            if (leftLifter.getCurrentPosition()<LIFT_SAFE_SWING) {
                 TaskManager.add(new Task() {
                     @Override
                     public Progress start() {
-                        int position = LIFT_SAFE_SWING+140;
+                        int position = LIFT_SAFE_SWING;
                         return liftToPosition(position, false);
                     }
                 }, taskName);
@@ -1125,6 +1141,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             TaskManager.add(new Task() {
                 @Override
                 public Progress start() {
+                    grabberOpen();
                     int position = LIFT_DOWN_GRAB;
                     return liftToPosition(position, false);
                 }
