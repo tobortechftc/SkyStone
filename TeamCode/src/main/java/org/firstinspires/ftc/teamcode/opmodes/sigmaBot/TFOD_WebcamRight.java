@@ -153,11 +153,15 @@ public class TFOD_WebcamRight extends LinearOpMode {
             // step through the list of recognitions and display boundary info.
             int i = 0;
             for (Recognition recognition : updatedRecognitions) {
+                double pos = (recognition.getRight() + recognition.getLeft()) / 2;
+                double skystone_width = recognition.getRight() - recognition.getLeft();
                 telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
-                telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
-                        recognition.getLeft(), recognition.getTop());
-                telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
-                        recognition.getRight(), recognition.getBottom());
+                //telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
+                //        recognition.getLeft(), recognition.getTop());
+                //telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
+                //        recognition.getRight(), recognition.getBottom());
+                telemetry.addData(String.format("pos/width (%d)", i), "%.03f /%.03f",
+                                pos, skystone_width);
             }
             telemetry.update();
 
@@ -167,22 +171,27 @@ public class TFOD_WebcamRight extends LinearOpMode {
             //logger.verbose("Starting recognitions");
             //logger.verbose("Recognitions: %d", (int) updatedRecognitions.size());
             int validRecognitions = 0;
+            if (ns>1000)
+                break;
             for (Recognition recognition :
                     updatedRecognitions) {
+                if (recognition.getLabel() == "Stone") {
+                    ns++;
+                    continue;
+                }
                 double width = recognition.getRight() - recognition.getLeft();
                 if (width < max_stone_width && width > min_stone_width) {
                     validRecognitions++;
                 }
             }
             //logger.verbose("Valid recognitions: %d", validRecognitions);
-            if (validRecognitions <= 0 && validRecognitions >= 4) {
-                continue;
-            }
+            //if (validRecognitions!=1) { // not detect just one skystone
+            //    continue;
+            //}
             for (Recognition recognition :
                     updatedRecognitions) {
                 total_stones++;
                 if (recognition.getLabel() == "Stone") {
-                    ns++;
                     continue;
                 }
                 double pos = (recognition.getRight() + recognition.getLeft()) / 2;
@@ -225,7 +234,7 @@ public class TFOD_WebcamRight extends LinearOpMode {
 
             }
             telemetry.update();
-            if (big_ss+good_ss>=1000) {
+            if (big_ss+good_ss>=100) {
                 break;
             }
         }

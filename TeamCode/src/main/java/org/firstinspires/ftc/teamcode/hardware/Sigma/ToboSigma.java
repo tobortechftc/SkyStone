@@ -1616,7 +1616,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         setupTelemetryTensor(telemetry);
 
         cameraStoneDetector = new CameraStoneDetector().configureLogging("CameraStoneDetector", logLevel);
-        cameraStoneDetector.configure(configuration, CameraSource.WEBCAM_LEFT);
+        cameraStoneDetector.configure(configuration, CameraSource.WEBCAM_RIGHT);
 
         em.updateTelemetry(telemetry, 100);
         em.onButtonDown(new Events.Listener() {
