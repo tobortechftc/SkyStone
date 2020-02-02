@@ -110,6 +110,12 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
         int min_stone_width = 150;
         int max_stone_width = 250;
         int large_stone_width = 320;
+        int n_ss = 0;
+        int n_rs = 0;
+        double skystone_width = 0;
+        double skystone_pos = 0;
+        double rstone_width[] = new double[2];
+        double rstone_pos[] = new double[2];
 
         logger.verbose("Start getGoldPositionTF()");
 
@@ -125,57 +131,82 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
 
         while (elapsedTime.seconds() < 2 && skystoneLocation == ToboSigma.SkystoneLocation.UNKNOWN) {
             List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
-
+            n_ss = n_rs = 0;
             if (updatedRecognitions==null || updatedRecognitions.size() < 1) {
                 continue;
             }
             //logger.verbose("Starting recognitions");
             //logger.verbose("Recognitions: %d", (int) updatedRecognitions.size());
-            int validRecognitions = 0;
             for (Recognition recognition :
                     updatedRecognitions) {
-                if (recognition.getLabel() == "Stone") {
-                    continue;
-                }
                 double width = recognition.getRight() - recognition.getLeft();
                 if (width < max_stone_width && width > min_stone_width) {
-                    validRecognitions++;
+                    if (recognition.getLabel() == "Stone") {
+                        if (n_rs<2) {
+                            rstone_width[n_rs] = recognition.getRight() - recognition.getLeft();
+                            rstone_pos[n_rs] = (recognition.getRight() + recognition.getLeft()) / 2;
+                        }
+                        n_rs++;
+                    } else {
+                        skystone_width = recognition.getRight() - recognition.getLeft();
+                        skystone_pos = (recognition.getRight() + recognition.getLeft()) / 2;
+                        n_ss++;
+                    }
                 }
             }
             //logger.verbose("Valid recognitions: %d", validRecognitions);
-            if (validRecognitions !=1) {
+            if (n_ss!=1 && n_rs!=2) {
                 continue;
             }
-            for (Recognition recognition :
-                    updatedRecognitions) {
-                if (recognition.getLabel() == "Stone") {
-                    continue;
-                }
-                double pos = (recognition.getRight() + recognition.getLeft()) / 2;
-                double skystone_width = recognition.getRight() - recognition.getLeft();
-                if (skystone_width>large_stone_width) { // stone detected is twice as regular, assume the skystone is on the right half
-                    pos = (pos+recognition.getRight())/2;
-                }
-                if (redSide) {
-                    if (pos < left_center_border_x) {
-                        skystoneLocation = ToboSigma.SkystoneLocation.RIGHT;
-                    } else if (pos > center_right_border_x) {
-                        skystoneLocation = ToboSigma.SkystoneLocation.CENTER;
-                    } else if (pos >= left_center_border_x && pos <= center_right_border_x) {
-                        skystoneLocation = ToboSigma.SkystoneLocation.LEFT;
-                    } else {
-                        skystoneLocation = ToboSigma.SkystoneLocation.UNKNOWN;
+            int ss_pos_on_screen = 3; // 0=left, 1=center, 2=right, 3=unknown
+            if (n_ss!=1) { // use regular two stones to imply the location of SS
+                boolean rstone_map[] = new boolean[3];
+                for (int i=0; i<3; i++) rstone_map[i]=false;
+                for (int i=0; i<n_rs; i++) {
+                    if (rstone_pos[i] < left_center_border_x)
+                        rstone_map[0] = true;
+                    else if (rstone_pos[i] > center_right_border_x) {
+                        rstone_map[2] = true;
+                    } else if (rstone_pos[i] >= left_center_border_x && rstone_pos[i] <= center_right_border_x) {
+                        rstone_map[1] = true;
                     }
+                }
+                for (int i=0; i<3; i++) {
+                    if (rstone_map[i]==false) {
+                        ss_pos_on_screen = i;
+                        break;
+                    }
+                }
+            } else {
+                if (skystone_pos < left_center_border_x) {
+                    ss_pos_on_screen = 0;
+                } else if (skystone_pos > center_right_border_x) {
+                    ss_pos_on_screen = 2;
+                } else if (skystone_pos >= left_center_border_x && skystone_pos <= center_right_border_x) {
+                    ss_pos_on_screen = 1;
                 } else {
-                    if (pos < left_center_border_x) {
-                        skystoneLocation = ToboSigma.SkystoneLocation.CENTER;
-                    } else if (pos > center_right_border_x) {
-                        skystoneLocation = ToboSigma.SkystoneLocation.LEFT;
-                    } else if (pos >= left_center_border_x && pos <= center_right_border_x) {
-                        skystoneLocation = ToboSigma.SkystoneLocation.RIGHT;
-                    } else {
-                        skystoneLocation = ToboSigma.SkystoneLocation.UNKNOWN;
-                    }
+                    ss_pos_on_screen = 3;
+                }
+            }
+            if (redSide) {
+                if (ss_pos_on_screen==0) {
+                    skystoneLocation = ToboSigma.SkystoneLocation.RIGHT;
+                } else if (ss_pos_on_screen==2) {
+                    skystoneLocation = ToboSigma.SkystoneLocation.CENTER;
+                } else if (ss_pos_on_screen==1) {
+                    skystoneLocation = ToboSigma.SkystoneLocation.LEFT;
+                } else {
+                    skystoneLocation = ToboSigma.SkystoneLocation.UNKNOWN;
+                }
+            } else {
+                if (ss_pos_on_screen==0) {
+                    skystoneLocation = ToboSigma.SkystoneLocation.CENTER;
+                } else if (ss_pos_on_screen==2) {
+                    skystoneLocation = ToboSigma.SkystoneLocation.LEFT;
+                } else if (ss_pos_on_screen==1) {
+                    skystoneLocation = ToboSigma.SkystoneLocation.RIGHT;
+                } else {
+                    skystoneLocation = ToboSigma.SkystoneLocation.UNKNOWN;
                 }
             }
         }
