@@ -1184,6 +1184,18 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
     }
 
+    public void getOneStone() throws InterruptedException{
+        stoneGrabber.armOutCombo();
+        while (!TaskManager.isComplete("Arm Out Combo")) {
+            TaskManager.processTasks();
+        }
+        stoneGrabber.grabberOpenAuto();
+        chassis.driveAuto(0.5,72,0,5000);
+
+        stoneGrabber.grabStoneComboAuto();
+        stoneGrabber.armInCombo(true, true);
+        chassis.driveAuto(0.6,-60,0,2000);
+    }
     public int getFirstSkyStoneDefense(ToboSigma.SkystoneLocation skyStonePosition, boolean isBlue, boolean safe) throws InterruptedException {
         int side = isBlue ? 1 : -1;
         stoneGrabber.armOutCombo();
