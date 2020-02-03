@@ -114,11 +114,6 @@ public class TFOD_WebcamRight extends LinearOpMode {
         if (tfod != null) {
             tfod.activate();
         }
-        ToboSigma robot = new ToboSigma();
-        robot.configureLogging("ToboSigma",LOG_LEVEL);
-        configuration = new Configuration(hardwareMap, robot.getName()).configureLogging("Config", LOG_LEVEL);
-        log.info("RoboSigma TeleOp finished configuration (CPU_time = %.2f sec)", getRuntime());
-
 
         /** Wait for the game to begin */
         telemetry.addData(">", "Press Play to start op mode");
@@ -132,17 +127,17 @@ public class TFOD_WebcamRight extends LinearOpMode {
         int ss_left = 0;
         int ss_cener = 0;
         int ss_right = 0;
+
         while (opModeIsActive()) {
             if (tfod == null) {
                 continue;
             }
-
             boolean redSide = false;
             int max_stone_width = 250;
             int min_stone_width = 150;
             int left_center_border_x = 200;
             int center_right_border_x = 400;
-            ToboSigma.SkystoneLocation skystoneLocation;
+            ToboSigma.SkystoneLocation skystoneLocation= ToboSigma.SkystoneLocation.UNKNOWN;
             // getUpdatedRecognitions() will return null if no new information is available since
             // the last time that call was made.
             List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
@@ -277,5 +272,14 @@ public class TFOD_WebcamRight extends LinearOpMode {
         tfodParameters.minimumConfidence = 0.8;
         tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
         tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_FIRST_ELEMENT, LABEL_SECOND_ELEMENT);
+    }
+    protected void handleException(Throwable T) {
+        log.error(T.getMessage(), T);
+        int linesToShow = 5;
+        for (StackTraceElement line : T.getStackTrace()) {
+            telemetry.log().add("%s.%s():%d", line.getClassName(), line.getMethodName(), line.getLineNumber());
+            if (--linesToShow == 0) break;
+        }
+        telemetry.update();
     }
 }

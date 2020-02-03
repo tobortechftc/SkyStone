@@ -33,20 +33,16 @@ public class TFOD_TeleOp extends LinearOpMode implements YieldHandler {
         telemetry.addData("Initializing Robot", "Please Wait ...");
         telemetry.update();
 
+        ToboSigma.SkystoneLocation StoneLoc= ToboSigma.SkystoneLocation.UNKNOWN;
+
         ToboSigma robot = new ToboSigma();
         robot.configureLogging("ToboSigma",LOG_LEVEL);
         configuration = new Configuration(hardwareMap, robot.getName()).configureLogging("Config", LOG_LEVEL);
-        log.info("RoboSigma TeleOp finished configuration (CPU_time = %.2f sec)", getRuntime());
-
         try {
             // configure robot and reset all hardware
-            robot.configure(configuration, telemetry, ToboSigma.AutoTeamColor.NOT_AUTO);
+            robot.configure(configuration, telemetry, ToboSigma.AutoTeamColor.AUTO_BLUE);
             configuration.apply();
-
-            eventManager1 = new EventManager(gamepad1, true);
-
-            robot.tensorTestFunc(configuration,eventManager1); // define events for the chassis drive
-
+            robot.reset(true);
             telemetry.addData("Robot is ready", "Press Play");
             telemetry.update();
         } catch (Exception E) {
@@ -57,19 +53,16 @@ public class TFOD_TeleOp extends LinearOpMode implements YieldHandler {
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         robot.core.set_yield_handler(this); // uses this class as yield handler
-
-        robot.foundationHook.hookUp();
-
+        int count=0;
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
-            try {
-                eventManager1.processEvents();
-                TaskManager.processTasks();
-            } catch (Exception E) {
-                telemetry.addData("Error in event handler", E.getMessage());
-                handleException(E);
-                Thread.sleep(5000);
-            }
+            double ini_time = getRuntime();
+            count++;
+            StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF(false);
+            telemetry.addData("StoneLoc", "%s, time=%.2f, count=%1d",
+                    StoneLoc.toString(),(getRuntime()-ini_time), count);
+            telemetry.update();
+            sleep(100);
         }
     }
 

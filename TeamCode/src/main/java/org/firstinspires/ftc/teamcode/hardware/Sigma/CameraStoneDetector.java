@@ -108,8 +108,8 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
         int center_right_border_x = 400;
 
         int min_stone_width = 150;
-        int max_stone_width = 250;
-        int large_stone_width = 320;
+        int max_stone_width = 320;
+
         int n_ss = 0;
         int n_rs = 0;
         double skystone_width = 0;
@@ -210,11 +210,12 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
                 }
             }
         }
-        if (tfod != null) {
-            tfod.deactivate();
-            tfod.shutdown();
-            logger.verbose("Tfod shutdown", tfod);
-        }
+
+//        if (tfod != null) {
+//            tfod.deactivate();
+//            tfod.shutdown();
+//            logger.verbose("Tfod shutdown", tfod);
+//        }
 
         switch (skystoneLocation) {
             case LEFT:

@@ -119,7 +119,7 @@ public class TFOD_WebcamLeft extends LinearOpMode {
             }
 
             boolean redSide = true;
-            int max_stone_width = 250;
+            int max_stone_width = 320;
             int min_stone_width = 150;
             int left_center_border_x = 200;
             int center_right_border_x = 400;
