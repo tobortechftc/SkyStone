@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.opmodes.sigmaBot;
 
 import android.util.Log;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -17,6 +18,7 @@ import org.firstinspires.ftc.teamcode.support.tasks.TaskManager;
 /**
  * Created by 28761 on 6/29/2019.
  */
+@Disabled
 @TeleOp(name="TFOD-TeleOp", group="Test")
 public class TFOD_TeleOp extends LinearOpMode implements YieldHandler {
     protected static int LOG_LEVEL = Log.INFO;

@@ -56,6 +56,7 @@ import java.util.List;
  * IMPORTANT: In order to use this OpMode, you need to obtain your own Vuforia license key as
  * is explained below.
  */
+@Disabled
 @TeleOp(name = "TFOD:WebcamRight", group = "Test")
 public class TFOD_WebcamRight extends LinearOpMode {
     private static final String TFOD_MODEL_ASSET = "Skystone.tflite";
@@ -151,10 +152,6 @@ public class TFOD_WebcamRight extends LinearOpMode {
                 double pos = (recognition.getRight() + recognition.getLeft()) / 2;
                 double skystone_width = recognition.getRight() - recognition.getLeft();
                 telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
-                //telemetry.addData(String.format("  left,top (%d)", i), "%.03f , %.03f",
-                //        recognition.getLeft(), recognition.getTop());
-                //telemetry.addData(String.format("  right,bottom (%d)", i), "%.03f , %.03f",
-                //        recognition.getRight(), recognition.getBottom());
                 telemetry.addData(String.format("pos/width (%d)", i), "%.03f /%.03f",
                                 pos, skystone_width);
             }

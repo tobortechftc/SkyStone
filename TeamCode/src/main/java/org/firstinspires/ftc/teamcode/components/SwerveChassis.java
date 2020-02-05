@@ -96,6 +96,9 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
 
     public ColorSensor FRColor;
     public ColorSensor FLColor;
+    DistanceSensor FRDistance;
+    DistanceSensor FLDistance;
+
 
     public Telemetry tl;
 
@@ -269,6 +272,8 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
 
             FRColor = configuration.getHardwareMap().get(ColorSensor.class, "FRColor");
             FLColor = configuration.getHardwareMap().get(ColorSensor.class, "FLColor");
+            FRDistance = configuration.getHardwareMap().get(DistanceSensor.class, "FRColor");
+            FLDistance = configuration.getHardwareMap().get(DistanceSensor.class, "FLColor");
         }
         // register chassis as configurable component
         configuration.register(this);
@@ -1779,6 +1784,14 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                     }
                 });
             }
+            if (FLDistance!=null) {
+                line.addData("FL-dist = ", "%.3f", new Func<Double>() {
+                    @Override
+                    public Double value() {
+                        return FLDistance.getDistance(DistanceUnit.CM);
+                    }
+                });
+            }
             if (FRColor != null) {
                 line.addData("Skystone-FR = ", "%s", new Func<String>() {
                     @Override
@@ -1791,6 +1804,14 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                     public Double value() {
                         double addedColors = FRColor.alpha() + FRColor.red() + FRColor.green() + FRColor.blue();
                         return addedColors;
+                    }
+                });
+            }
+            if (FRDistance!=null) {
+                line.addData("FR-dist = ", "%.3f", new Func<Double>() {
+                    @Override
+                    public Double value() {
+                        return FRDistance.getDistance(DistanceUnit.CM);
                     }
                 });
             }
