@@ -855,19 +855,25 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         telemetry.addLine().addData(" < (LS) >", "Power").setRetained(true);
         chassis.setupTelemetry(telemetry);
         em.updateTelemetry(telemetry, 100);
-        em.onStick(new Events.Listener() {
+        em.onButtonDown(new Events.Listener() {
             @Override
-            public void stickMoved(EventManager source, Events.Side side, float currentX, float changeX,
-                                   float currentY, float changeY) throws InterruptedException {
-                intake.intakeDropAuto();
-                chassis.driveStraightAutoRunToPosition(auto_chassis_power, 0, -40, 2000);
-                chassis.rotateTo(.5, 45);
-                chassis.driveStraightAutoRunToPosition(auto_chassis_power, 0, -20, 2000);
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                chassis.rotateTo(.3, 90);
+                stoneGrabber.armInReadyGrabCombo();
+                intake.intakeDropDown();
+                intake.gateServoOpen();
+                double dist = chassis.getDistance(SwerveChassis.Direction.BACK);
+                chassis.driveAuto(auto_chassis_power, - dist + 35,  0, 2000);
+                dist = chassis.getDistance(SwerveChassis.Direction.LEFT);
+                chassis.driveAuto(auto_chassis_power, dist - 15,  -90, 2000);
+                chassis.rotateTo(-.5, -45);
                 intake.intakeIn(true);
-                chassis.driveStraightAutoRunToPosition(auto_chassis_power, 0, 20, 2000);
-
+                chassis.driveAuto(auto_chassis_power_slow, 135, 0, 2000);
+                intake.intakeStop();
+                intake.gateServoClose();
+                chassis.driveAuto(auto_chassis_power, 30, 0, 2000);
             }
-        }, Events.Axis.X_ONLY, Events.Side.LEFT);
+        }, new Button[]{Button.A});
 
         em.onButtonDown(new Events.Listener() {
             @Override

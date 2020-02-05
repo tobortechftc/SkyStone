@@ -50,12 +50,6 @@ public class BlueTwoSS extends LinearOpMode {
             handleException(E);
         }
         log.info("RoboSigma Autonomous finished initialization (CPU_time = %.2f sec)", getRuntime());
-        // Wait for the game to start (driver presses PLAY)
-        List<Recognition> updatedRecognitions = null;
-//        if (robot.cameraStoneDetector.getTfod()!=null) {
-//            updatedRecognitions = robot.cameraStoneDetector.getTfod().getUpdatedRecognitions();
-//        }
-        int robot_pos = 1;
         if (robot.intake != null)
             robot.intake.intakeDropInit();
         waitForStart();
