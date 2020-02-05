@@ -1486,6 +1486,12 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         }
         for (WheelAssembly wheel : wheels)
             wheel.motor.setPower(0);
+        //**************Check for overshoot and correction**************
+        currentHeading = orientationSensor.getHeading();
+        currentAbsDiff = abs(finalHeading - currentHeading) > 180 ? 360 - abs(finalHeading - currentHeading) : abs(finalHeading - currentHeading);
+        if (currentAbsDiff > 2.0)
+            rawRotateTo(0.2, finalHeading, false, timeout);
+        //**************End correction**************
         driveMode = DriveMode.STOP;
         useScalePower = true;
     }

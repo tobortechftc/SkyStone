@@ -63,7 +63,7 @@ public class BlueBackLaneStoneOnly extends LinearOpMode {
                 StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF(false);
                 telemetry.addData("StoneLoc",StoneLoc);
                 telemetry.update();
-                sleep(30000);
+                sleep(3000);
                 if (StoneLoc == ToboSigma.SkystoneLocation.LEFT) {
                     robot.chassis.driveAuto(0.6, 60, +90, 3000);
                 } else if (StoneLoc == ToboSigma.SkystoneLocation.RIGHT) {
@@ -72,6 +72,7 @@ public class BlueBackLaneStoneOnly extends LinearOpMode {
                     robot.chassis.driveAuto(0.6, 60, +90, 3000);
                 }
                 robot.getOneStone();
+                sleep(2000);
                 robot.chassis.rotateTo(0.6, -90);
 
                 robot.chassis.driveAuto(0.6, 120, 0, 4000);
