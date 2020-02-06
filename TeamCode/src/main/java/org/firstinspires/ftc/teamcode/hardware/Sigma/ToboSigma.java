@@ -222,7 +222,9 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                     // dead zone mapping: [-120, -75] to -90
                     // dead zone mapping: [75, 120] to 90
                     if (heading > -120 && heading < -75) heading = -90;
-                    if (heading > 75 && heading < 120) heading = 90;
+                    else if (heading > 75 && heading < 120) heading = 90;
+                    else if (cur_heading==90 && heading>90 && heading<145) heading=90;
+                    else if (cur_heading==-90 && heading<-90 && heading>-145) heading=-90;
                     if ((Math.abs(cur_heading - heading) == 180) && Math.abs(heading) <= 90) {
                         heading = cur_heading;
                         power = -1 * power;

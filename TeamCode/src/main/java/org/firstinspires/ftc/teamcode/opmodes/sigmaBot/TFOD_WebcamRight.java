@@ -128,6 +128,7 @@ public class TFOD_WebcamRight extends LinearOpMode {
         int ss_left = 0;
         int ss_cener = 0;
         int ss_right = 0;
+        double stoneYpos = 0;
 
         while (opModeIsActive()) {
             if (tfod == null) {
@@ -151,9 +152,12 @@ public class TFOD_WebcamRight extends LinearOpMode {
             for (Recognition recognition : updatedRecognitions) {
                 double pos = (recognition.getRight() + recognition.getLeft()) / 2;
                 double skystone_width = recognition.getRight() - recognition.getLeft();
+                stoneYpos = (recognition.getTop() + recognition.getBottom()) / 2;
                 telemetry.addData(String.format("label (%d)", i), recognition.getLabel());
-                telemetry.addData(String.format("pos/width (%d)", i), "%.03f /%.03f",
-                                pos, skystone_width);
+                telemetry.addData(String.format("pos/width/Ypos (%d)", i), "%.1f /%.1f/%.1f",
+                                pos, skystone_width, stoneYpos);
+                telemetry.addData(String.format("top/bottom/left/right (%d)", i), "%.1f /%.1f/%.1f/%.1f",
+                        recognition.getTop(), recognition.getBottom(), recognition.getLeft(), recognition.getRight());
             }
             telemetry.update();
 
