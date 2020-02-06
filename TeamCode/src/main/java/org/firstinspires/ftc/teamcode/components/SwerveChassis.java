@@ -1660,10 +1660,10 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                 return String.format("%s", (isTankDrive() ? "Tank" : "Normal"));
             }
         });
-        line.addData("Pwr/Scale", new Func<String>() {
+        line.addData("Pwr/Head/Scale", new Func<String>() {
             @Override
             public String value() {
-                return String.format("%.2f / %.2f %s", frontLeft.motor.getPower(), getDefaultScale(), (isReversed() ? "(R)" : "(F)"));
+                return String.format("%.2f/%.1f/%.1f/%s", frontLeft.motor.getPower(), curHeading, getDefaultScale(), (isReversed() ? "(R)" : "(F)"));
             }
         });
         if (frontLeft.motor != null) {
