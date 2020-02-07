@@ -23,6 +23,7 @@ import org.firstinspires.ftc.teamcode.support.tasks.TaskManager;
 
 import java.util.Arrays;
 
+import static com.qualcomm.robotcore.hardware.DistanceSensor.distanceOutOfRange;
 import static java.lang.Math.sin;
 import static java.lang.Math.cos;
 import static java.lang.Math.PI;
@@ -433,27 +434,6 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                 return false;
             }
         }
-    }
-
-    public ToboSigma.SkystoneLocation skyStoneLocation(boolean isBlue) {
-        if (isBlue) {
-            if (isSkystone(false) && !isSkystone(true)) {
-                return ToboSigma.SkystoneLocation.CENTER;
-            } else if (!isSkystone(false) && isSkystone(true)) {
-                return ToboSigma.SkystoneLocation.RIGHT;
-            } else if (!isSkystone(false) && !isSkystone(true)) {
-                return ToboSigma.SkystoneLocation.LEFT;
-            }
-        } else {
-            if (isSkystone(false) && !isSkystone(true)) {
-                return ToboSigma.SkystoneLocation.LEFT;
-            } else if (!isSkystone(false) && isSkystone(true)) {
-                return ToboSigma.SkystoneLocation.CENTER;
-            } else if (!isSkystone(false) && !isSkystone(true)) {
-                return ToboSigma.SkystoneLocation.RIGHT;
-            }
-        }
-        return ToboSigma.SkystoneLocation.UNKNOWN;
     }
 
     public void reset() {
@@ -1784,14 +1764,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                     }
                 });
             }
-            if (FLDistance!=null) {
-                line.addData("FL-dist = ", "%.3f", new Func<Double>() {
-                    @Override
-                    public Double value() {
-                        return FLDistance.getDistance(DistanceUnit.CM);
-                    }
-                });
-            }
+
             if (FRColor != null) {
                 line.addData("Skystone-FR = ", "%s", new Func<String>() {
                     @Override
@@ -1807,26 +1780,34 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                     }
                 });
             }
-            if (FRDistance!=null) {
-                line.addData("FR-dist = ", "%.3f", new Func<Double>() {
+            if (FLDistance!=null) {
+                line.addData("FL-dist = ", "%.1f", new Func<Double>() {
                     @Override
                     public Double value() {
-                        return FRDistance.getDistance(DistanceUnit.CM);
+                        return getDistanceColor(FLDistance);
                     }
                 });
             }
-            if (FLColor != null && FRColor != null) {
+            if (FRDistance!=null) {
+                line.addData("FR-dist = ", "%.1f", new Func<Double>() {
+                    @Override
+                    public Double value() {
+                        return getDistanceColor(FRDistance);
+                    }
+                });
+            }
+            if (FLDistance != null && FRDistance != null) {
                 line.addData("SkystoneLOC(Blue) = ", "%s", new Func<String>() {
                     @Override
                     public String value() {
-                        ToboSigma.SkystoneLocation loc = skyStoneLocation(true);
+                        ToboSigma.SkystoneLocation loc = getSkystonePositionColor(false);
                         return loc.toString();
                     }
                 });
                 line.addData("SkystoneLOC(Red) = ", "%s", new Func<String>() {
                     @Override
                     public String value() {
-                        ToboSigma.SkystoneLocation loc = skyStoneLocation(false);
+                        ToboSigma.SkystoneLocation loc = getSkystonePositionColor(true);
                         return loc.toString();
                     }
                 });
@@ -1870,7 +1851,6 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         return orientationSensor.hasRollStabalized(inputIndex, minDiff);
     }
 
-
     final class WheelAssembly {
         AdjustableServo servo;
         DcMotor motor;
@@ -1912,5 +1892,36 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         void setDirection(DcMotor.Direction direction) {
             if (motor != null) motor.setDirection(direction);
         }
+    }
+    public double getDistanceColor(DistanceSensor sen) {
+       double dist = sen.getDistance(DistanceUnit.CM);
+       if (dist==(double)(Double.MAX_VALUE) || dist>128.0 || dist<=0.0 || dist==(double)distanceOutOfRange || dist==(double)(DistanceUnit.infinity))
+           dist=1024.0;
+       else if (Double.isNaN(dist))
+           dist=1024.0;
+
+       return dist;
+    }
+
+    public ToboSigma.SkystoneLocation getSkystonePositionColor(boolean redSide)
+    {
+        double distL = getDistanceColor(FLDistance);
+        double distR = getDistanceColor(FRDistance);
+
+        if(!redSide) // blue side
+        {
+            if (Math.abs(distL - distR) <= 10)
+                return ToboSigma.SkystoneLocation.LEFT;
+            else if (Math.max(distL, distR) >= Math.min(distL, distR)*1.5)
+                return Math.max(distL, distR) == distL ? ToboSigma.SkystoneLocation.CENTER : ToboSigma.SkystoneLocation.RIGHT;
+        }
+        else // red side
+        {
+            if (Math.abs(distL - distR) <= 10)
+                return ToboSigma.SkystoneLocation.RIGHT;
+            else if (Math.max(distL, distR) >= Math.min(distL, distR)*1.5)
+                return Math.max(distL, distR) == distL ? ToboSigma.SkystoneLocation.LEFT : ToboSigma.SkystoneLocation.CENTER;
+        }
+        return ToboSigma.SkystoneLocation.UNKNOWN;
     }
 }

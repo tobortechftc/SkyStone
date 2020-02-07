@@ -1210,8 +1210,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         chassis.driveAuto(.6, 56, 0, 10000);
         stoneGrabber.grabberOpenAuto();
         double dist = Math.min(chassis.getDistance(SwerveChassis.Direction.FRONT_RIGHT), chassis.getDistance(SwerveChassis.Direction.FRONT_LEFT)) - 14;
-        if (skyStonePosition != SkystoneLocation.UNKNOWN)
-            dist -= 2;
+
         if (dist > 29) dist = 29;
         while (!TaskManager.isComplete("Arm Out Combo")) {
             TaskManager.processTasks();
@@ -1222,10 +1221,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         chassis.driveAuto(.3, dist, 0, 1000);
 
         if (skyStonePosition == SkystoneLocation.UNKNOWN) { // use color sensor to detect the skystone
-            chassis.rotateTo(auto_chassis_align_power, 0);
-            sleep(200);
-            skyStonePosition = chassis.skyStoneLocation(isBlue); // using color sensors need to be close enough to the stones
-            chassis.driveAuto(auto_chassis_power_slow, -2, 0, 500);
+            sleep(100);
+            skyStonePosition = chassis.getSkystonePositionColor(!isBlue); // using color sensors need to be close enough to the stones
         }
 
 //        telemetry.addData("skeystone=","%s",skyStonePosition.toString());

@@ -51,6 +51,7 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
        chassis = new SwerveChassis(this.core).configureLogging("Swerve", logLevel); // Log.DEBUG
        chassis.enableRangeSensorTelemetry();
        chassis.enableShowColors();
+       chassis.enableImuTelemetry();
         chassis.configure(configuration, ((autoColor != ToboSigma.AutoTeamColor.NOT_AUTO)), true);
         info("RoboSigma configure() after init Chassis (run time = %.2f sec)", (runtime.seconds() - ini_time));
 //        if (auto) {
