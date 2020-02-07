@@ -17,6 +17,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 import org.firstinspires.ftc.teamcode.components.CameraSystem;
+import org.firstinspires.ftc.teamcode.hardware.minibot.Robot;
 import org.firstinspires.ftc.teamcode.support.Logger;
 import org.firstinspires.ftc.teamcode.support.hardware.Configurable;
 import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
@@ -174,7 +175,7 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
         return bitmap;
     }
 
-    public ToboSigma.SkystoneLocation getSkystonePositionElementary(Telemetry tl, boolean debug) {
+    public ToboSigma.SkystoneLocation getSkystonePositionElementary(Telemetry tl, boolean debug, ToboSigma.AutoTeamColor teamColor) {
         vuforia.setFrameQueueCapacity(1);
         Vuforia.setFrameFormat(PIXEL_FORMAT.RGB565, true);//used to be PIXEL_FORMAT.RGB565
         vuforia.enableConvertFrameToBitmap();
@@ -196,13 +197,10 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
 
         int width = img.getWidth();
         int height = img.getHeight();
-        //Bitmap pic = captureVuforiaBitmap();
-//        tl.addData("pxl",frm.getNumImages());
-//        int width = pic.getWidth();
-//        int height = pic.getHeight();
-        tl.addData("image Width", width);
-        tl.addData("image Height", height);
-
+        if (debug) {
+            tl.addData("image Width", width);
+            tl.addData("image Height", height);
+        }
         Bitmap bitmap = Bitmap.createBitmap(img.getWidth(), img.getHeight(), Bitmap.Config.RGB_565);//Bitmap.Config.RGB_565
         bitmap.copyPixelsFromBuffer(img.getPixels());
 
@@ -210,12 +208,12 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
         long blackCount = 0;
 
         String path = Environment.getExternalStorageDirectory().toString();
-        PrintWriter pw = null;
-        try {
-            pw = new PrintWriter(new FileWriter(new File(path, "color5.txt")));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        PrintWriter pw = null;
+//        try {
+//            pw = new PrintWriter(new FileWriter(new File(path, "color5.txt")));
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
 
         for (int i = 0; i < width; i++) {
             int color = bitmap.getPixel(i, 280);
@@ -228,7 +226,7 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
             int r = (color >> 16) & 0xFF;
             int g = (color >> 8) & 0xFF;
             int b = color & 0xFF;
-            pw.println(String.format("r %d, g %d, b%d, at x=%d", r, g, b, i));
+//            pw.println(String.format("r %d, g %d, b%d, at x=%d", r, g, b, i));
             int brightness = r + g + b;
             if (brightness < 80) {
                 blackCount++;
@@ -236,8 +234,8 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
 //                pw.println(String.format("r %d, g %d, b%d, at x=%d", r, g, b, i));
             }
         }
-        pw.flush();
-        pw.close();
+//        pw.flush();
+//        pw.close();
         tl.addData("black count", blackCount);
         tl.addData("black X sum", blackXsum);
 
@@ -253,18 +251,19 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
                 e.printStackTrace();
             }
         }
-        tl.update();
+
+        //tl.update();
 
         if (blackCount == 0) {
             return ToboSigma.SkystoneLocation.UNKNOWN;
         }
         long blackAvg = blackXsum / blackCount;
         if (blackAvg < 213) {
-            return ToboSigma.SkystoneLocation.LEFT;
+            return teamColor == ToboSigma.AutoTeamColor.AUTO_BLUE ? ToboSigma.SkystoneLocation.CENTER : ToboSigma.SkystoneLocation.RIGHT;
         } else if (blackAvg > 426) {
-            return ToboSigma.SkystoneLocation.RIGHT;
+            return teamColor == ToboSigma.AutoTeamColor.AUTO_BLUE ? ToboSigma.SkystoneLocation.LEFT : ToboSigma.SkystoneLocation.CENTER;
         } else {
-            return ToboSigma.SkystoneLocation.CENTER;
+            return teamColor == ToboSigma.AutoTeamColor.AUTO_BLUE ? ToboSigma.SkystoneLocation.RIGHT : ToboSigma.SkystoneLocation.LEFT;
         }
     }
 

@@ -57,25 +57,27 @@ public class BlueBackLaneStoneOnly extends LinearOpMode {
         // run until the end of the match (driver presses STOP or timeout)
         if (opModeIsActive()) {
             try {
-                robot.cameraStoneDetector.getSkystonePositionElementary(telemetry);
-                sleep(10000);
-//                boolean isBlue = true;
-//                sleep(2000);
-//                robot.chassis.driveAuto(0.6, 60, +90, 3000);
-//                StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF(false);
-//                telemetry.addData("StoneLoc",StoneLoc);
+//                StoneLoc = robot.cameraStoneDetector.getSkystonePositionElementary(telemetry,true, ToboSigma.AutoTeamColor.AUTO_BLUE);
+//                telemetry.addData("ss loc",StoneLoc);
 //                telemetry.update();
-//                sleep(3000);
-//                if (StoneLoc == ToboSigma.SkystoneLocation.LEFT) {
-//                    robot.chassis.driveAuto(0.6, 60, +90, 3000);
-//                } else if (StoneLoc == ToboSigma.SkystoneLocation.RIGHT) {
-//                    robot.chassis.driveAuto(0.6, 60, +90, 3000);
-//                } else {
-//                    robot.chassis.driveAuto(0.6, 60, +90, 3000);
-//                }
-//                robot.getOneStone();
-//                sleep(2000);
-//                robot.chassis.rotateTo(0.6, -90);
+//                sleep(5000);
+                boolean isBlue = true;
+                sleep(2000);
+                robot.chassis.driveAuto(0.6, 70, +90, 3000);
+                StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF(false);
+                telemetry.addData("StoneLoc", StoneLoc);
+                telemetry.update();
+                sleep(3000);
+                if (StoneLoc == ToboSigma.SkystoneLocation.LEFT) {
+                    robot.chassis.driveAuto(0.6, 8, +90, 3000);
+                } else if (StoneLoc == ToboSigma.SkystoneLocation.RIGHT) {
+                    robot.chassis.driveAuto(0.6, 8 + 20.32 * 2, +90, 3000);
+                } else {
+                    robot.chassis.driveAuto(0.6, 8 + 20.32, +90, 3000);
+                }
+                robot.getOneStone();
+                sleep(2000);
+                robot.chassis.rotateTo(0.6, -90);
 //
 //                robot.chassis.driveAuto(0.6, 120, 0, 4000);
 
