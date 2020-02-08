@@ -223,8 +223,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                     // dead zone mapping: [75, 120] to 90
                     if (heading > -120 && heading < -75) heading = -90;
                     else if (heading > 75 && heading < 120) heading = 90;
-                    else if (cur_heading==90 && heading>90 && heading<145) heading=90;
-                    else if (cur_heading==-90 && heading<-90 && heading>-145) heading=-90;
+                    else if (cur_heading == 90 && heading > 90 && heading < 145) heading = 90;
+                    else if (cur_heading == -90 && heading < -90 && heading > -145) heading = -90;
                     if ((Math.abs(cur_heading - heading) == 180) && Math.abs(heading) <= 90) {
                         heading = cur_heading;
                         power = -1 * power;
@@ -333,7 +333,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 if (intake != null) {
                     intake.intakeStop();
                     chassis.setDefaultScale(chassis.DEFAULT_FAST_SCALE);
-                    if(!intake.feederModeCheck())
+                    if (!intake.feederModeCheck())
                         intake.gateServoClose();
                 }
             }
@@ -342,7 +342,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         em.onButtonUp(new Events.Listener() {
             @Override
             public void buttonUp(EventManager source, Button button) throws InterruptedException {
-                if(intake != null)
+                if (intake != null)
                     intake.feederModeAuto();
             }
         }, Button.B);
@@ -879,10 +879,10 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 chassis.driveAuto(.3, -dist + 63,  -90, 2000);
                 chassis.driveAuto(.6, -260, 0, 5000);
                 chassis.rotateTo(.3, 90);
-                 dist = chassis.getDistance(SwerveChassis.Direction.LEFT);
+                dist = chassis.getDistance(SwerveChassis.Direction.LEFT);
                 chassis.driveAuto(.3, dist - 15,  -90, 2000);
                 sleep(200);
-                 dist = chassis.getDistance(SwerveChassis.Direction.BACK);
+                dist = chassis.getDistance(SwerveChassis.Direction.BACK);
                 chassis.driveAuto(.3, - dist + 30,  0, 2000);
 
                 chassis.rotateTo(.6, 135);
@@ -1218,18 +1218,19 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
     }
 
-    public void getOneStone() throws InterruptedException{
+    public void getOneStone(AutoTeamColor color) throws InterruptedException {
         stoneGrabber.armOutCombo();
         while (!TaskManager.isComplete("Arm Out Combo")) {
             TaskManager.processTasks();
         }
         stoneGrabber.grabberOpenAuto();
-        chassis.driveAuto(0.5,72,0,5000);
+        chassis.driveAuto(0.5, 72, 0, 5000);
 
         stoneGrabber.grabStoneComboAutoHigher();
 //        stoneGrabber.armInCombo(true, true);
-        chassis.driveAuto(0.6,-60,0,2000);
+        chassis.driveAuto(0.6, color == AutoTeamColor.AUTO_BLUE ? -60 : -50, 0, 2000);
     }
+
     public int getFirstSkyStoneDefense(ToboSigma.SkystoneLocation skyStonePosition, boolean isBlue, boolean safe) throws InterruptedException {
         int side = isBlue ? 1 : -1;
         stoneGrabber.armOutCombo();

@@ -77,7 +77,7 @@ public class BlueBackLaneStoneOnly extends LinearOpMode {
                 } else {
                     robot.chassis.driveAuto(0.6, 8 + 20.32, +90, 3000);
                 }
-                robot.getOneStone();
+                robot.getOneStone(ToboSigma.AutoTeamColor.AUTO_BLUE);
 //                sleep(2000);
                 robot.chassis.rotateTo(0.7, -90);
                 robot.stoneGrabber.lifterDownCombo();

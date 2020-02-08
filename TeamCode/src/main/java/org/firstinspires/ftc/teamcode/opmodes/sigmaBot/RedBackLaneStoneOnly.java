@@ -64,7 +64,7 @@ public class RedBackLaneStoneOnly extends LinearOpMode {
 //                sleep(5000);
                 boolean isBlue = false;
                 sleep(2000);
-                robot.chassis.driveAuto(0.6, 70, -90, 3000);
+                robot.chassis.driveAuto(0.6, 68, -90, 3000);
                 StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF(true);
                 telemetry.addData("StoneLoc", StoneLoc);
                 telemetry.update();
@@ -76,7 +76,7 @@ public class RedBackLaneStoneOnly extends LinearOpMode {
                 } else {
                     robot.chassis.driveAuto(0.6, 8 + 20.32, -90, 3000);
                 }
-                robot.getOneStone();
+                robot.getOneStone(ToboSigma.AutoTeamColor.AUTO_RED);
                 robot.chassis.rotateTo(0.7, +90);
                 robot.stoneGrabber.lifterDownCombo();
                 while (!TaskManager.isComplete("Lifter Down Combo")){
