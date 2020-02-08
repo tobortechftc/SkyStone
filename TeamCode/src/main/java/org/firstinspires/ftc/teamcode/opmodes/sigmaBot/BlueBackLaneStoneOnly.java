@@ -78,25 +78,33 @@ public class BlueBackLaneStoneOnly extends LinearOpMode {
                     robot.chassis.driveAuto(0.6, 8 + 20.32, +90, 3000);
                 }
                 robot.getOneStone();
-                sleep(2000);
+//                sleep(2000);
                 robot.chassis.rotateTo(0.7, -90);
-                sleep(2000);
-                if (StoneLoc == ToboSigma.SkystoneLocation.LEFT) {
-                    robot.chassis.driveAuto(0.8, 200 + 8, 0, 4000);
-                } else if (StoneLoc == ToboSigma.SkystoneLocation.RIGHT) {
-                    robot.chassis.driveAuto(0.8, 200 + 8 + 20.32 * 2, 0, 4000);
-                } else {
-                    robot.chassis.driveAuto(0.8, 200 + 8 + 20.32, 0, 4000);
-                }
-                robot.stoneGrabber.armOutComboAuto();
-                robot.stoneGrabber.deliverStoneComboAuto();
-//                robot.stoneGrabber.armInComboAuto(false);
-
-                robot.chassis.driveAuto(0.8,-100,0,3000);
                 robot.stoneGrabber.lifterDownCombo();
                 while (!TaskManager.isComplete("Lifter Down Combo")){
                     TaskManager.processTasks();
                 }
+                sleep(2000);
+                if (StoneLoc == ToboSigma.SkystoneLocation.LEFT) {
+                    robot.chassis.driveAuto(0.8, 50 + 8, 0, 4000);
+                } else if (StoneLoc == ToboSigma.SkystoneLocation.RIGHT) {
+                    robot.chassis.driveAuto(0.8, 50 + 8 + 20.32 * 2, 0, 4000);
+                } else {
+                    robot.chassis.driveAuto(0.8, 50 + 8 + 20.32, 0, 4000);
+                }
+//                robot.stoneGrabber.armOutComboAuto();
+                sleep(2000);
+                robot.chassis.driveAuto(0.8, 150, 0, 4000);
+//                robot.stoneGrabber.deliverStoneComboAuto();
+//                robot.stoneGrabber.armInComboAuto(false);
+                robot.stoneGrabber.grabberOpenAuto();
+                sleep(100);
+
+                robot.chassis.driveAuto(0.8,-100,0,3000);
+//                robot.stoneGrabber.lifterDownCombo();
+//                while (!TaskManager.isComplete("Lifter Down Combo")){
+//                    TaskManager.processTasks();
+//                }
             } catch (Exception E) {
                 telemetry.addData("Error in event handler", E.getMessage());
                 handleException(E);

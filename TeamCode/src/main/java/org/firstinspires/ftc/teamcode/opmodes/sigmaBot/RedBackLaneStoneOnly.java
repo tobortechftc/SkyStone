@@ -9,6 +9,7 @@ import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.hardware.Sigma.ToboSigma;
 import org.firstinspires.ftc.teamcode.support.Logger;
 import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
+import org.firstinspires.ftc.teamcode.support.tasks.TaskManager;
 
 import java.util.List;
 
@@ -63,21 +64,41 @@ public class RedBackLaneStoneOnly extends LinearOpMode {
 //                sleep(5000);
                 boolean isBlue = false;
                 sleep(2000);
-                robot.chassis.driveAuto(0.6, 70, +90, 3000);
+                robot.chassis.driveAuto(0.6, 70, -90, 3000);
                 StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF(true);
                 telemetry.addData("StoneLoc", StoneLoc);
                 telemetry.update();
                 sleep(3000);
                 if (StoneLoc == ToboSigma.SkystoneLocation.LEFT) {
-                    robot.chassis.driveAuto(0.6, 8, +90, 3000);
+                    robot.chassis.driveAuto(0.6, 8, -90, 3000);
                 } else if (StoneLoc == ToboSigma.SkystoneLocation.RIGHT) {
-                    robot.chassis.driveAuto(0.6, 8 + 20.32 * 2, +90, 3000);
+                    robot.chassis.driveAuto(0.6, 8 + 20.32 * 2, -90, 3000);
                 } else {
-                    robot.chassis.driveAuto(0.6, 8 + 20.32, +90, 3000);
+                    robot.chassis.driveAuto(0.6, 8 + 20.32, -90, 3000);
                 }
                 robot.getOneStone();
+                robot.chassis.rotateTo(0.7, +90);
+                robot.stoneGrabber.lifterDownCombo();
+                while (!TaskManager.isComplete("Lifter Down Combo")){
+                    TaskManager.processTasks();
+                }
                 sleep(2000);
-                robot.chassis.rotateTo(0.6, -90);
+                if (StoneLoc == ToboSigma.SkystoneLocation.LEFT) {
+                    robot.chassis.driveAuto(0.8, 50 + 8, 0, 4000);
+                } else if (StoneLoc == ToboSigma.SkystoneLocation.RIGHT) {
+                    robot.chassis.driveAuto(0.8, 50 + 8 + 20.32 * 2, 0, 4000);
+                } else {
+                    robot.chassis.driveAuto(0.8, 50 + 8 + 20.32, 0, 4000);
+                }
+//                robot.stoneGrabber.armOutComboAuto();
+                sleep(2000);
+                robot.chassis.driveAuto(0.8, 150, 0, 4000);
+//                robot.stoneGrabber.deliverStoneComboAuto();
+//                robot.stoneGrabber.armInComboAuto(false);
+                robot.stoneGrabber.grabberOpenAuto();
+                sleep(100);
+
+                robot.chassis.driveAuto(0.8,-100,0,3000);
 //
 //                robot.chassis.driveAuto(0.6, 120, 0, 4000);
 
