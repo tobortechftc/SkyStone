@@ -71,10 +71,14 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
     public String getUniqueName() {
         return "CameraStoneDetector";
     }
-    
-    public TFObjectDetector getTfod() { return tfod; }
-    
-    public double getStoneYpos() { return stoneYpos;}
+
+    public TFObjectDetector getTfod() {
+        return tfod;
+    }
+
+    public double getStoneYpos() {
+        return stoneYpos;
+    }
 
 
     public void configure(Configuration configuration, ToboSigma.CameraSource cameraSource) {
@@ -254,7 +258,7 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
 
         //tl.update();
 
-        if (blackCount == 0) {
+        if (blackCount == 0 && blackCount > 250) {
             return ToboSigma.SkystoneLocation.UNKNOWN;
         }
         long blackAvg = blackXsum / blackCount;
@@ -309,7 +313,7 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
                     updatedRecognitions) {
                 double width = recognition.getRight() - recognition.getLeft();
                 if (width < max_stone_width && width > min_stone_width) {
-                    stoneYpos = (recognition.getBottom()+recognition.getTop())/2;
+                    stoneYpos = (recognition.getBottom() + recognition.getTop()) / 2;
                     if (recognition.getLabel() == "Stone") {
                         if (n_rs < 2) {
                             rstone_width[n_rs] = recognition.getRight() - recognition.getLeft();
