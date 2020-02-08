@@ -47,6 +47,7 @@ public class IntakeV3 extends Logger<IntakeV3> implements Configurable {
     private final double GATE_SERVO_CLOSE = 0.1;
 
     private boolean isGateOpen = true;
+    private boolean feederMode = false;
 
     private ElapsedTime runtime = new ElapsedTime();
 
@@ -64,6 +65,15 @@ public class IntakeV3 extends Logger<IntakeV3> implements Configurable {
     /**
      * Hanging constructor
      */
+
+    public boolean feederModeCheck(){
+        return feederMode;
+    }
+
+    public void feederModeAuto(){
+        feederMode = !feederMode;
+    }
+
     public IntakeV3(CoreSystem core) {
         this.core = core;
     }

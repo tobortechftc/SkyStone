@@ -333,10 +333,19 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 if (intake != null) {
                     intake.intakeStop();
                     chassis.setDefaultScale(chassis.DEFAULT_FAST_SCALE);
-                    intake.gateServoClose();
+                    if(intake.feederModeCheck())
+                        intake.gateServoClose();
                 }
             }
         }, Button.LEFT_BUMPER);
+
+        em.onButtonUp(new Events.Listener() {
+            @Override
+            public void buttonUp(EventManager source, Button button) throws InterruptedException {
+                if(intake != null)
+                    intake.feederModeAuto();
+            }
+        }, Button.B);
 
         em.onTrigger(new Events.Listener() {
             @Override
