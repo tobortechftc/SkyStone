@@ -333,7 +333,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 if (intake != null) {
                     intake.intakeStop();
                     chassis.setDefaultScale(chassis.DEFAULT_FAST_SCALE);
-                    if(intake.feederModeCheck())
+                    if(!intake.feederModeCheck())
                         intake.gateServoClose();
                 }
             }
