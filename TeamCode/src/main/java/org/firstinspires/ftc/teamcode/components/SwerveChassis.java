@@ -129,7 +129,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         return isTankDrive;
     }
 
-    public void enableImuTelemetry() {
+    public void  enableImuTelemetry(){
         setImuTelemetry = true;
     }
 
@@ -1475,7 +1475,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         currentHeading = orientationSensor.getHeading();
         currentAbsDiff = abs(finalHeading - currentHeading) > 180 ? 360 - abs(finalHeading - currentHeading) : abs(finalHeading - currentHeading);
         if (currentAbsDiff > 2.0)
-            rawRotateTo(0.2, finalHeading, false, timeout);
+            rawRotateTo(0.22, finalHeading, false, timeout);
         //**************End correction**************
         driveMode = DriveMode.STOP;
         useScalePower = true;

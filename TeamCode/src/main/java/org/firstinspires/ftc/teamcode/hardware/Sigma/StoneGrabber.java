@@ -773,6 +773,91 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             }, taskName);
         }
     }
+    public void grabInsideAndArmOutCombo(double delaySec, boolean auto) {
+        final String taskName = "Grab Inside and Arm Out Combo";
+        if (!TaskManager.isComplete(taskName)) return;
+        boolean armWasOut = !isArmInside();
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                armDown();
+                return liftToPosition(LIFT_DOWN, false);
+            }
+        }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                return moveArm(ARM_DOWN_SAFE);
+            }
+        }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                return moveGrabber(true);
+            }
+        }, taskName);
+        if (delaySec>0) {
+            waitSec = delaySec;
+            TaskManager.add(new Task() {
+                @Override
+                public Progress start() {
+                    SGTimer.reset();
+                    return new Progress() {
+                        @Override
+                        public boolean isDone() { return (SGTimer.seconds() >= waitSec); }
+                    };
+                }
+            }, taskName);
+        }
+        if (!armWasOut) {
+            TaskManager.add(new Task() {
+                @Override
+                public Progress start() {
+                    return moveArm(ARM_DOWN_SAFE);
+                }
+            }, taskName);
+            if (leftLifter.getCurrentPosition()<LIFT_SAFE_SWING) {
+                TaskManager.add(new Task() {
+                    @Override
+                    public Progress start() {
+                        if (isWristParallel && isGrabberOpened) grabberClose();
+                        return liftToPosition(LIFT_SAFE_SWING+150, false);
+                    }
+                }, taskName);
+            }
+        }
+        if (auto) {
+            TaskManager.add(new Task() {
+                @Override
+                public Progress start() {
+                    return moveArm(ARM_OUT_AUTO);
+                }
+            }, taskName);
+        } else if (armWasOut){
+            TaskManager.add(new Task() {
+                @Override
+                public Progress start() {
+                    return moveArm(ARM_OUT_MORE);
+                }
+            }, taskName);
+        } else {
+            TaskManager.add(new Task() {
+                @Override
+                public Progress start() {
+                    return moveArm(ARM_OUT);
+                }
+            }, taskName);
+        }
+        if (leftLifter.getCurrentPosition()<=LIFT_SAFE_SWING) {
+            TaskManager.add(new Task() {
+                @Override
+                public Progress start() {
+                    return liftToPosition(LIFT_GRAB, false);
+                }
+            }, taskName);
+        }
+
+    }
     public void releaseStoneCombo() {
         final String taskName = "Release Stone Combo";
         if (!TaskManager.isComplete(taskName)) return;
