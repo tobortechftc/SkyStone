@@ -9,12 +9,11 @@ import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.hardware.Sigma.ToboSigma;
 import org.firstinspires.ftc.teamcode.support.Logger;
 import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
-import org.firstinspires.ftc.teamcode.support.tasks.TaskManager;
 
 import java.util.List;
 
-@Autonomous(name = "Blue Back Lane", group = "Sigma")
-public class BlueBackLaneStoneOnly extends LinearOpMode {
+@Autonomous(name = "Red Back Lane", group = "Sigma")
+public class RedBackLaneStoneOnly extends LinearOpMode {
     private ToboSigma.SkystoneLocation StoneLoc;
 
     protected static int LOG_LEVEL = Log.INFO;
@@ -37,7 +36,7 @@ public class BlueBackLaneStoneOnly extends LinearOpMode {
 
         try {
             // configure robot and reset all hardware
-            robot.configure(configuration, telemetry, ToboSigma.AutoTeamColor.AUTO_BLUE);
+            robot.configure(configuration, telemetry, ToboSigma.AutoTeamColor.AUTO_RED);
             configuration.apply();
             robot.reset(true);
             telemetry.addData("Robot is ready", "Press Play");
@@ -58,15 +57,14 @@ public class BlueBackLaneStoneOnly extends LinearOpMode {
         // run until the end of the match (driver presses STOP or timeout)
         if (opModeIsActive()) {
             try {
-//                StoneLoc = robot.cameraStoneDetector.getSkystonePositionElementary(telemetry,true, ToboSigma.AutoTeamColor.AUTO_BLUE);
+//                StoneLoc = robot.cameraStoneDetector.getSkystonePositionElementary(telemetry,true, ToboSigma.AutoTeamColor.AUTO_RED);
 //                telemetry.addData("ss loc",StoneLoc);
 //                telemetry.update();
 //                sleep(5000);
-                boolean isBlue = true;
+                boolean isBlue = false;
                 sleep(2000);
                 robot.chassis.driveAuto(0.6, 70, +90, 3000);
-                sleep(1000);
-                StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF(false);
+                StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF(true);
                 telemetry.addData("StoneLoc", StoneLoc);
                 telemetry.update();
                 sleep(3000);
@@ -79,24 +77,10 @@ public class BlueBackLaneStoneOnly extends LinearOpMode {
                 }
                 robot.getOneStone();
                 sleep(2000);
-                robot.chassis.rotateTo(0.7, -90);
-                sleep(2000);
-                if (StoneLoc == ToboSigma.SkystoneLocation.LEFT) {
-                    robot.chassis.driveAuto(0.8, 200 + 8, 0, 4000);
-                } else if (StoneLoc == ToboSigma.SkystoneLocation.RIGHT) {
-                    robot.chassis.driveAuto(0.8, 200 + 8 + 20.32 * 2, 0, 4000);
-                } else {
-                    robot.chassis.driveAuto(0.8, 200 + 8 + 20.32, 0, 4000);
-                }
-                robot.stoneGrabber.armOutComboAuto();
-                robot.stoneGrabber.deliverStoneComboAuto();
-//                robot.stoneGrabber.armInComboAuto(false);
+                robot.chassis.rotateTo(0.6, -90);
+//
+//                robot.chassis.driveAuto(0.6, 120, 0, 4000);
 
-                robot.chassis.driveAuto(0.8,-100,0,3000);
-                robot.stoneGrabber.lifterDownCombo();
-                while (!TaskManager.isComplete("Lifter Down Combo")){
-                    TaskManager.processTasks();
-                }
             } catch (Exception E) {
                 telemetry.addData("Error in event handler", E.getMessage());
                 handleException(E);
