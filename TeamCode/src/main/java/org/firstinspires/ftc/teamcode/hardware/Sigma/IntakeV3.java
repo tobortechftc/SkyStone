@@ -241,7 +241,7 @@ public class IntakeV3 extends Logger<IntakeV3> implements Configurable {
     public void intakeIn(boolean fast){
         intakeOn = true;
         intake_count++;
-        double ratio = ((intake_count%5)==0?0.5:1.0);
+        double ratio = ((intake_count%5)==0?1.0:1.0);
         if(fast){
             rightIntakeMotor.setPower(INTAKE_FAST);
             leftIntakeMotor.setPower(INTAKE_FAST*ratio);
