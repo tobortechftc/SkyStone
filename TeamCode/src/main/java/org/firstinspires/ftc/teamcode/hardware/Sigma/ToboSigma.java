@@ -1489,7 +1489,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         }*/
         //stoneGrabber.wristPerpendicular();
         chassis.changeStopBehavior(false);
-        chassis.driveStraightSec(-.9, (isBlue?0.2:.15), true);
+        chassis.driveStraightSec(-.9, (isBlue ? 0.2 : .15), true);
         stoneGrabber.deliverStoneCombo(true);
         chassis.rawRotateTo(.95, -80 * side, true, 2000);
         //stoneGrabber.deliverStoneCombo(true);
@@ -1542,46 +1542,45 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     }
 
     public void getWallStone(boolean isBlue) throws InterruptedException {
-        int redSide = isBlue? -1: 1;
-        if (isBlue) redSide = -1;
+        int redSide = isBlue ? -1 : 1;
         stoneGrabber.armInReadyGrabCombo();
         intake.intakeDropDown();
         intake.gateServoOpen();
-        chassis.rotateTo(.3, 90);
-        double dist = chassis.getDistance(SwerveChassis.Direction.RIGHT);
-        chassis.driveAuto(.6, -dist + 58, -90, 2000);
-        chassis.driveAuto(.9, -235, 0, 5000);
-        chassis.rotateTo(.3, 90);
-        dist = chassis.getDistance(SwerveChassis.Direction.LEFT);
-        chassis.driveAuto(.3, dist - 15, -90, 2000);
+        chassis.rotateTo(.22, redSide * 90);
+        double dist = chassis.getDistance(redSide == 1 ? SwerveChassis.Direction.RIGHT : SwerveChassis.Direction.LEFT);
+        chassis.driveAuto(.6, -dist + (isBlue? 65:58), redSide * (-90), 2000);
+        chassis.driveAuto(.9, -235, 0, 5000);//drive all the way to the wall
+        chassis.rotateTo(.22, redSide * 90);
+        dist = chassis.getDistance(redSide == 1 ? SwerveChassis.Direction.LEFT : SwerveChassis.Direction.RIGHT);
+        chassis.driveAuto(.3, dist - 15, redSide * (-90), 2000);//adjust distance to stone
         sleep(100);
         dist = chassis.getDistance(SwerveChassis.Direction.BACK);
-        chassis.driveAuto(.3, -dist + 25, 0, 2000);
+        chassis.driveAuto(.3, -dist + 25, 0, 2000);//adjust distant to back wall
 
-        chassis.rotateTo(.5, 135);
+        chassis.rotateTo(.5, redSide * 135);
         intake.intakeIn(true);
-        chassis.driveAuto(.5, -40, 0, 2000);
+        chassis.driveAuto(.5, -40, 0, 2000);//suck in the stone
         chassis.driveAuto(.8, 30, 0, 2000);
-        chassis.rotateTo(.5, 90);
+        chassis.rotateTo(.5, redSide * 90);
         intake.intakeStop();
         intake.gateServoClose();
         //stoneGrabber.grabStoneInsideCombo();
         //chassis.rotateTo(.3 90);
         stoneGrabber.grabInsideAndArmOutCombo(.75, true);
         if (Thread.interrupted()) return;
-        chassis.driveAuto(.85, 250, 0, 5000);
+        chassis.driveAuto(.85, 250, 0, 5000);//drive all the way to the foundation
         while (!TaskManager.isComplete("Grab Inside and Arm Out Combo")) {
             TaskManager.processTasks();
         }
         stoneGrabber.grabberOpenAuto();
 //        sleep(200);
-        chassis.rotateTo(0.22, +90);
+        chassis.rotateTo(0.22, redSide * 90);//fine adjustment
         if (Thread.interrupted()) return;
     }
 
     public void park2SSwithWall() throws InterruptedException {
         stoneGrabber.lifterDownCombo(0.5);
-        chassis.driveAuto(.9, -125, 5, 5000);
+        chassis.driveAuto(.7, -125, 5, 5000);
     }
 
     public void rotateFoundation(boolean isBlue, boolean moveArm) throws InterruptedException {

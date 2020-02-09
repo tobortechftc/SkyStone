@@ -65,10 +65,17 @@ public class BlueTwoSS extends LinearOpMode {
                 robot.rotateFoundationNew(isBlue);
                 int count = 2;
                 if (robot.runtimeAuto.seconds() < 18.5) {//may be too large - TYPICALLY AROUND 17-18
-                    boolean place2ndSS = robot.runtimeAuto.seconds() < 17;
-                    robot.getAnotherSkyStoneNew(ss_pos, count, isBlue, place2ndSS);
-                    if (robot.runtimeAuto.seconds() < 29.0) {
-                        robot.park2SS(place2ndSS);
+                    if (ss_pos == 3) {
+                        robot.getWallStone(isBlue);
+                        if (robot.runtimeAuto.seconds() < 29.0) {
+                            robot.park2SSwithWall();
+                        }
+                    } else {
+                        boolean place2ndSS = robot.runtimeAuto.seconds() < 17;
+                        robot.getAnotherSkyStoneNew(ss_pos, count, isBlue, place2ndSS);
+                        if (robot.runtimeAuto.seconds() < 29.0) {
+                            robot.park2SS(place2ndSS);
+                        }
                     }
                 } else {
                     robot.parkAfterRotateNew(isBlue);
