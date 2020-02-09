@@ -1422,7 +1422,10 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
 
     public void rotateTo(double power, double finalHeading, int timeout) throws InterruptedException {
         if (Thread.interrupted()) return;
-        if (power < 0.3) rawRotateTo(power, finalHeading, false, timeout);
+        if (power < 0.3) {
+            rawRotateTo(power, finalHeading, false, timeout);
+            return;
+        }
         double iniHeading = orientationSensor.getHeading();
         double iniAbsDiff = abs(finalHeading - iniHeading) > 180 ? 360 - abs(finalHeading - iniHeading) : abs(finalHeading - iniHeading);
         if (iniAbsDiff < 0.5)//if within 0.5 degree of target, don't rotate
@@ -1447,6 +1450,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         double currentAbsDiff;
         boolean lowerPowerApplied = false;
         long iniTime = System.currentTimeMillis();
+        int loop=0;
         while (true) {
             currentHeading = orientationSensor.getHeading();
             crossProduct = cross(-currentHeading, -finalHeading);
@@ -1468,17 +1472,21 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             if (Thread.interrupted()) break;
             if (System.currentTimeMillis() - iniTime > timeout) break;
             TaskManager.processTasks();
+            loop++;
         }
         for (WheelAssembly wheel : wheels)
             wheel.motor.setPower(0);
         //**************Check for overshoot and correction**************
-        currentHeading = orientationSensor.getHeading();
-        currentAbsDiff = abs(finalHeading - currentHeading) > 180 ? 360 - abs(finalHeading - currentHeading) : abs(finalHeading - currentHeading);
-        if (currentAbsDiff > 2.0)
-            rawRotateTo(0.22, finalHeading, false, timeout);
+//        currentHeading = orientationSensor.getHeading();
+//        currentAbsDiff = abs(finalHeading - currentHeading) > 180 ? 360 - abs(finalHeading - currentHeading) : abs(finalHeading - currentHeading);
+//        if (currentAbsDiff > 1.0)
+//            rawRotateTo(0.20, finalHeading, false, timeout);
         //**************End correction**************
         driveMode = DriveMode.STOP;
         useScalePower = true;
+//        tl.addData("iteration",loop);
+//        tl.update();
+//        sleep(3000);
     }
 
     //final heading needs to be with in range(-180,180]

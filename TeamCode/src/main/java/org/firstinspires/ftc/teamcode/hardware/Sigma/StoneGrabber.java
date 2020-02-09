@@ -33,7 +33,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private ElapsedTime SGTimer = new ElapsedTime();
     private double waitSec;
 
-    private final double ARM_OFFSET = -.04; // must > -.04 and < .04)
+    private final double ARM_OFFSET = -.02; // must > -.04 and < .04)
     private final double ARM_UP = 0.06+ARM_OFFSET;
     private final double ARM_READY_GRAB = 0.96+ARM_OFFSET;
     private final double ARM_DOWN = 0.84+ARM_OFFSET;  // right position to grab stone inside
@@ -833,30 +833,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
                     return moveArm(ARM_OUT_AUTO);
                 }
             }, taskName);
-        } else if (armWasOut){
-            TaskManager.add(new Task() {
-                @Override
-                public Progress start() {
-                    return moveArm(ARM_OUT_MORE);
-                }
-            }, taskName);
-        } else {
-            TaskManager.add(new Task() {
-                @Override
-                public Progress start() {
-                    return moveArm(ARM_OUT);
-                }
-            }, taskName);
         }
-        if (leftLifter.getCurrentPosition()<=LIFT_SAFE_SWING) {
-            TaskManager.add(new Task() {
-                @Override
-                public Progress start() {
-                    return liftToPosition(LIFT_GRAB, false);
-                }
-            }, taskName);
-        }
-
     }
     public void releaseStoneCombo() {
         final String taskName = "Release Stone Combo";
@@ -1363,11 +1340,25 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             }
         }, taskName);
     }
-
     public void lifterDownCombo() {
+        lifterDownCombo(0.0);
+    }
+    public void lifterDownCombo(double delaySec) {
         final String taskName = "Lifter Down Combo";
         if (!TaskManager.isComplete(taskName)) return;
-
+        if (delaySec>0) {
+            waitSec = delaySec;
+            TaskManager.add(new Task() {
+                @Override
+                public Progress start() {
+                    SGTimer.reset();
+                    return new Progress() {
+                        @Override
+                        public boolean isDone() { return (SGTimer.seconds() >= waitSec); }
+                    };
+                }
+            }, taskName);
+        }
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
