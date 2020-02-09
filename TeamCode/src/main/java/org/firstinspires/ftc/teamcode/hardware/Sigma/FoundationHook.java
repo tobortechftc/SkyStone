@@ -33,11 +33,11 @@ public class FoundationHook extends Logger<FoundationHook> implements Configurab
     public DistanceSensor rangetouch;
 
 
-    private final double LEFT_HOOK_INIT = 0.1;
+    private final double LEFT_HOOK_INIT = 0.08;
     private final double LEFT_HOOK_UP = 0.141;
     private final double LEFT_HOOK_DOWN = 0.61;
 
-    private final double RIGHT_HOOK_INIT = 0.75;
+    private final double RIGHT_HOOK_INIT = 0.8;
     private final double RIGHT_HOOK_UP = 0.739;
     private final double RIGHT_HOOK_DOWN = .273;
 
