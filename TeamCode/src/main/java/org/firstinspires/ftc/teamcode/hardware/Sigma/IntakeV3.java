@@ -237,6 +237,49 @@ public class IntakeV3 extends Logger<IntakeV3> implements Configurable {
        else
            intakeIn(fast);
     }
+    private Progress moveGate(double position) {
+        double adjustment = Math.abs(position - gateServo.getPosition());
+        gateServo.setPosition(position);
+        if (position>=GATE_SERVO_OPEN-0.1)
+            isGateOpen=true;
+        else
+            isGateOpen=false;
+
+        // 3.3ms per degree of rotation
+        final long doneBy = System.currentTimeMillis() + Math.round(adjustment * 600);
+        return new Progress() {
+            @Override
+            public boolean isDone() {
+                return System.currentTimeMillis() >= doneBy;
+            }
+        };
+    }
+
+    public void inTakeInCombo() {
+        final String taskName = "Intake In Combo";
+        if (!TaskManager.isComplete(taskName)) return;
+        if (!isGateOpen) {
+            TaskManager.add(new Task() {
+                @Override
+                public Progress start() {
+                    return moveGate(GATE_SERVO_OPEN);
+                }
+            }, taskName);
+        }
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                rightIntakeMotor.setPower(INTAKE_FAST);
+                leftIntakeMotor.setPower(INTAKE_FAST);
+                return new Progress() {
+                    @Override
+                    public boolean isDone() {
+                        return true;
+                    }
+                };
+            }
+        }, taskName);
+    }
 
     public void intakeIn(boolean fast){
         intakeOn = true;

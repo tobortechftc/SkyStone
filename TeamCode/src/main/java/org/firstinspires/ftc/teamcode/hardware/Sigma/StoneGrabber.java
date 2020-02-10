@@ -73,7 +73,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final int LIFT_RUN_TO_POSITION_OFFSET = 100;  // V5.3, new control for goBilda 5205 motor
     private final int LIFT_DOWN_GRAB = 0;
     private final int LIFT_DOWN = 0;
-    private final int LIFT_GRAB_READY_CAPSTONE = 280;
+    private final int LIFT_GRAB_READY_CAPSTONE = 310;
     private final int LIFT_GRAB = 180;
     private final int LIFT_GRAB_AUTO = 230;
     private final int LIFT_MIN = 0;
