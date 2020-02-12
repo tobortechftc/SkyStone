@@ -61,6 +61,9 @@ public class BlueTwoSS extends LinearOpMode {
             try {
                 boolean isBlue = true;
                 StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF(false);
+                if (StoneLoc== ToboSigma.SkystoneLocation.UNKNOWN){
+                    StoneLoc=robot.cameraStoneDetector.getSkystonePositionElementary(telemetry,false, ToboSigma.AutoTeamColor.AUTO_BLUE);
+                }
                 int ss_pos = robot.getFirstSkyStoneDefense(StoneLoc, isBlue, false);
                 robot.rotateFoundationNew(isBlue);
                 int count = 2;

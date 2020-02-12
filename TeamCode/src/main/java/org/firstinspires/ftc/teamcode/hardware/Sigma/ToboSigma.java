@@ -316,8 +316,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                     return;
                 }
                 if (intake != null) {
-                    if (source.isPressed(Button.RIGHT_BUMPER)) {
-                        intake.gateServoAuto();
+                    if (source.isPressed(Button.DPAD_UP)) {
+                        if (intake != null) intake.intakeDropAuto();
                     } else {
                         // intake.gateServoOpen();
                         chassis.setDefaultScale(chassis.DEFAULT_SLOW_SCALE);
@@ -331,6 +331,10 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         em.onButtonUp(new Events.Listener() {
             @Override
             public void buttonUp(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.A)||source.isPressed(Button.B)||source.isPressed(Button.Y)||
+                        source.isPressed(Button.X)||source.isPressed(Button.DPAD_UP)) {
+                    return;
+                }
                 if (intake != null) {
                     intake.intakeStop();
                     chassis.setDefaultScale(chassis.DEFAULT_FAST_SCALE);
@@ -339,14 +343,6 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 }
             }
         }, Button.LEFT_BUMPER);
-
-        em.onButtonUp(new Events.Listener() {
-            @Override
-            public void buttonUp(EventManager source, Button button) throws InterruptedException {
-                if (intake != null)
-                    intake.feederModeAuto();
-            }
-        }, Button.B);
 
         em.onTrigger(new Events.Listener() {
             @Override
@@ -419,8 +415,10 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                     stoneGrabber.armOutCombo(0, false);
                 else if (source.isPressed(Button.RIGHT_BUMPER))
                     chassis.toggleTankDrive();
-                else if (!source.isPressed(Button.START))
-                    stoneGrabber.wristAuto();
+                else if (!source.isPressed(Button.START)) {
+                    if (intake != null)
+                        intake.feederModeAuto();
+                }
             }
         }, new Button[]{Button.B});
 
@@ -1237,7 +1235,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         stoneGrabber.armOutCombo();
         chassis.driveAuto(.6, 54, 0, 10000);
         stoneGrabber.grabberOpenAuto();
-        double dist = Math.min(chassis.getDistance(SwerveChassis.Direction.FRONT_RIGHT), chassis.getDistance(SwerveChassis.Direction.FRONT_LEFT)) - 16;
+        double dist = Math.min(chassis.getDistance(SwerveChassis.Direction.FRONT_RIGHT), chassis.getDistance(SwerveChassis.Direction.FRONT_LEFT)) - 18;
 
         if (dist > 29) dist = 29;
         while (!TaskManager.isComplete("Arm Out Combo")) {

@@ -33,13 +33,13 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private ElapsedTime SGTimer = new ElapsedTime();
     private double waitSec;
 
-    private final double ARM_OFFSET = -.02; // must > -.04 and < .04)
+    private final double ARM_OFFSET = .0; // must > -.04 and < .04)
     private final double ARM_UP = 0.06+ARM_OFFSET;
     private final double ARM_READY_GRAB = 0.96+ARM_OFFSET;
-    private final double ARM_DOWN = 0.84+ARM_OFFSET;  // right position to grab stone inside
+    private final double ARM_DOWN = 0.86+ARM_OFFSET;  // right position to grab stone inside
     private final double ARM_DOWN_MORE = ARM_DOWN+ARM_OFFSET+0.06;  // right position to grab stone inside
     private final double ARM_DOWN_MORE_CAP = ARM_DOWN+ARM_OFFSET+0.09;  // right position to grab stone inside
-    private final double ARM_DOWN_SAFE = 0.84+ARM_OFFSET;
+    private final double ARM_DOWN_SAFE = 0.82+ARM_OFFSET;
     private final double ARM_INITIAL = 0.84+ARM_OFFSET;
     private final double ARM_OUT_INIT = 0.47+ARM_OFFSET;
     private final double ARM_IN = 0.65+ARM_OFFSET;
@@ -73,6 +73,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final int LIFT_RUN_TO_POSITION_OFFSET = 100;  // V5.3, new control for goBilda 5205 motor
     private final int LIFT_DOWN_GRAB = 0;
     private final int LIFT_DOWN = 0;
+    private final int LIFT_DOWN_GRAB_INSIDE = 150;
     private final int LIFT_GRAB_READY_CAPSTONE = 310;
     private final int LIFT_GRAB = 180;
     private final int LIFT_GRAB_AUTO = 230;
@@ -88,8 +89,8 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final int LIFT_UP_BEFORE_CAP = 500;
     private final int LIFT_UP_FINAL_CAP = 1050;
     //private final double LIFT_POWER = 0.5;   // V5.2
-    private final double LIFT_POWER = 0.8;  // V5.3
-    private final double LIFT_POWER_DOWN = 0.6;
+    private final double LIFT_POWER = 1.0;  // V5.3
+    private final double LIFT_POWER_DOWN = 0.8;
     private final double LIFT_POWER_COMBO = 0.6;
     private final double LIFT_POWER_HOLD = 0.3;
     private final double LIFT_POWER_SLOW = 0.6;
@@ -1094,14 +1095,21 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
-                armDown();
-                return liftToPosition(LIFT_DOWN, false);
+                // armDown();
+                return liftToPosition(LIFT_DOWN_GRAB_INSIDE, true);
             }
         }, taskName);
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
                 return moveArm(ARM_DOWN_SAFE);
+            }
+        }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                armDown();
+                return liftToPosition(LIFT_DOWN, false);
             }
         }, taskName);
         TaskManager.add(new Task() {
