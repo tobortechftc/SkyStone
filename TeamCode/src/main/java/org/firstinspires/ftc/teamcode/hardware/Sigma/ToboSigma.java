@@ -95,7 +95,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     public double rotateRatio = 0.7; // slow down ratio for rotation
     public double motor_count = 0;
     public double auto_chassis_power = .7;
-    public double auto_chassis_dist = 10;
+    public double auto_chassis_dist = 150;
+    public double auto_chassis_heading = -90;
     public double auto_chassis_power_slow = .4;
     public double auto_chassis_align_power = .22;
 
@@ -573,8 +574,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         line.addData("Test ", new Func<String>() {
             @Override
             public String value() {
-                return String.format("Power=%.2f, dist=%.1f, rotate_degree=%.1f\n",
-                        auto_chassis_power, auto_chassis_dist, auto_rotate_degree);
+                return String.format("Power=%.2f, dist=%.1f, heading=%.1f, rotate_degree=%.1f\n",
+                        auto_chassis_power, auto_chassis_dist, auto_chassis_heading,auto_rotate_degree);
             }
         });
     }
@@ -648,10 +649,11 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
     @MenuEntry(label = "Auto drive straight", group = "Test Chassis")
     public void testStraightSkyStone(EventManager em) {
-        // chassis.setupTelemetry(telemetry);
         telemetry.addLine().addData("(BACK) Y/A", "+/- Power(%.2f)", auto_chassis_power).setRetained(true);
         telemetry.addLine().addData("(BACK)(L-BUMP) X/B", "+/- dist(%.2f)", auto_chassis_dist).setRetained(true);
+        telemetry.addLine().addData("(BACK) D-UP/DOWN", "+/- heading(%.2f)", auto_chassis_heading).setRetained(true);
         setupTelemetryDiagnostics(telemetry);
+        chassis.setupTelemetry(telemetry);
         em.updateTelemetry(telemetry, 100);
         em.onButtonDown(new Events.Listener() {
             @Override
@@ -662,7 +664,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
                 } else {
                     long iniTime = System.currentTimeMillis();
-                    chassis.driveAuto(auto_chassis_power, auto_chassis_dist, 0, 10000);
+                    chassis.driveAuto(auto_chassis_power, auto_chassis_dist, auto_chassis_heading, 10000);
                     telemetry.addLine(System.currentTimeMillis() - iniTime + "");
                 }
             }
@@ -696,7 +698,28 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 }
             }
         }, new Button[]{Button.B});
-
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.BACK)) {
+                    auto_chassis_heading -= 10;
+                } else if (source.isPressed(Button.LEFT_BUMPER)) {
+                    auto_chassis_heading -= 5;
+                }
+                if (auto_chassis_heading<-90) auto_chassis_heading=-90;
+            }
+        }, new Button[]{Button.DPAD_DOWN});
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.BACK)) {
+                    auto_chassis_heading += 10;
+                } else if (source.isPressed(Button.LEFT_BUMPER)) {
+                    auto_chassis_heading += 5;
+                }
+                if (auto_chassis_heading>90) auto_chassis_heading=90;
+            }
+        }, new Button[]{Button.DPAD_UP});
     }
 
     public double auto_rotate_degree = 90;
@@ -1421,8 +1444,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 //        telemetry.update();
 //        sleep(20000);
         if (Thread.interrupted()) return;
-        if (Math.abs(dist - 7) > 1)
-            chassis.driveAuto(.35, dist - 7, 0, 1500);
+        if (Math.abs(dist - 10) > 1)
+            chassis.driveAuto(.35, dist - 10, 0, 1500);
 //        if (dist - 14 > 1) {
 //            chassis.driveAuto(.35, dist - 14, 0, 1000);////?
 //        } else if (dist - 14 < -1) {
@@ -1541,26 +1564,27 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     }
 
     public void getWallStone(boolean isBlue) throws InterruptedException {
-        int redSide = isBlue ? -1 : 1;
+        int negtiveDegree = isBlue ? -1 : 1;
         stoneGrabber.armInReadyGrabCombo();
         intake.intakeDropDown();
         intake.gateServoOpen();
-        chassis.rotateTo(.22, redSide * 90);
-        double dist = chassis.getDistance(redSide == 1 ? SwerveChassis.Direction.RIGHT : SwerveChassis.Direction.LEFT);
-        chassis.driveAuto(.6, -dist + (isBlue? 65:58), redSide * (-90), 2000);
+        chassis.rotateTo(.22, negtiveDegree * 90);
+        double dist = chassis.getDistance(negtiveDegree == 1 ? SwerveChassis.Direction.RIGHT : SwerveChassis.Direction.LEFT);
+        chassis.driveAuto(.6, -dist + (isBlue? 65:58), negtiveDegree * (-90), 2000);
+        chassis.rotateTo(.22, negtiveDegree * 89.5);
         chassis.driveAuto(.9, -235, 0, 5000);//drive all the way to the wall
-        chassis.rotateTo(.22, redSide * 90);
-        dist = chassis.getDistance(redSide == 1 ? SwerveChassis.Direction.LEFT : SwerveChassis.Direction.RIGHT);
-        chassis.driveAuto(.3, dist - 15, redSide * (-90), 2000);//adjust distance to stone
+        chassis.rotateTo(.22, negtiveDegree * 90);
+        dist = chassis.getDistance(negtiveDegree == 1 ? SwerveChassis.Direction.LEFT : SwerveChassis.Direction.RIGHT);
+        chassis.driveAuto(.3, dist - 15, negtiveDegree * (-90), 2000);//adjust distance to stone
         sleep(100);
         dist = chassis.getDistance(SwerveChassis.Direction.BACK);
         chassis.driveAuto(.3, -dist + 25, 0, 2000);//adjust distant to back wall
 
-        chassis.rotateTo(.5, redSide * 135);
+        chassis.rotateTo(.5, negtiveDegree * 135);
         intake.intakeIn(true);
         chassis.driveAuto(.5, -40, 0, 2000);//suck in the stone
         chassis.driveAuto(.8, 30, 0, 2000);
-        chassis.rotateTo(.5, redSide * 90);
+        chassis.rotateTo(.5, negtiveDegree * 90);
         intake.intakeStop();
         intake.gateServoClose();
         //stoneGrabber.grabStoneInsideCombo();
@@ -1573,7 +1597,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         }
         stoneGrabber.grabberOpenAuto();
 //        sleep(200);
-        chassis.rotateTo(0.22, redSide * 90);//fine adjustment
+        chassis.rotateTo(0.22, negtiveDegree * 90);//fine adjustment
         if (Thread.interrupted()) return;
     }
 

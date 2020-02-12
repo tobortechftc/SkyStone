@@ -643,8 +643,8 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                 headingDeviation = targetHeading - sensorHeading;
                 debug("driveStraight(): target=%+.2f, sensor=%+.2f, adjustment=%+.2f)",
                         targetHeading, sensorHeading, headingDeviation);
-                if (Math.abs(headingDeviation) > 0.5) {
-                    servoCorrection = headingDeviation / 3;
+                if (Math.abs(headingDeviation) > .5) {
+                    servoCorrection = headingDeviation/3 ;
                     applyServoCorrection(octant, servoCorrection);
 
                 } else {
@@ -1422,10 +1422,10 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
 
     public void rotateTo(double power, double finalHeading, int timeout) throws InterruptedException {
         if (Thread.interrupted()) return;
-        if (power <= 0.3) {
-            rawRotateTo(power, finalHeading, false, timeout);
+        if (power <= 0.3) {//was 0.3
+            rawRotateTo(power, finalHeading, false, timeout);//was power
             if (power>0.22)
-                rawRotateTo(0.2, finalHeading, false, timeout);
+                rawRotateTo(0.22, finalHeading, false, timeout);
             return;
         }
         double iniHeading = orientationSensor.getHeading();
