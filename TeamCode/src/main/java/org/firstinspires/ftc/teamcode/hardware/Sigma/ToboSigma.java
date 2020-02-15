@@ -1274,7 +1274,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         }
         if (Thread.currentThread().isInterrupted()) return 0;
         foundationHook.hookUp();
-        
+
         if (Thread.currentThread().isInterrupted()) return 0;
         boolean ready_grab = false;
         if (skyStonePosition == SkystoneLocation.UNKNOWN) { // use color sensor to detect the skystone

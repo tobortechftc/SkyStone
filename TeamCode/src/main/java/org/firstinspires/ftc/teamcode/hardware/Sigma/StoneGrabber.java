@@ -68,7 +68,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double GRABBER_OPEN_IN = 0.59;
     private final double GRABBER_VERTICAL = 0.5;
     private final double GRABBER_OPEN = 0.9;
-    private final double GRABBER_OPEN_AUTO = 0.94;
+    private final double GRABBER_OPEN_AUTO = 0.98;
 
 
     private final int LIFT_THRESHOLD = 15;
@@ -78,7 +78,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final int LIFT_DOWN_GRAB_INSIDE = 150;
     private final int LIFT_GRAB_READY_CAPSTONE = 310;
     private final int LIFT_GRAB = 180;
-    private final int LIFT_GRAB_AUTO = 230;
+    private final int LIFT_GRAB_AUTO = 20;
     private final int LIFT_MIN = 0;
     private final int LIFT_MAX = 3200;
     private final int LIFT_SAFE_SWING_AUTO = 500;
@@ -791,7 +791,6 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
-                armDown();
                 return liftToPosition(LIFT_GRAB_AUTO, false);
             }
         }, taskName);
