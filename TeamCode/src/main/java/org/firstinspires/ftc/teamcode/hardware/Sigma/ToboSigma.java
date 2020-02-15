@@ -337,6 +337,10 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                     return;
                 }
                 if (intake != null) {
+                    final String taskName = "Intake In Combo";
+                    while (!TaskManager.isComplete(taskName)&&Thread.interrupted()) {
+                        TaskManager.processTasks();
+                    }
                     intake.intakeStop();
                     chassis.setDefaultScale(chassis.DEFAULT_FAST_SCALE);
                     if (!intake.feederModeCheck())
@@ -1019,7 +1023,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         if (firstStone) {
 //            stoneGrabber.grabStoneComboAuto();
             stoneGrabber.grabStoneComboHigher();
-            while (!TaskManager.isComplete("Grab Stone Combo")) {
+            while (!TaskManager.isComplete("Grab Stone Combo")&&!Thread.interrupted()) {
                 TaskManager.processTasks();
             }
             //====================parallelized region===================
@@ -1035,7 +1039,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             }
             stoneGrabber.grabberOpenAuto();
             stoneGrabber.grabStoneComboHigher();
-            while (!TaskManager.isComplete("Grab Stone Combo")) {
+            while (!TaskManager.isComplete("Grab Stone Combo")&&!Thread.interrupted()) {
                 TaskManager.processTasks();
             }
             //====================parallelized region===================
@@ -1085,7 +1089,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 //        stoneGrabber.armOutComboAuto();
         stoneGrabber.armOutCombo();
         chassis.driveStraightAutoRunToPosition(.6, 46, 0, 10000);
-        while (!TaskManager.isComplete("Arm Out Combo")) {
+        while (!TaskManager.isComplete("Arm Out Combo")&&!Thread.interrupted()) {
             TaskManager.processTasks();
         }
         //===========================================================================================
@@ -1118,7 +1122,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             //===================parallelized region===================
             stoneGrabber.armOutCombo();
             chassis.driveStraightAutoRunToPosition(0.75, Math.abs(initialX - stoneX), initialX > stoneX ? 90 : -90, StoneId == 5 ? 0.6 : 0.4, 5000);
-            while (!TaskManager.isComplete("Arm Out Combo")) {
+            while (!TaskManager.isComplete("Arm Out Combo")&&!Thread.interrupted()) {
                 TaskManager.processTasks();
             }
             //=========================================================
@@ -1159,7 +1163,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 //        stoneGrabber.deliverStoneComboAuto();
         stoneGrabber.deliverStoneCombo(true);
         chassis.driveStraightAutoRunToPosition(auto_chassis_power, -dist, 7 * side, 4000);//        dist = chassis.getDistance(SwerveChassis.Direction.BACK);
-        while (!TaskManager.isComplete("Deliver Stone Combo")) {
+        while (!TaskManager.isComplete("Deliver Stone Combo")&&!Thread.interrupted()) {
             TaskManager.processTasks();
         }
         //===========================================================================================
@@ -1198,7 +1202,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 //        chassis.driveStraightAutoRunToPosition(0.7, -1.05*dist/Math.cos(Math.PI*7.0/180.0), 7 * side, 5000);
         chassis.driveStraightAutoRunToPositionNoIMU(.4, -dist, 5 * side, 5000);//        dist = chassis.getDistance(SwerveChassis.Direction.BACK);
 //        chassis.driveStraightAutoRunToPosition(0.6, -dist, 0, 5000);
-        while (!TaskManager.isComplete("Deliver Stone Combo")) {
+        while (!TaskManager.isComplete("Deliver Stone Combo")&&!Thread.interrupted()) {
             TaskManager.processTasks();
         }
         //===========================================================================================
@@ -1242,7 +1246,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
     public void getOneStone(AutoTeamColor color) throws InterruptedException {
         stoneGrabber.armOutCombo();
-        while (!TaskManager.isComplete("Arm Out Combo")) {
+        while (!TaskManager.isComplete("Arm Out Combo")&&!Thread.interrupted()) {
             TaskManager.processTasks();
         }
         stoneGrabber.grabberOpenAuto();
@@ -1261,7 +1265,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         double dist = Math.min(chassis.getDistance(SwerveChassis.Direction.FRONT_RIGHT), chassis.getDistance(SwerveChassis.Direction.FRONT_LEFT)) - (isBlue ? 19 : 17);
 
         if (dist > 29) dist = 29;
-        while (!TaskManager.isComplete("Arm Out Combo")) {
+        while (!TaskManager.isComplete("Arm Out Combo")&&!Thread.interrupted()) {
             TaskManager.processTasks();
         }
         // go to stones
@@ -1338,7 +1342,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         }
         // the following step crossing the bridge
         chassis.driveAuto(.8, 160 + 20 * ss_pos, -90 * side, 15000);
-        while (!TaskManager.isComplete("Arm In Combo")) {
+        while (!TaskManager.isComplete("Arm In Combo")&&!Thread.interrupted()) {
             TaskManager.processTasks();
         }
         //       chassis.rotateTo(auto_chassis_align_power, 0);
@@ -1502,12 +1506,14 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     }
 
     public void rotateFoundationNew(boolean isBlue) throws InterruptedException {
-        if (Thread.currentThread().isInterrupted()) return;
+        if (Thread.interrupted()) return;
         int side = isBlue ? 1 : -1;
         double dist = Math.min(chassis.getDistance(SwerveChassis.Direction.FRONT_RIGHT), chassis.getDistance(SwerveChassis.Direction.FRONT_LEFT));
         chassis.driveAuto(auto_chassis_power, dist + 5, 0, 1000);//isBlue ? 23 : 28
         foundationHook.hookDown();
+        if (Thread.interrupted()) return;
         chassis.driveStraightSec(0.25, 0.2, false);
+        if (Thread.interrupted()) return;
 
         stoneGrabber.armOutCombo();
         chassis.driveAuto(.9, -32, -55 * side, 1500);//50?
@@ -1515,20 +1521,25 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             TaskManager.processTasks();
         }*/
         //stoneGrabber.wristPerpendicular();
+        if (Thread.interrupted()) return;
         chassis.changeStopBehavior(false);
         chassis.driveStraightSec(-.9, (isBlue ? 0.2 : .15), true);
+        if (Thread.interrupted()) return;
         stoneGrabber.deliverStoneCombo(true);
         chassis.rawRotateTo(.95, -80 * side, true, 2000);
         //stoneGrabber.deliverStoneCombo(true);
+        if (Thread.interrupted()) return;
         chassis.changeStopBehavior(true);
         chassis.driveAuto(.9, 30, 0, 1000);
+        if (Thread.interrupted()) return;
         foundationHook.hookUp();
         chassis.driveAuto(.9, -10, 0, 1500);
+        if (Thread.interrupted()) return;
         stoneGrabber.armInCombo(false, true);
         stoneGrabber.grabberClose();
 
 
-        //while (!TaskManager.isComplete("Deliver Stone Combo")) {
+        //while (!TaskManager.isComplete("Deliver Stone Combo")&&!Thread.interrupted()) {
         //  TaskManager.processTasks();
         //}
 
@@ -1569,13 +1580,21 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     }
 
     public void getWallStone(boolean isBlue) throws InterruptedException {
+        if (Thread.currentThread().isInterrupted()) return;
         int negtiveDegree = isBlue ? -1 : 1;
+        if (Thread.currentThread().isInterrupted()) return;
         stoneGrabber.armInReadyGrabCombo();
+        if (Thread.currentThread().isInterrupted()) return;
+
         intake.intakeDropDown();
         intake.gateServoOpen();
         chassis.rotateTo(.22, negtiveDegree * 90);
+        if (Thread.currentThread().isInterrupted()) return;
+
         double dist = chassis.getDistance(negtiveDegree == 1 ? SwerveChassis.Direction.RIGHT : SwerveChassis.Direction.LEFT);
+        if (Thread.currentThread().isInterrupted()) return;
         chassis.driveAuto(.6, -dist + (isBlue ? 65 : 58), negtiveDegree * (-90), 2000);
+        if (Thread.currentThread().isInterrupted()) return;
         double currHeading = chassis.getCurHeading();
         if (isBlue) {
             if (currHeading < -90.5 || currHeading > -88)
@@ -1584,20 +1603,28 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             if (currHeading > 90.5 || currHeading < 88)
                 chassis.rotateTo(.20, 89);
         }
+        if (Thread.currentThread().isInterrupted()) return;
 
         chassis.driveAuto(.9, -235, 0, 5000);//drive all the way to the wall
+        if (Thread.currentThread().isInterrupted()) return;
         chassis.rotateTo(.22, negtiveDegree * 90);
         dist = chassis.getDistance(negtiveDegree == 1 ? SwerveChassis.Direction.LEFT : SwerveChassis.Direction.RIGHT);
         chassis.driveAuto(.3, dist - 15, negtiveDegree * (-90), 2000);//adjust distance to stone
+        if (Thread.currentThread().isInterrupted()) return;
         sleep(100);
         dist = chassis.getDistance(SwerveChassis.Direction.BACK);
         chassis.driveAuto(.3, -dist + 31, 0, 2000);//adjust distant to back wall
+        if (Thread.currentThread().isInterrupted()) return;
 
         chassis.rotateTo(.5, negtiveDegree * 135);
+        if (Thread.currentThread().isInterrupted()) return;
         intake.intakeIn(true);
         chassis.driveAuto(.5, -40, 0, 2000);//suck in the stone
+        if (Thread.currentThread().isInterrupted()) return;
         chassis.driveAuto(.8, 30, 0, 2000);
+        if (Thread.currentThread().isInterrupted()) return;
         chassis.rotateTo(.5, (isBlue ? -90 : 91));//was 90.5
+        if (Thread.currentThread().isInterrupted()) return;
         intake.intakeStop();
         intake.gateServoClose();
         //stoneGrabber.grabStoneInsideCombo();
@@ -1605,11 +1632,15 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         stoneGrabber.grabInsideAndArmOutCombo(.75, true);
         if (Thread.interrupted()) return;
         chassis.driveAuto(.85, 240, 0, 5000);//drive all the way to the foundation
-        while (!TaskManager.isComplete("Grab Inside and Arm Out Combo")) {
+        if (Thread.interrupted()) return;
+        while (!TaskManager.isComplete("Grab Inside and Arm Out Combo") && !Thread.interrupted()) {
             TaskManager.processTasks();
         }
         chassis.driveAuto(.3, 10, 0, 400);
+        if (Thread.interrupted()) return;
+
         chassis.rotateTo(0.3, negtiveDegree * 95, 400);//fine adjustment
+        if (Thread.interrupted()) return;
         stoneGrabber.grabberOpenAuto();//place skystone
         sleep(200);
         chassis.rotateTo(0.22, isBlue ? -90.5 : 88, 500);//fine adjustment
@@ -1617,7 +1648,9 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     }
 
     public void park2SSwithWall() throws InterruptedException {
+        if (Thread.interrupted()) return;
         stoneGrabber.lifterDownCombo(0.5);
+        if (Thread.interrupted()) return;
         chassis.driveAuto(.7, -125, 5, 5000);
     }
 
@@ -1628,29 +1661,37 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             chassis.driveStraightAutoRunToPosition(auto_chassis_power, isBlue ? 23 : 28, 0, 1000);
         foundationHook.hookDown();
         chassis.driveStraightSec(0.25, 0.5, false);
+        if (Thread.interrupted()) return;
         if (moveArm)
             stoneGrabber.armOutCombo();
         chassis.driveStraightAutoRunToPositionNoIMU(.8, -50, -50 * side, 1500);//.7?
-        /*while (!TaskManager.isComplete("Arm Out Combo")) {
+        /*while (!TaskManager.isComplete("Arm Out Combo")&&!Thread.interrupted()) {
             TaskManager.processTasks();
         }*/
         //stoneGrabber.wristPerpendicular();
+        if (Thread.interrupted()) return;
         chassis.changeStopBehavior(false);
         chassis.driveStraightSec(-.7, .2, true);
         if (moveArm)
             stoneGrabber.deliverStoneCombo(true);
+        if (Thread.interrupted()) return;
         chassis.rawRotateTo(.8, -85 * side, true, 3000);
         //stoneGrabber.deliverStoneCombo(true);
+        if (Thread.interrupted()) return;
         chassis.changeStopBehavior(true);
         chassis.driveStraightAuto(.6, 35, 0, 1000);
+        if (Thread.interrupted()) return;
         foundationHook.hookUp();
         chassis.driveStraightAuto(auto_chassis_power, -10, 0, 1500);
+        if (Thread.interrupted()) return;
         if (moveArm) {
             stoneGrabber.armInCombo(false, true);
+            if (Thread.interrupted()) return;
             chassis.rotateTo(.5, 0);
             double dist = Math.max(10, Math.min(70, chassis.getDistance(SwerveChassis.Direction.BACK)));
+            if (Thread.interrupted()) return;
             chassis.driveStraightAutoRunToPosition(auto_chassis_power, 53 - dist, 0, 1500);
-            while (!TaskManager.isComplete("Deliver Stone Combo")) {
+            while (!TaskManager.isComplete("Deliver Stone Combo")&&!Thread.interrupted()) {
                 TaskManager.processTasks();
             }
         }
@@ -1658,6 +1699,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     }
 
     public void autoBackupProgram(boolean isBlue, boolean laneFront, boolean offensive, boolean parkOnly) throws InterruptedException {
+        if (Thread.interrupted()) return;
         int side = isBlue ? 1 : -1;
         if (parkOnly) {
             chassis.driveStraightAutoRunToPosition(.4, 82, 90 * side, 5000);
@@ -1667,19 +1709,28 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             return;
         }
         chassis.driveStraightAutoRunToPosition(auto_chassis_power, 10, -90 * side, 1500);
+        if (Thread.interrupted()) return;
         chassis.driveStraightAutoRunToPosition(auto_chassis_power, 70, 0, 1500);
+        if (Thread.interrupted()) return;
         if (offensive) {
             foundationHook.hookDown();
+            if (Thread.interrupted()) return;
             chassis.driveStraightAutoRunToPosition(auto_chassis_power, 70, 0, 1500);
+            if (Thread.interrupted()) return;
             chassis.driveStraightAutoRunToPosition(auto_chassis_power, -70, 0, 1500);
+            if (Thread.interrupted()) return;
             double dist2 = chassis.getDistance(SwerveChassis.Direction.BACK);
             if (dist2 > 128) dist2 = 70;
             chassis.driveStraightAutoRunToPosition(auto_chassis_power, 70 - dist2, 0, 1500);
+            if (Thread.interrupted()) return;
             chassis.rotateTo(.6, 0);
+            if (Thread.interrupted()) return;
         }
 
         rotateFoundation(isBlue, false);
+        if (Thread.interrupted()) return;
         chassis.rotateTo(0.25, -90 * side);
+        if (Thread.interrupted()) return;
         double dist = chassis.getDistance(isBlue ? SwerveChassis.Direction.LEFT : SwerveChassis.Direction.RIGHT);
         if (dist > 45) dist = 45;
         if (laneFront) {
@@ -1687,7 +1738,9 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         } else {
             chassis.driveStraightAutoRunToPosition(auto_chassis_power, 10 - dist, 90 * side, 1500);
         }
+        if (Thread.interrupted()) return;
         chassis.driveStraightAutoRunToPositionNoIMU(.4, -85, 0, 3000);
+        if (Thread.interrupted()) return;
     }
 
     public void getFoundation(boolean isBlue, boolean laneTwo) throws InterruptedException {

@@ -302,7 +302,7 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
             return ToboSigma.SkystoneLocation.UNKNOWN;
         }
 
-        while (elapsedTime.seconds() < 0.5 && skystoneLocation == ToboSigma.SkystoneLocation.UNKNOWN) {
+        while (elapsedTime.seconds() < 0.3 && skystoneLocation == ToboSigma.SkystoneLocation.UNKNOWN) {
             List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
             n_ss = n_rs = 0;
             if (updatedRecognitions == null || updatedRecognitions.size() < 1) {

@@ -64,22 +64,30 @@ public class RedTwoSS extends LinearOpMode {
                     StoneLoc = StoneLoc2;
                 }
                 int ss_pos = robot.getFirstSkyStoneDefense(StoneLoc, isBlue, false);
-                robot.rotateFoundationNew(isBlue);
+                if (opModeIsActive()) {
+                    robot.rotateFoundationNew(isBlue);
+                }
                 int count = 2;
-                if (robot.runtimeAuto.seconds() < 20.0) {//may be too large - TYPICALLY AROUND 17-18
+                if ((robot.runtimeAuto.seconds() < 19.5) && opModeIsActive()) {//may be too large - TYPICALLY AROUND 17-18
                     if (ss_pos == 3) {
-                        robot.getWallStone(isBlue);
+                        if (opModeIsActive()) {
+                            robot.getWallStone(isBlue);
+                        }
                         if (robot.runtimeAuto.seconds() < 29.0) {
                             robot.park2SSwithWall();
                         }
                     } else {
-                        robot.getAnotherSkyStoneNew(ss_pos, count, isBlue, true);
-                        if (robot.runtimeAuto.seconds() < 29.0) {
+                        if (opModeIsActive()) {
+                            robot.getAnotherSkyStoneNew(ss_pos, count, isBlue, true);
+                        }
+                        if ((robot.runtimeAuto.seconds() < 29.0)&&opModeIsActive()) {
                             robot.park2SS(true);
                         }
                     }
                 } else {
-                    robot.parkAfterRotateNew(isBlue);
+                    if (opModeIsActive()) {
+                        robot.parkAfterRotateNew(isBlue);
+                    }
                 }
 
             } catch (Exception E) {

@@ -626,6 +626,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
 
         //start powering wheels
         for (WheelAssembly wheel : wheels) wheel.motor.setPower(power);
+        if (Thread.interrupted()) return;
 
         //record time
         long iniTime = System.currentTimeMillis();
@@ -705,6 +706,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     }
 
     public void driveAuto(double power, double cm, double heading, int timeout) throws InterruptedException {
+        if (Thread.interrupted()) return;
         double overshoot = 1;
         if (cm > 0) {
             if (cm <= 10) {
@@ -1298,6 +1300,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     }
 
     public double driveStraightSec(double power, double sec, boolean noStop) throws InterruptedException {
+        if (Thread.interrupted()) return 0;
         double[] startingCount = new double[4];
         for (int i = 0; i < 4; i++) {
             startingCount[i] = wheels[i].motor.getCurrentPosition();
