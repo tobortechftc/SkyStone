@@ -473,7 +473,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (source.isPressed(Button.RIGHT_BUMPER))
-                    stoneGrabber.armOutCombo(1.0, true);
+                    stoneGrabber.armOutReadyGrabAutoCombo();
                 else if (source.isPressed(Button.LEFT_BUMPER))
                     stoneGrabber.armOutCombo(0, false);
                 else if (!source.isPressed(Button.START))
@@ -1258,21 +1258,29 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     }
 
     public int getFirstSkyStoneDefense(ToboSigma.SkystoneLocation skyStonePosition, boolean isBlue, boolean safe) throws InterruptedException {
+        if (Thread.currentThread().isInterrupted()) return 0;
         int side = isBlue ? 1 : -1;
         stoneGrabber.armOutCombo();
+        if (Thread.currentThread().isInterrupted()) return 0;
         chassis.driveAuto(.6, 54, 0, 10000);
+        if (Thread.currentThread().isInterrupted()) return 0;
         stoneGrabber.grabberOpenAuto();
+        if (Thread.currentThread().isInterrupted()) return 0;
         double dist = Math.min(chassis.getDistance(SwerveChassis.Direction.FRONT_RIGHT), chassis.getDistance(SwerveChassis.Direction.FRONT_LEFT)) - (isBlue ? 19 : 17);
 
         if (dist > 29) dist = 29;
         while (!TaskManager.isComplete("Arm Out Combo")&&!Thread.interrupted()) {
             TaskManager.processTasks();
         }
-        // go to stones
+        if (Thread.currentThread().isInterrupted()) return 0;
         foundationHook.hookUp();
-        chassis.driveAuto(.3, dist, 0, 1000);
-
+        
+        if (Thread.currentThread().isInterrupted()) return 0;
+        boolean ready_grab = false;
         if (skyStonePosition == SkystoneLocation.UNKNOWN) { // use color sensor to detect the skystone
+            // go to stones
+            chassis.driveAuto(.3, dist, 0, 1000);
+            ready_grab = true;
             sleep(200);
             skyStonePosition = chassis.getSkystonePositionColor(!isBlue); // using color sensors need to be close enough to the stones
         }
@@ -1280,6 +1288,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 //        telemetry.addData("skeystone=","%s",skyStonePosition.toString());
 //        telemetry.update();
 //        core.yield_for(5);
+        if (Thread.currentThread().isInterrupted()) return 0;
 
         if (!isBlue) { // Red side
             if ((skyStonePosition == SkystoneLocation.LEFT) || skyStonePosition == SkystoneLocation.UNKNOWN) {
@@ -1297,6 +1306,11 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             } else { // skyStonePosition == ToboSigma.SkystoneLocation.LEFT
                 chassis.driveAuto(auto_chassis_power_slow, 30, -90 * side, 1000);  // test to get exact numbers
             }
+        }
+        if (Thread.currentThread().isInterrupted()) return 0;
+
+        if (!ready_grab) { // get close to the stone grab position
+            chassis.driveAuto(.3, dist, 0, 1000);
         }
 
         //grab stone
@@ -1325,30 +1339,34 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         //=================================Parallelized region=======================================
         //stoneGrabber.armInComboAuto(true);
         stoneGrabber.armInCombo(true, true);
+        if (Thread.currentThread().isInterrupted()) return 0;
+
         chassis.driveAuto(.7, -5, 0, 1000);
+        if (Thread.currentThread().isInterrupted()) return 0;
         if (Math.abs(chassis.getCurHeading()) > 1.0) {
             chassis.rotateTo(auto_chassis_align_power, 0, 500);
         }
         if (ss_pos == 1) {
             long iniTime = System.currentTimeMillis();
-            while (System.currentTimeMillis() - iniTime < 450) {
+            while ((System.currentTimeMillis() - iniTime < 450)&&!Thread.interrupted()) {
                 TaskManager.processTasks();
             }
         } else if (ss_pos == 2) {
             long iniTime = System.currentTimeMillis();
-            while (System.currentTimeMillis() - iniTime < 250) {
+            while ((System.currentTimeMillis() - iniTime < 250)&&!Thread.interrupted()) {
                 TaskManager.processTasks();
             }
         }
         // the following step crossing the bridge
         chassis.driveAuto(.8, 160 + 20 * ss_pos, -90 * side, 15000);
+        if (Thread.currentThread().isInterrupted()) return 0;
         while (!TaskManager.isComplete("Arm In Combo")&&!Thread.interrupted()) {
             TaskManager.processTasks();
         }
         //       chassis.rotateTo(auto_chassis_align_power, 0);
         dist = chassis.getDistance(isBlue ? SwerveChassis.Direction.LEFT : SwerveChassis.Direction.RIGHT);
         int dForward = 0;
-        if (safe) {
+        if (safe && !Thread.interrupted()) {
             chassis.driveAuto(auto_chassis_power, -10, 0, 2000);
             dForward = 10;
 
@@ -1358,9 +1376,12 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             }
         }
         dist = Math.min(dist - 40, 55); // min for 55 cm as the range sensor is not accurate for long distance (over 50 cm) here.
+        if (Thread.interrupted()) return 0;
         if (dist > 3) {
             chassis.driveAuto(auto_chassis_power, dist, -90 * side, 3000);
         }
+        if (Thread.interrupted()) return 0;
+
         if (dForward != 0) {
             chassis.driveAuto(auto_chassis_power, dForward, 0, 2000);
         }

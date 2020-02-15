@@ -68,6 +68,8 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double GRABBER_OPEN_IN = 0.59;
     private final double GRABBER_VERTICAL = 0.5;
     private final double GRABBER_OPEN = 0.9;
+    private final double GRABBER_OPEN_AUTO = 0.94;
+
 
     private final int LIFT_THRESHOLD = 15;
     private final int LIFT_RUN_TO_POSITION_OFFSET = 100;  // V5.3, new control for goBilda 5205 motor
@@ -364,7 +366,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         isGrabberOpened = true;
     }
     public void grabberOpenAuto () {
-        grabber.setPosition(GRABBER_OPEN);
+        grabber.setPosition(GRABBER_OPEN_AUTO);
         isGrabberOpened = true;
     }
 
@@ -774,6 +776,27 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             }, taskName);
         }
     }
+    public void armOutReadyGrabAutoCombo() {
+        final String taskName = "Arm Out Auto Combo";
+        if (!TaskManager.isComplete(taskName)) return;
+
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                grabberOpenAuto();
+                return moveArm(ARM_OUT_AUTO);
+            }
+            }, taskName);
+
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                armDown();
+                return liftToPosition(LIFT_GRAB_AUTO, false);
+            }
+        }, taskName);
+    }
+
     public void grabInsideAndArmOutCombo(double delaySec, boolean auto) {
         final String taskName = "Grab Inside and Arm Out Combo";
         if (!TaskManager.isComplete(taskName)) return;
