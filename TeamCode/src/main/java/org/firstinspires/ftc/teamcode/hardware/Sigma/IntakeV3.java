@@ -148,6 +148,7 @@ public class IntakeV3 extends Logger<IntakeV3> implements Configurable {
     }
 
     public void gateServoClose(){
+        intakeStop();
         gateServo.setPosition(GATE_SERVO_CLOSE);
         isGateOpen = false;
     }
@@ -242,9 +243,10 @@ public class IntakeV3 extends Logger<IntakeV3> implements Configurable {
         gateServo.setPosition(position);
         if (position>=GATE_SERVO_OPEN-0.1)
             isGateOpen=true;
-        else
-            isGateOpen=false;
-
+        else {
+            isGateOpen = false;
+            intakeStop();
+        }
         // 3.3ms per degree of rotation
         final long doneBy = System.currentTimeMillis() + Math.round(adjustment * 600);
         return new Progress() {
@@ -269,8 +271,10 @@ public class IntakeV3 extends Logger<IntakeV3> implements Configurable {
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
-                rightIntakeMotor.setPower(INTAKE_FAST);
-                leftIntakeMotor.setPower(INTAKE_FAST);
+                if (isGateOpen) {
+                    rightIntakeMotor.setPower(INTAKE_FAST);
+                    leftIntakeMotor.setPower(INTAKE_FAST);
+                }
                 return new Progress() {
                     @Override
                     public boolean isDone() {
