@@ -332,8 +332,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         em.onButtonUp(new Events.Listener() {
             @Override
             public void buttonUp(EventManager source, Button button) throws InterruptedException {
-                if (source.isPressed(Button.A)||source.isPressed(Button.B)||source.isPressed(Button.Y)||
-                        source.isPressed(Button.X)||source.isPressed(Button.DPAD_UP)) {
+                if (source.isPressed(Button.A) || source.isPressed(Button.B) || source.isPressed(Button.Y) ||
+                        source.isPressed(Button.X) || source.isPressed(Button.DPAD_UP)) {
                     return;
                 }
                 if (intake != null) {
@@ -575,7 +575,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             @Override
             public String value() {
                 return String.format("Power=%.2f, dist=%.1f, heading=%.1f, rotate_degree=%.1f\n",
-                        auto_chassis_power, auto_chassis_dist, auto_chassis_heading,auto_rotate_degree);
+                        auto_chassis_power, auto_chassis_dist, auto_chassis_heading, auto_rotate_degree);
             }
         });
     }
@@ -706,7 +706,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 } else if (source.isPressed(Button.LEFT_BUMPER)) {
                     auto_chassis_heading -= 5;
                 }
-                if (auto_chassis_heading<-90) auto_chassis_heading=-90;
+                if (auto_chassis_heading < -90) auto_chassis_heading = -90;
             }
         }, new Button[]{Button.DPAD_DOWN});
         em.onButtonDown(new Events.Listener() {
@@ -717,7 +717,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 } else if (source.isPressed(Button.LEFT_BUMPER)) {
                     auto_chassis_heading += 5;
                 }
-                if (auto_chassis_heading>90) auto_chassis_heading=90;
+                if (auto_chassis_heading > 90) auto_chassis_heading = 90;
             }
         }, new Button[]{Button.DPAD_UP});
     }
@@ -1258,7 +1258,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         stoneGrabber.armOutCombo();
         chassis.driveAuto(.6, 54, 0, 10000);
         stoneGrabber.grabberOpenAuto();
-        double dist = Math.min(chassis.getDistance(SwerveChassis.Direction.FRONT_RIGHT), chassis.getDistance(SwerveChassis.Direction.FRONT_LEFT)) - 18;
+        double dist = Math.min(chassis.getDistance(SwerveChassis.Direction.FRONT_RIGHT), chassis.getDistance(SwerveChassis.Direction.FRONT_LEFT)) - (isBlue ? 19 : 17);
 
         if (dist > 29) dist = 29;
         while (!TaskManager.isComplete("Arm Out Combo")) {
@@ -1322,7 +1322,9 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         //stoneGrabber.armInComboAuto(true);
         stoneGrabber.armInCombo(true, true);
         chassis.driveAuto(.7, -5, 0, 1000);
-        chassis.rotateTo(auto_chassis_align_power, 0);
+        if (Math.abs(chassis.getCurHeading()) > 1.0) {
+            chassis.rotateTo(auto_chassis_align_power, 0, 500);
+        }
         if (ss_pos == 1) {
             long iniTime = System.currentTimeMillis();
             while (System.currentTimeMillis() - iniTime < 450) {
@@ -1461,7 +1463,10 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             chassis.driveAuto(.8, 20, -90 * side, 1000);
         }
         if (Thread.interrupted()) return;
-        chassis.rotateTo(.65, -90 * side);
+        chassis.rotateTo(.65, (isBlue?-89:90),2000);
+        if (isBlue) {
+            chassis.rawRotateTo(0.2,-88,false,500);
+        }
         sleep(200);
         if (Thread.interrupted()) return;
         stoneGrabber.lifterDownCombo();
@@ -1570,34 +1575,44 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         intake.gateServoOpen();
         chassis.rotateTo(.22, negtiveDegree * 90);
         double dist = chassis.getDistance(negtiveDegree == 1 ? SwerveChassis.Direction.RIGHT : SwerveChassis.Direction.LEFT);
-        chassis.driveAuto(.6, -dist + (isBlue? 65:58), negtiveDegree * (-90), 2000);
-        chassis.rotateTo(.22, negtiveDegree * 89.5);
+        chassis.driveAuto(.6, -dist + (isBlue ? 65 : 58), negtiveDegree * (-90), 2000);
+        double currHeading = chassis.getCurHeading();
+        if (isBlue) {
+            if (currHeading < -90.5 || currHeading > -88)
+                chassis.rotateTo(.20, -89.5);
+        } else {
+            if (currHeading > 90.5 || currHeading < 88)
+                chassis.rotateTo(.20, 89);
+        }
+
         chassis.driveAuto(.9, -235, 0, 5000);//drive all the way to the wall
         chassis.rotateTo(.22, negtiveDegree * 90);
         dist = chassis.getDistance(negtiveDegree == 1 ? SwerveChassis.Direction.LEFT : SwerveChassis.Direction.RIGHT);
         chassis.driveAuto(.3, dist - 15, negtiveDegree * (-90), 2000);//adjust distance to stone
         sleep(100);
         dist = chassis.getDistance(SwerveChassis.Direction.BACK);
-        chassis.driveAuto(.3, -dist + 25, 0, 2000);//adjust distant to back wall
+        chassis.driveAuto(.3, -dist + 31, 0, 2000);//adjust distant to back wall
 
         chassis.rotateTo(.5, negtiveDegree * 135);
         intake.intakeIn(true);
         chassis.driveAuto(.5, -40, 0, 2000);//suck in the stone
         chassis.driveAuto(.8, 30, 0, 2000);
-        chassis.rotateTo(.5, negtiveDegree * 90);
+        chassis.rotateTo(.5, (isBlue ? -90 : 91));//was 90.5
         intake.intakeStop();
         intake.gateServoClose();
         //stoneGrabber.grabStoneInsideCombo();
         //chassis.rotateTo(.3 90);
         stoneGrabber.grabInsideAndArmOutCombo(.75, true);
         if (Thread.interrupted()) return;
-        chassis.driveAuto(.85, 250, 0, 5000);//drive all the way to the foundation
+        chassis.driveAuto(.85, 240, 0, 5000);//drive all the way to the foundation
         while (!TaskManager.isComplete("Grab Inside and Arm Out Combo")) {
             TaskManager.processTasks();
         }
-        stoneGrabber.grabberOpenAuto();
-//        sleep(200);
-        chassis.rotateTo(0.22, negtiveDegree * 90);//fine adjustment
+        chassis.driveAuto(.3, 10, 0, 400);
+        chassis.rotateTo(0.3, negtiveDegree * 95, 400);//fine adjustment
+        stoneGrabber.grabberOpenAuto();//place skystone
+        sleep(200);
+        chassis.rotateTo(0.22, isBlue ? -90.5 : 88, 500);//fine adjustment
         if (Thread.interrupted()) return;
     }
 

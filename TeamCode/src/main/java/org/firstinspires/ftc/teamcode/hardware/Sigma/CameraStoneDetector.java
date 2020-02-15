@@ -189,7 +189,7 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
         } catch (InterruptedException e) {
             tl.addLine(e.toString());
         }
-        tl.addData("NumImage", frm.getNumImages());
+//        tl.addData("NumImage", frm.getNumImages());
         long numImages = frm.getNumImages();
         Image img = null;
         for (int i = 0; i < numImages; i++) {
@@ -202,8 +202,8 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
         int width = img.getWidth();
         int height = img.getHeight();
         if (debug) {
-            tl.addData("image Width", width);
-            tl.addData("image Height", height);
+//            tl.addData("image Width", width);
+//            tl.addData("image Height", height);
         }
         Bitmap bitmap = Bitmap.createBitmap(img.getWidth(), img.getHeight(), Bitmap.Config.RGB_565);//Bitmap.Config.RGB_565
         bitmap.copyPixelsFromBuffer(img.getPixels());
@@ -218,9 +218,9 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
 //        } catch (IOException e) {
 //            e.printStackTrace();
 //        }
-
+        tl.addData("stoneYpos", stoneYpos);
         for (int i = 0; i < width; i++) {
-            int color = bitmap.getPixel(i, 280);
+            int color = bitmap.getPixel(i, (int) stoneYpos);//was fixed at 280
 //            int R = (int) (((color >> 11) & 0x1F) * 255.0 / 31.0 + 0.5);
 //            int G = (int) (((color >> 5) & 0x3F) * 255.0 / 63.0 + 0.5);
 //            int B = (int) ((color & 0x1F) * 255.0 / 31.0 + 0.5);
@@ -246,7 +246,7 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
         if (debug) {
             try {
 
-                OutputStream fOut = new FileOutputStream(new File(path, "ss5.png"));
+                OutputStream fOut = new FileOutputStream(new File(path, "ss2-14-1.png"));
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, fOut); // bmp is your Bitmap instance
                 // PNG is a lossless format, the compression factor (100) is ignored
                 fOut.flush(); // Not really required
@@ -256,9 +256,10 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
             }
         }
 
-        //tl.update();
+        if (debug)
+            tl.update();
 
-        if (blackCount == 0 && blackCount > 250) {
+        if (blackCount == 0 || blackCount > 250) {
             return ToboSigma.SkystoneLocation.UNKNOWN;
         }
         long blackAvg = blackXsum / blackCount;
@@ -313,7 +314,7 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
                     updatedRecognitions) {
                 double width = recognition.getRight() - recognition.getLeft();
                 if (width < max_stone_width && width > min_stone_width) {
-                    stoneYpos = (recognition.getBottom() + recognition.getTop()) / 2;
+                    stoneYpos = 0.6 * recognition.getBottom() + 0.4 * recognition.getTop();
                     if (recognition.getLabel() == "Stone") {
                         if (n_rs < 2) {
                             rstone_width[n_rs] = recognition.getRight() - recognition.getLeft();

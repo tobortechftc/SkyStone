@@ -1,6 +1,6 @@
 {
   "servoFrontRight": {
-    "center": 0.514,
+    "center": 0.516,
     "left": 0.201,
     "right": 0.803
   },
@@ -10,7 +10,7 @@
     "right": 0.815
   },
   "servoFrontLeft": {
-    "center": 0.521,
+    "center": 0.523,
     "left": 0.219,
     "right": 0.815
   },
