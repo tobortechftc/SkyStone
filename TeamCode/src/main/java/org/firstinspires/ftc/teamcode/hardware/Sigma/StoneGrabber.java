@@ -35,11 +35,12 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
 
     private final double ARM_OFFSET = .0; // must > -.04 and < .04)
     private final double ARM_UP = 0.06+ARM_OFFSET;
-    private final double ARM_READY_GRAB = 0.96+ARM_OFFSET;
+    private final double ARM_READY_GRAB = 0.99+ARM_OFFSET;
     private final double ARM_DOWN = 0.86+ARM_OFFSET;  // right position to grab stone inside
     private final double ARM_DOWN_MORE = ARM_DOWN+ARM_OFFSET+0.06;  // right position to grab stone inside
     private final double ARM_DOWN_MORE_CAP = ARM_DOWN+ARM_OFFSET+0.09;  // right position to grab stone inside
-    private final double ARM_DOWN_SAFE = 0.82+ARM_OFFSET;
+    private final double ARM_DOWN_SAFE = 0.86+ARM_OFFSET;
+    private final double ARM_DOWN_WITH_STONE = 0.90+ARM_OFFSET;
     private final double ARM_INITIAL = 0.84+ARM_OFFSET;
     private final double ARM_OUT_INIT = 0.47+ARM_OFFSET;
     private final double ARM_IN = 0.65+ARM_OFFSET;
@@ -924,7 +925,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
-                return moveArm(ARM_DOWN_SAFE);
+                return moveArm(ARM_DOWN_WITH_STONE);
             }
         }, taskName);
         TaskManager.add(new Task() {
