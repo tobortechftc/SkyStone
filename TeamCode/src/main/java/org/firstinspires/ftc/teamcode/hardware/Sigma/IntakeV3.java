@@ -33,8 +33,8 @@ public class IntakeV3 extends Logger<IntakeV3> implements Configurable {
     private final double INTAKE_FAST = 0.7;
     private final double INTAKE_SPEED = 0.5;
 
-    private final double RIGHT_INTAKE_DROP_INIT = 0.964;
-    private final double RIGHT_INTAKE_DROP_DOWN = 0.091;
+    private final double RIGHT_INTAKE_DROP_INIT = 0.930;
+    private final double RIGHT_INTAKE_DROP_DOWN = 0.046;
 
     private boolean intakeDropDown = false;
     private boolean intakeOn = false;
