@@ -1532,7 +1532,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
     public void park2SS(boolean placing) throws InterruptedException {
         chassis.driveAuto(.9, placing ? -100 : -40, 0, 3000);
-        chassis.driveAuto(.4, -15, 0, 1000);
+        chassis.driveAuto(.4, -20, 0, 1000);
     }
 
     public void rotateFoundationNew(boolean isBlue) throws InterruptedException {
@@ -1628,14 +1628,14 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         double currHeading = chassis.getCurHeading();
         if (isBlue) {
             if (currHeading < -90.5 || currHeading > -88)
-                chassis.rotateTo(.20, -89.5);
+                chassis.rotateTo(.20, -90);//was -89.5
         } else {
             if (currHeading > 90.5 || currHeading < 88)
                 chassis.rotateTo(.20, 89);
         }
         if (Thread.currentThread().isInterrupted()) return;
 
-        chassis.driveAuto(.9, -235, 0, 5000);//drive all the way to the wall
+        chassis.driveAuto(.9, -250, 0, 5000);//drive all the way to the wall
         if (Thread.currentThread().isInterrupted()) return;
         chassis.driveAuto(.4, -10, 0, 500);
         if (Thread.currentThread().isInterrupted()) return;
@@ -1645,7 +1645,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         if (Thread.currentThread().isInterrupted()) return;
         sleep(100);
         dist = chassis.getDistance(SwerveChassis.Direction.BACK);
-        chassis.driveAuto(.3, -dist + 31, 0, 2000);//adjust distant to back wall
+        chassis.driveAuto(.3, -dist + 25, 0, 2000);//adjust distant to back wall
         if (Thread.currentThread().isInterrupted()) return;
 
         chassis.rotateTo(.5, negtiveDegree * 135);
@@ -1683,7 +1683,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         if (Thread.interrupted()) return;
         stoneGrabber.lifterDownCombo(0.5);
         if (Thread.interrupted()) return;
-        chassis.driveAuto(.7, -125, 5, 5000);
+        chassis.driveAuto(.7, -130, 5, 5000);
     }
 
     public void rotateFoundation(boolean isBlue, boolean moveArm) throws InterruptedException {
