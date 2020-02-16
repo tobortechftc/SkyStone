@@ -1342,7 +1342,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         stoneGrabber.armInCombo(true, true);
         if (Thread.currentThread().isInterrupted()) return 0;
 
-        chassis.driveAuto(.5, (isBlue?-6:-10), 0, 1000);
+        chassis.driveAuto(.5, (isBlue ? -6 : -10), 0, 1000);
         if (Thread.currentThread().isInterrupted()) return 0;
         if (Math.abs(chassis.getCurHeading()) > 1.0) {
             chassis.rotateTo(auto_chassis_align_power, 0, 500);
@@ -1531,7 +1531,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     }
 
     public void park2SS(boolean placing) throws InterruptedException {
-        chassis.driveAuto(.9, placing ? -100 : -40, 0, 15000);
+        chassis.driveAuto(.9, placing ? -100 : -40, 0, 3000);
+        chassis.driveAuto(.4, -15, 0, 1000);
     }
 
     public void rotateFoundationNew(boolean isBlue) throws InterruptedException {

@@ -52,7 +52,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double ARM_CAPSTONE = 0.78+ARM_OFFSET;
     private final double ARM_CAPSTONE_MORE = 0.9+ARM_OFFSET;
     private final double ARM_DELIVER = 0.28+ARM_OFFSET;
-    private final double ARM_DELIVER_HIGHER = 0.24+ARM_OFFSET;
+    private final double ARM_DELIVER_HIGHER = 0.26+ARM_OFFSET;
     private final double ARM_DELIVER_THROW = 0.14+ARM_OFFSET;
     private final double ARM_MIN = 0.12+ARM_OFFSET;
 
