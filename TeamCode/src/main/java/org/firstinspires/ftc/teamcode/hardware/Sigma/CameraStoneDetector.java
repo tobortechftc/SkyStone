@@ -56,7 +56,7 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
     private static final String VUFORIA_KEY = "AS0FKrL/////AAABmTcBCNs1gE8uh4tntGA7HSgXRT5npDQpV2pw5tlqbZCI6WJQRf0bKf458A218bGkQJCWkJzvJy6UtNnhziraRVDDZSnTSZGSD7s3WN9jNYqBiSoO3CVE6FU2dX1yuJNa1zfiEhcGT8ChTd+kucE/q3sXsy/nw1KqlW/7uEaEeRwaCPseqsbNrc1HZ1bi18PzwQpCaypDruqqVEyZ3dvTqDmjPg7WFBe2kStPR/qTtcLSXdE804RxxkgTGUtDMIG7TTbAdirInGVZw2p2APZKAQdYofYW2E0Ss5hZCeL55zflSuQK0QcW1sAyvaTUMd/fDse4FgqxhnfK0ip0Kc+ZqZ6XJpof/Nowwxv3IgDWZJzO";
     private VuforiaLocalizer vuforia;
     private TFObjectDetector tfod;
-    private double stoneYpos = 0;
+    private double stoneYpos = 390;
 
     //    private CameraSystem camSys;
     private String lastError;
@@ -313,8 +313,10 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
             for (Recognition recognition :
                     updatedRecognitions) {
                 double width = recognition.getRight() - recognition.getLeft();
-                if (width < max_stone_width && width > min_stone_width) {
+                if (width>min_stone_width) {
                     stoneYpos = 0.6 * recognition.getBottom() + 0.4 * recognition.getTop();
+                }
+                if (width < max_stone_width && width > min_stone_width) {
                     if (recognition.getLabel() == "Stone") {
                         if (n_rs < 2) {
                             rstone_width[n_rs] = recognition.getRight() - recognition.getLeft();
