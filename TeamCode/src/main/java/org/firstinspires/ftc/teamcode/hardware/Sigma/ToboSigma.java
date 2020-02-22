@@ -984,10 +984,10 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         stoneGrabber.armInReadyGrabCombo();
         intake.intakeDropDown();
         intake.gateServoOpen();
-        chassis.driveAuto(.6, -75.5, 0, 5000);
+        chassis.driveAuto(.6, -75.5, 0, 5000);//////////////////////////////////////going to a stone
         //chassis.driveAuto(.6, 45, 90, 5000);
         intake.intakeIn(true);
-        chassis.rotateTo(.35, -15);
+        chassis.rotateTo(.35, -15);//////////////////////////////////////////////////////rotating to a stone
         chassis.driveAuto(.4, -10, 0, 5000);
         //sleep(1000);
         //chassis.rotateTo(.5, 0);
@@ -996,7 +996,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         intake.gateServoClose();
         chassis.rotateTo(.7, 90, 3000);
         stoneGrabber.grabStoneInsideCombo();
-        chassis.driveAuto(.6, 220, 0, 3000);
+        chassis.driveAuto(.6, 220, 0, 3000);////////////////// going to the foundation
         chassis.rotateTo(.7, 179.5, 3000);
 
     }
@@ -1012,10 +1012,10 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 stoneGrabber.armInReadyGrabCombo();
                 intake.intakeDropDown();
                 intake.gateServoOpen();
-                chassis.driveAuto(.6, -73, 0, 5000);
+                chassis.driveAuto(.6, -73, 0, 5000);//////////////////////////////////////going to a stone
                 //chassis.driveAuto(.6, 45, 90, 5000);
                 intake.intakeIn(true);
-                chassis.rotateTo(.35, -20);
+                chassis.rotateTo(.35, -20);//////////////////////////////////////////////////////rotating to a stone
                 chassis.driveAuto(.4, -10, 0, 5000);
                 //sleep(1000);
                 //chassis.rotateTo(.5, 0);
@@ -1024,7 +1024,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 intake.gateServoClose();
                 chassis.rotateTo(.7, 90, 3000);
                 stoneGrabber.grabStoneInsideCombo();
-                chassis.driveAuto(.6, 220, 0, 3000);
+                chassis.driveAuto(.6, 220, 0, 3000);////////////////// going to the foundation
                 chassis.rotateTo(.7, 179.5, 3000);
                 rotateFoundation(true);
                 getSecondStone(2, 2, true);
@@ -1037,10 +1037,10 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 stoneGrabber.armInReadyGrabCombo();
                 intake.intakeDropDown();
                 intake.gateServoOpen();
-                chassis.driveAuto(.6, -73, 0, 5000);
+                chassis.driveAuto(.6, -73, 0, 5000);//////////////////////////////////////going to a stone
                 //chassis.driveAuto(.6, 45, 90, 5000);
                 intake.intakeIn(true);
-                chassis.rotateTo(.35, 20);
+                chassis.rotateTo(.35, 20);//////////////////////////////////////////////////////rotating to a stone
                 chassis.driveAuto(.4, -10, 0, 5000);
                 //sleep(1000);
                 //chassis.rotateTo(.5, 0);
@@ -1049,7 +1049,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 intake.gateServoClose();
                 chassis.rotateTo(.7, 90, 3000);
                 stoneGrabber.grabStoneInsideCombo();
-                chassis.driveAuto(.6, 220, 0, 3000);
+                chassis.driveAuto(.6, 220, 0, 3000);////////////////// going to the foundation
                 chassis.rotateTo(.7, 179.5, 3000);
                 rotateFoundation(true);
                 getSecondStone(2, 3, true);
@@ -1063,10 +1063,10 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 stoneGrabber.armInReadyGrabCombo();
                 intake.intakeDropDown();
                 intake.gateServoOpen();
-                chassis.driveAuto(.6, -78, -12, 5000);
+                chassis.driveAuto(.6, -78, -12, 5000);//////////////////////////////////////going to a stone
                 //chassis.driveAuto(.6, 45, 90, 5000);
                 intake.intakeIn(true);
-                chassis.rotateTo(.35, -23);
+                chassis.rotateTo(.35, -23);//////////////////////////////////////////////////////rotating to a stone
                 chassis.driveAuto(.4, -10, 0, 5000);
                 //sleep(1000);
                 //chassis.rotateTo(.5, 0);
@@ -1075,7 +1075,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 intake.gateServoClose();
                 chassis.rotateTo(.7, 90, 3000);
                 stoneGrabber.grabStoneInsideCombo();
-                chassis.driveAuto(.6, 200, 0, 3000);
+                chassis.driveAuto(.6, 200, 0, 3000);////////////////// going to the foundation
                 chassis.rotateTo(.7, 179.5, 3000);
                 rotateFoundation(true);
                 getSecondStone(2, 1, true);
