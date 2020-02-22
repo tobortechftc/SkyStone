@@ -2066,8 +2066,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
     }
 
-    @MenuEntry(label = "TensorTest", group = "Competition-Auto")
-    public void tensorTestFunc(Configuration configuration, EventManager em) {
+    @MenuEntry(label = "Tensor Test", group = "Test Auto")
+    public void tensorTestFunc(EventManager em, Configuration configuration) {
         telemetry.addLine().addData(" | <X>", "Done").setRetained(true);
         setupTelemetryTensor(telemetry);
 
@@ -2092,7 +2092,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         em.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
-                tensorTest(tensorPara.getIter(), tensorPara.correctLoc());
+                //tensorTest(tensorPara.getIter(), tensorPara.correctLoc());
+                simpleGetStoneTest();
             }
         }, new Button[]{Button.X});
     }

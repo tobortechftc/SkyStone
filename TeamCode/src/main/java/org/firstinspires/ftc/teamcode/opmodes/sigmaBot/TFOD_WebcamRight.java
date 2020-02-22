@@ -34,9 +34,11 @@ import android.util.Log;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
@@ -56,7 +58,7 @@ import java.util.List;
  * IMPORTANT: In order to use this OpMode, you need to obtain your own Vuforia license key as
  * is explained below.
  */
-@Disabled
+//@Disabled
 @TeleOp(name = "TFOD:WebcamRight", group = "Test")
 public class TFOD_WebcamRight extends LinearOpMode {
     private static final String TFOD_MODEL_ASSET = "Skystone.tflite";
@@ -120,7 +122,7 @@ public class TFOD_WebcamRight extends LinearOpMode {
         telemetry.addData(">", "Press Play to start op mode");
         telemetry.update();
         waitForStart();
-
+        /*
         int total_stones = 0;
         int big_ss = 0;
         int good_ss = 0;
@@ -129,11 +131,31 @@ public class TFOD_WebcamRight extends LinearOpMode {
         int ss_cener = 0;
         int ss_right = 0;
         double stoneYpos = 0;
-
+         */
         while (opModeIsActive()) {
             if (tfod == null) {
                 continue;
             }
+
+            ElapsedTime elapsedTime = new ElapsedTime();
+            elapsedTime.startTime();
+            while (elapsedTime.seconds() < 0.3) {
+                List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+                int i=0;
+                if (updatedRecognitions == null || updatedRecognitions.size() < 1) {
+                    continue;
+                }
+                for (Recognition recognition :
+                        updatedRecognitions) {
+                    i++;
+                    double width = recognition.getWidth();
+                    double height = recognition.getHeight();
+                    double angle = recognition.estimateAngleToObject(AngleUnit.DEGREES);
+                    telemetry.addData("Stone","%d:: wid=%.1f,he=%.1f,ang=%.1f",i,width,height,angle);
+                }
+                telemetry.update();
+            }
+            /*
             boolean redSide = false;
             int max_stone_width = 250;
             int min_stone_width = 150;
@@ -229,16 +251,18 @@ public class TFOD_WebcamRight extends LinearOpMode {
                 telemetry.update();
 
             }
+
             telemetry.update();
             if (big_ss+good_ss>=100) {
                 break;
             }
+            */
         }
-
+        /*
         telemetry.addLine().addData("Result", "L=%d,C=%d,R=%d,good=%d,big=%d,total=%d",
                 ss_left,ss_cener,ss_right,good_ss,big_ss,total_stones);
         telemetry.update();
-
+         */
         sleep(10000);
         if (tfod != null) {
             tfod.shutdown();
