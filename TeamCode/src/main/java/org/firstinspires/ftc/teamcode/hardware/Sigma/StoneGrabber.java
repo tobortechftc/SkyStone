@@ -41,7 +41,8 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double ARM_DOWN_MORE_CAP = ARM_DOWN+ARM_OFFSET+0.09;  // right position to grab stone inside
     private final double ARM_DOWN_SAFE = 0.86+ARM_OFFSET;
     private final double ARM_DOWN_WITH_STONE = 0.90+ARM_OFFSET;
-    private final double ARM_INITIAL = 0.84+ARM_OFFSET;
+    // private final double ARM_INITIAL = 0.84+ARM_OFFSET;
+    private final double ARM_INITIAL = ARM_READY_GRAB;
     private final double ARM_OUT_INIT = 0.47+ARM_OFFSET;
     private final double ARM_IN = 0.65+ARM_OFFSET;
     private final double ARM_LOW = 0.58+ARM_OFFSET;
@@ -64,9 +65,9 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double WRIST_INC_UNIT = 0.01;
     private final double WRIST_CAPSTONE = WRIST_PARALLEL - 0.01;
 
-    private final double GRABBER_INIT = 0.29;
     private final double GRABBER_CLOSE = 0.29;
     private final double GRABBER_OPEN_IN = 0.59;
+    private final double GRABBER_INIT = GRABBER_OPEN_IN;
     private final double GRABBER_VERTICAL = 0.5;
     private final double GRABBER_OPEN = 0.9;
     private final double GRABBER_OPEN_AUTO = 0.98;
@@ -136,7 +137,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         if (arm != null)
             armInit(armOut);
         if (wrist!=null) {
-            if (armOut)
+            if (armOut || Auto)
                 wristParallel();
             else
                 wristInit();
@@ -356,6 +357,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     public void grabberInit() {
         if (grabber==null) return;
         grabber.setPosition(GRABBER_INIT);
+        isGrabberOpened = true;
     }
 
     public void grabberOpen () {

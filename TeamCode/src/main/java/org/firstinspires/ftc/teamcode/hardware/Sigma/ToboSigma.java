@@ -2112,7 +2112,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 double angle = recognition.estimateAngleToObject(AngleUnit.DEGREES);
                 telemetry.addLine().addData("Stone","%d:: wid=%.1f,he=%.1f,ang=%.1f",i,width,height,angle).setRetained(true);
                 telemetry.update();
-                }
+
             }
         }
     }
