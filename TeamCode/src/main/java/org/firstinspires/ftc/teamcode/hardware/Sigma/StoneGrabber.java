@@ -139,8 +139,10 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
         if (wrist!=null) {
             if (armOut || Auto)
                 wristParallel();
-            else
-                wristInit();
+            else {
+                wristParallel();
+                // wristInit();
+            }
         }
         if (grabber!=null)
             grabberInit();
