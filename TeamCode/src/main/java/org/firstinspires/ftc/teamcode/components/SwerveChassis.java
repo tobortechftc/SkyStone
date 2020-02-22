@@ -77,6 +77,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     private double maxPower = 1.0;
     // the ratio of the distance that should be drove with desired power
     private double bufferPercentage = 0.8;
+    private double chassisAligmentPower = 0.25;
 
     private double maxRange = 127; // max range sensor detectable
 
@@ -1413,7 +1414,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         rawRotateTo(power, firstTarget, true, timeout);
         //sleep(100);
         if (Thread.interrupted()) return;
-        rawRotateTo(0.22, finalHeading, false, 1000);
+        rawRotateTo(chassisAligmentPower, finalHeading, false, 1000);
     }
 
     static final double degreeToRad = PI / 180;
@@ -1425,10 +1426,10 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
 
     public void rotateTo(double power, double finalHeading, int timeout) throws InterruptedException {
         if (Thread.interrupted()) return;
-        if (power <= 0.3) {//was 0.3
+        if (power <= chassisAligmentPower) {//was 0.3
             rawRotateTo(power, finalHeading, false, timeout);//was power
-            if (power>0.22)
-                rawRotateTo(0.22, finalHeading, false, timeout);
+            if (power>chassisAligmentPower)
+                rawRotateTo(chassisAligmentPower, finalHeading, false, timeout);
             return;
         }
         double iniHeading = orientationSensor.getHeading();
@@ -1469,7 +1470,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             if (!lowerPowerApplied && currentAbsDiff / iniAbsDiff < 0.40) {//damp power to 0.22 if in last 40%
                 rotate(0.0);
                 sleep(100);
-                rotate(direction * 0.20);
+                rotate(direction * chassisAligmentPower);
                 lowerPowerApplied = true;
             }
             if (currentAbsDiff / iniAbsDiff < 0.20 && abs(crossProduct) * radToDegree < 0.5)//assume sinx=x
