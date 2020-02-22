@@ -272,8 +272,11 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
         }
     }
 
-
     public ToboSigma.SkystoneLocation getSkystonePositionTF(boolean redSide) {
+        return getSkystonePositionTF(redSide, true);
+    }
+
+        public ToboSigma.SkystoneLocation getSkystonePositionTF(boolean redSide, boolean forSQT) {
         // The TFObjectDetector uses the camera frames from the VuforiaLocalizer, so we create that
         // first.
 
@@ -364,23 +367,37 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
                     ss_pos_on_screen = 3;
                 }
             }
-            if (redSide) {
-                if (ss_pos_on_screen == 0) {
-                    skystoneLocation = ToboSigma.SkystoneLocation.RIGHT;
-                } else if (ss_pos_on_screen == 2) {
-                    skystoneLocation = ToboSigma.SkystoneLocation.CENTER;
-                } else if (ss_pos_on_screen == 1) {
-                    skystoneLocation = ToboSigma.SkystoneLocation.LEFT;
+            if(forSQT) {
+                if (redSide) {
+                    if (ss_pos_on_screen == 0) {
+                        skystoneLocation = ToboSigma.SkystoneLocation.RIGHT;
+                    } else if (ss_pos_on_screen == 2) {
+                        skystoneLocation = ToboSigma.SkystoneLocation.CENTER;
+                    } else if (ss_pos_on_screen == 1) {
+                        skystoneLocation = ToboSigma.SkystoneLocation.LEFT;
+                    } else {
+                        skystoneLocation = ToboSigma.SkystoneLocation.UNKNOWN;
+                    }
                 } else {
-                    skystoneLocation = ToboSigma.SkystoneLocation.UNKNOWN;
+                    if (ss_pos_on_screen == 0) {
+                        skystoneLocation = ToboSigma.SkystoneLocation.CENTER;
+                    } else if (ss_pos_on_screen == 2) {
+                        skystoneLocation = ToboSigma.SkystoneLocation.LEFT;
+                    } else if (ss_pos_on_screen == 1) {
+                        skystoneLocation = ToboSigma.SkystoneLocation.RIGHT;
+                    } else {
+                        skystoneLocation = ToboSigma.SkystoneLocation.UNKNOWN;
+                    }
                 }
-            } else {
+            }
+            else
+            {
                 if (ss_pos_on_screen == 0) {
-                    skystoneLocation = ToboSigma.SkystoneLocation.CENTER;
-                } else if (ss_pos_on_screen == 2) {
                     skystoneLocation = ToboSigma.SkystoneLocation.LEFT;
-                } else if (ss_pos_on_screen == 1) {
+                } else if (ss_pos_on_screen == 2) {
                     skystoneLocation = ToboSigma.SkystoneLocation.RIGHT;
+                } else if (ss_pos_on_screen == 1) {
+                    skystoneLocation = ToboSigma.SkystoneLocation.CENTER;
                 } else {
                     skystoneLocation = ToboSigma.SkystoneLocation.UNKNOWN;
                 }

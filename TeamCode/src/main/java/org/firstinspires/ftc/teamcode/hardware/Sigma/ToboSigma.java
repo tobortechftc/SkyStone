@@ -4,6 +4,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Func;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.components.Robot2;
 import org.firstinspires.ftc.teamcode.components.SwerveChassis;
 import org.firstinspires.ftc.teamcode.support.CoreSystem;
@@ -14,6 +16,8 @@ import org.firstinspires.ftc.teamcode.support.events.EventManager;
 import org.firstinspires.ftc.teamcode.support.events.Events;
 import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
 import org.firstinspires.ftc.teamcode.support.tasks.TaskManager;
+
+import java.util.List;
 
 import javax.xml.transform.Source;
 
@@ -2091,6 +2095,26 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 tensorTest(tensorPara.getIter(), tensorPara.correctLoc());
             }
         }, new Button[]{Button.X});
+    }
+
+    public void simpleGetStoneTest()
+    {
+        ElapsedTime elapsedTime = new ElapsedTime();
+        elapsedTime.startTime();
+        while (elapsedTime.seconds() < 0.3) {
+            List<Recognition> updatedRecognitions = cameraStoneDetector.getTfod().getUpdatedRecognitions();
+            int i=0;
+            for (Recognition recognition :
+                    updatedRecognitions) {
+                i++;
+                double width = recognition.getWidth();
+                double height = recognition.getHeight();
+                double angle = recognition.estimateAngleToObject(AngleUnit.DEGREES);
+                telemetry.addLine().addData("Stone","%d:: wid=%.1f,he=%.1f,ang=%.1f",i,width,height,angle).setRetained(true);
+                telemetry.update();
+                }
+            }
+        }
     }
 
 }
