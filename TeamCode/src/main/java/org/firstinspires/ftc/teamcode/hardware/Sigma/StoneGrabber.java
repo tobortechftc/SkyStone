@@ -52,6 +52,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final double ARM_DOWN_FOR_CAP = 0.72+ARM_OFFSET;
     private final double ARM_CAPSTONE = 0.78+ARM_OFFSET;
     private final double ARM_CAPSTONE_MORE = 0.9+ARM_OFFSET;
+    private final double ARM_DELIVER_LOW = 0.35+ARM_OFFSET;
     private final double ARM_DELIVER = 0.28+ARM_OFFSET;
     private final double ARM_DELIVER_HIGHER = 0.26+ARM_OFFSET;
     private final double ARM_DELIVER_THROW = 0.14+ARM_OFFSET;
@@ -87,7 +88,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
     private final int LIFT_SAFE_SWING = 500;
     private final int LIFT_SAFE_BRIDGE = 540;
     private final int LIFT_SAFE_SWING_IN = 600;
-    private final int LIFT_SAFE_DELIVERY = 400;
+    private final int LIFT_SAFE_DELIVERY = 250;
     private final int LIFT_UP_FOR_REGRAB = 215;
     private final int LIFT_UP_FOR_CAP = 640;
     private final int LIFT_UP_BEFORE_CAP = 500;
@@ -1320,7 +1321,7 @@ public class StoneGrabber extends Logger<StoneGrabber> implements Configurable {
             TaskManager.add(new Task() {
                 @Override
                 public Progress start() {
-                    return moveArm(ARM_DELIVER);
+                    return moveArm(ARM_DELIVER_LOW);
                 }
             }, taskName);
         } else {
