@@ -30,7 +30,7 @@ public class IntakeV3 extends Logger<IntakeV3> implements Configurable {
     private CRServo leftIntakeDrop;
     private DigitalChannel prox = null;
 
-    private final double INTAKE_FAST = 0.7;
+    private final double INTAKE_FAST = 0.8;
     private final double INTAKE_SPEED = 0.5;
 
     private final double RIGHT_INTAKE_DROP_INIT = 0.900;

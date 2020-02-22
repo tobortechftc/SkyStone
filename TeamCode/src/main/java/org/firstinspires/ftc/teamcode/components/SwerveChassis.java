@@ -1473,7 +1473,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                 rotate(direction * chassisAligmentPower);
                 lowerPowerApplied = true;
             }
-            if (currentAbsDiff / iniAbsDiff < 0.20 && abs(crossProduct) * radToDegree < 0.5)//assume sinx=x
+            if (currentAbsDiff / iniAbsDiff < 0.20 && abs(crossProduct) * radToDegree < 1.0)//assume sinx=x, stop 1 degree early
                 break;//stop if really close to target
             if (Thread.interrupted()) break;
             if (System.currentTimeMillis() - iniTime > timeout) break;

@@ -201,10 +201,10 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
 
         int width = img.getWidth();
         int height = img.getHeight();
-        if (debug) {
+//        if (debug) {
 //            tl.addData("image Width", width);
 //            tl.addData("image Height", height);
-        }
+//        }
         Bitmap bitmap = Bitmap.createBitmap(img.getWidth(), img.getHeight(), Bitmap.Config.RGB_565);//Bitmap.Config.RGB_565
         bitmap.copyPixelsFromBuffer(img.getPixels());
 
@@ -245,7 +245,6 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
 
         if (debug) {
             try {
-
                 OutputStream fOut = new FileOutputStream(new File(path, "ss2-14-1.png"));
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, fOut); // bmp is your Bitmap instance
                 // PNG is a lossless format, the compression factor (100) is ignored
@@ -264,11 +263,11 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
         }
         long blackAvg = blackXsum / blackCount;
         if (blackAvg < 213) {
-            return teamColor == ToboSigma.AutoTeamColor.AUTO_BLUE ? ToboSigma.SkystoneLocation.CENTER : ToboSigma.SkystoneLocation.RIGHT;
+            return ToboSigma.SkystoneLocation.LEFT;
         } else if (blackAvg > 426) {
-            return teamColor == ToboSigma.AutoTeamColor.AUTO_BLUE ? ToboSigma.SkystoneLocation.LEFT : ToboSigma.SkystoneLocation.CENTER;
+            return ToboSigma.SkystoneLocation.RIGHT;
         } else {
-            return teamColor == ToboSigma.AutoTeamColor.AUTO_BLUE ? ToboSigma.SkystoneLocation.RIGHT : ToboSigma.SkystoneLocation.LEFT;
+            return ToboSigma.SkystoneLocation.CENTER;
         }
     }
 

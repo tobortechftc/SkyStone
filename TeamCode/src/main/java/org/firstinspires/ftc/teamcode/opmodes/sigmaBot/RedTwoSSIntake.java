@@ -12,8 +12,8 @@ import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
 /**
  * Created by 28761 on 6/29/2019.
  */
-@Autonomous(name = "Blue 2SSIntake", group = "Sigma")
-public class BlueTwoSSIntake extends LinearOpMode {
+@Autonomous(name = "Red 2SSIntake", group = "Sigma")
+public class RedTwoSSIntake extends LinearOpMode {
     private ToboSigma.SkystoneLocation StoneLoc;
 
     protected static int LOG_LEVEL = Log.INFO;
@@ -37,7 +37,7 @@ public class BlueTwoSSIntake extends LinearOpMode {
 
         try {
             // configure robot and reset all hardware
-            robot.configure(configuration, telemetry, ToboSigma.AutoTeamColor.AUTO_BLUE);
+            robot.configure(configuration, telemetry, ToboSigma.AutoTeamColor.AUTO_RED);
             configuration.apply();
             robot.reset(true);
             telemetry.addData("Robot is ready", "Press Play");
@@ -56,17 +56,17 @@ public class BlueTwoSSIntake extends LinearOpMode {
         // run until the end of the match (driver presses STOP or timeout)
         if (opModeIsActive()) {
             try {
-                boolean isBlue = true;
-                StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF(false, false);
-                ToboSigma.SkystoneLocation StoneLoc2 = StoneLoc = robot.cameraStoneDetector.getSkystonePositionElementary(telemetry, false, ToboSigma.AutoTeamColor.AUTO_BLUE);
+                boolean isBlue = false;
+                StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF(true, false);
+                ToboSigma.SkystoneLocation StoneLoc2 = StoneLoc = robot.cameraStoneDetector.getSkystonePositionElementary(telemetry, false, ToboSigma.AutoTeamColor.AUTO_RED);
                 if (StoneLoc2 != ToboSigma.SkystoneLocation.UNKNOWN) {
                     StoneLoc = StoneLoc2;
                 }
-                robot.wheelIntakeFirstStone(StoneLoc);
-                robot.rotateFoundation(true);
-                robot.wheelIntakeSecondStone(2, StoneLoc == ToboSigma.SkystoneLocation.LEFT ? 1 : (StoneLoc == ToboSigma.SkystoneLocation.CENTER ? 2 : 3), true);
+                robot.wheelIntakeFirstStoneRed(StoneLoc);
+                robot.rotateFoundation(false);
+                robot.wheelIntakeSecondStone(2, StoneLoc == ToboSigma.SkystoneLocation.LEFT ? 1 : (StoneLoc == ToboSigma.SkystoneLocation.CENTER ? 2 : 3), false);
                 robot.stoneGrabber.lifterDownCombo();
-                robot.chassis.driveAuto(0.8,-100,0,2500);
+                robot.chassis.driveAuto(0.8,-100,0,3000);
             } catch (Exception E) {
                 telemetry.addData("Error in event handler", E.getMessage());
                 handleException(E);
