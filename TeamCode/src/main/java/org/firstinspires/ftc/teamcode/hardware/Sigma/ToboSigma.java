@@ -1644,7 +1644,6 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         }
         chassis.rotateTo(auto_chassis_align_power, 0);
         stoneGrabber.armOutCombo(1, true);
-        stoneGrabber.moveWrist(false);
         if (Thread.interrupted()) return;
         chassis.driveAuto(.8, 210, 90 * side, 5000);//<==============================
         stoneGrabber.grabberOpenAuto();

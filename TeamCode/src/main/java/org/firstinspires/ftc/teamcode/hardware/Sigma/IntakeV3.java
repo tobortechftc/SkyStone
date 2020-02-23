@@ -42,10 +42,10 @@ public class IntakeV3 extends Logger<IntakeV3> implements Configurable {
 
     private AdjustableServo frontGate;
 
-    private final double GATE_SERVO_OPEN = 0.95;
-    private final double GATE_SERVO_INIT = GATE_SERVO_OPEN;
-    private final double GATE_SERVO_CLOSE = 0.39;
-    private final double GATE_SERVO_PUSH = 0.04;
+    private final double FRONT_GATE_OPEN = 0.95;
+    private final double FRONT_GATE_INIT = FRONT_GATE_OPEN;
+    private final double FRONT_GATE_CLOSE = 0.3;
+    private final double FRONT_GATE_PUSH = 0.04;
 
     private boolean isGateOpen = true;
     private boolean feederMode = false;
@@ -139,23 +139,23 @@ public class IntakeV3 extends Logger<IntakeV3> implements Configurable {
     }
 
     public void gateServoInit(){
-        frontGate.setPosition(GATE_SERVO_INIT);
+        frontGate.setPosition(FRONT_GATE_INIT);
         isGateOpen = true;
     }
 
     public void gateServoOpen(){
-        frontGate.setPosition(GATE_SERVO_OPEN);
+        frontGate.setPosition(FRONT_GATE_OPEN);
         isGateOpen = true;
     }
 
     public void gateServoPush(){
-        frontGate.setPosition(GATE_SERVO_PUSH);
+        frontGate.setPosition(FRONT_GATE_PUSH);
         isGateOpen = false;
     }
 
     public void gateServoClose(){
         intakeStop();
-        frontGate.setPosition(GATE_SERVO_CLOSE);
+        frontGate.setPosition(FRONT_GATE_CLOSE);
         isGateOpen = false;
     }
 
@@ -247,7 +247,7 @@ public class IntakeV3 extends Logger<IntakeV3> implements Configurable {
     private Progress moveGate(double position) {
         double adjustment = Math.abs(position - frontGate.getPosition());
         frontGate.setPosition(position);
-        if (position>=GATE_SERVO_OPEN-0.1)
+        if (position>= FRONT_GATE_OPEN -0.1)
             isGateOpen=true;
         else {
             isGateOpen = false;
@@ -270,7 +270,7 @@ public class IntakeV3 extends Logger<IntakeV3> implements Configurable {
             TaskManager.add(new Task() {
                 @Override
                 public Progress start() {
-                    return moveGate(GATE_SERVO_OPEN);
+                    return moveGate(FRONT_GATE_OPEN);
                 }
             }, taskName);
         }

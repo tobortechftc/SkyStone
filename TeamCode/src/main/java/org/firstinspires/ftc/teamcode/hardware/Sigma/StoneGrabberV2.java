@@ -34,46 +34,44 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     private double waitSec;
 
     private final double ARM_OFFSET = .0; // must > -.04 and < .04)
-    private final double ARM_UP = 0.06+ARM_OFFSET;
-    private final double ARM_READY_GRAB = 0.99+ARM_OFFSET;
-    private final double ARM_DOWN = 0.86+ARM_OFFSET;  // right position to grab stone inside
+    private final double ARM_UP = 0.94+ARM_OFFSET;
+    private final double ARM_READY_GRAB = 0.42+ARM_OFFSET;
+    private final double ARM_DOWN = 0.55+ARM_OFFSET;  // right position to grab stone inside
     private final double ARM_DOWN_MORE = ARM_DOWN+ARM_OFFSET+0.06;  // right position to grab stone inside
     private final double ARM_DOWN_MORE_CAP = ARM_DOWN+ARM_OFFSET+0.09;  // right position to grab stone inside
-    private final double ARM_DOWN_SAFE = 0.86+ARM_OFFSET;
-    private final double ARM_DOWN_WITH_STONE = 0.90+ARM_OFFSET;
-    // private final double ARM_INITIAL = 0.84+ARM_OFFSET;
+    private final double ARM_DOWN_SAFE = 0.55+ARM_OFFSET;
+    private final double ARM_DOWN_WITH_STONE = 0.51+ARM_OFFSET;
+    // private final double ARM_INITIAL = 0.16+ARM_OFFSET;
     private final double ARM_INITIAL = ARM_READY_GRAB;
-    private final double ARM_OUT_INIT = 0.47+ARM_OFFSET;
     private final double ARM_IN = 0.65+ARM_OFFSET;
-    private final double ARM_LOW = 0.58+ARM_OFFSET;
-    private final double ARM_OUT = 0.35+ARM_OFFSET;
-    private final double ARM_OUT_MORE = 0.27+ARM_OFFSET;
-    private final double ARM_OUT_AUTO = 0.45+ARM_OFFSET;
-    private final double ARM_DOWN_FOR_CAP = 0.72+ARM_OFFSET;
-    private final double ARM_CAPSTONE = 0.78+ARM_OFFSET;
-    private final double ARM_CAPSTONE_MORE = 0.9+ARM_OFFSET;
-    private final double ARM_DELIVER_LOW = 0.35+ARM_OFFSET;
-    private final double ARM_DELIVER = 0.28+ARM_OFFSET;
-    private final double ARM_DELIVER_HIGHER = 0.26+ARM_OFFSET;
-    private final double ARM_DELIVER_THROW = 0.14+ARM_OFFSET;
-    private final double ARM_MIN = 0.12+ARM_OFFSET;
+    private final double ARM_DOWN_FOR_CAP = 0.69+ARM_OFFSET;
+    private final double ARM_CAPSTONE = 0.63+ARM_OFFSET;
+    private final double ARM_CAPSTONE_MORE = 0.4+ARM_OFFSET;
+
+    private final double ARM_LOW = 0.71+ARM_OFFSET;
+
+    private final double ARM_OUT_INIT = 0.85+ARM_OFFSET;
+    private final double ARM_OUT = 0.855+ARM_OFFSET;
+    private final double ARM_OUT_MORE = 0.94+ARM_OFFSET;
+    private final double ARM_OUT_AUTO = 0.865+ARM_OFFSET; private final double ARM_DELIVER_LOW = 0.8+ARM_OFFSET;
+    private final double ARM_DELIVER = 0.86+ARM_OFFSET;
+    private final double ARM_DELIVER_HIGHER = 0.9+ARM_OFFSET;
+    private final double ARM_DELIVER_THROW = 0.94+ARM_OFFSET;
+    private final double ARM_MAX = 0.985+ARM_OFFSET;
 
     private final double ARM_INC_UNIT = 0.02;
-
-    private final double WRIST_PARALLEL = 0.66;
-    private final double WRIST_PERPENDICULAR = 0.08;
-    private final double WRIST_INIT = WRIST_PERPENDICULAR;
     private final double GATE_INC_UNIT = 0.01;
-    private final double WRIST_CAPSTONE = WRIST_PARALLEL - 0.01;
 
-    private final double GRABBER_CLOSE = 0.29;
-    private final double GRABBER_OPEN_IN = 0.59;
+    private final double GRABBER_CLOSE = 0.27;
+    private final double GRABBER_OPEN_IN = 0.5;
     private final double GRABBER_INIT = GRABBER_OPEN_IN;
-    private final double GRABBER_VERTICAL = 0.5;
-    private final double GRABBER_OPEN = 0.9;
-    private final double GRABBER_OPEN_AUTO = 0.98;
-    private final double BACK_GATE_CLOSE = 0.5;
-    private final double BACK_GATE_OPEN = 0.5;
+    private final double GRABBER_VERTICAL = 0.451;
+    private final double GRABBER_OPEN = 0.616;
+    private final double GRABBER_OPEN_AUTO = 0.75;
+
+    private final double BACK_GATE_CLOSE = 0.76;
+    private final double BACK_GATE_OPEN = 0.24;
+    private final double BACK_GATE_PARALLEL = 0.61;
 
     private final int LIFT_THRESHOLD = 15;
     private final int LIFT_RUN_TO_POSITION_OFFSET = 100;  // V5.3, new control for goBilda 5205 motor
@@ -111,7 +109,6 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     private boolean armIsDown = false;
     private boolean armIsIn = true;
     private boolean isGrabberOpened = false;
-    private boolean isWristParallel = false;
     private boolean isCapstoneServoOut = false;
     private ElapsedTime runtime = new ElapsedTime();
     private int lift_target_pos;
@@ -247,8 +244,8 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     public void armUpInc(boolean force) {
         double cur_pos = arm.getPosition();
         cur_pos -= ARM_INC_UNIT;
-        if ((cur_pos<ARM_MIN) && !force)
-            cur_pos=ARM_MIN;
+        if ((cur_pos< ARM_MAX) && !force)
+            cur_pos= ARM_MAX;
         if (cur_pos<0) cur_pos=0;
         arm.setPosition(cur_pos);
         armIsDown = false;
@@ -299,10 +296,10 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
         cur_pos -= GATE_INC_UNIT;
         if (cur_pos<0) cur_pos=0;
         backGate.setPosition(cur_pos);
-        if (cur_pos<=(WRIST_PARALLEL+0.2))
-            isWristParallel = true;
+        if (cur_pos<=(BACK_GATE_OPEN+0.2))
+            backGateIsOpen = true;
         else
-            isWristParallel = false;
+            backGateIsOpen = false;
 
     }
     public void backGateUpInc() {
@@ -310,42 +307,11 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
         cur_pos += GATE_INC_UNIT;
         if (cur_pos>1) cur_pos=1;
         backGate.setPosition(cur_pos);
-        if (cur_pos>=(WRIST_PERPENDICULAR-0.2))
-            isWristParallel = false;
+        if (cur_pos>=(BACK_GATE_CLOSE-0.2))
+            backGateIsOpen = false;
         else
-            isWristParallel = true;
+            backGateIsOpen = true;
 
-    }
-
-    public Progress moveWrist(boolean parallel) {
-        double target = parallel ? WRIST_PARALLEL : WRIST_PERPENDICULAR;
-        isWristParallel = parallel;
-        double adjustment = Math.abs(grabber.getPosition() - target);
-        debug("moveWrist(): target=%.2f, adjustment=%.2f", target, adjustment);
-        // entire move from parallel to vertical takes 2 seconds
-        final long doneBy = System.currentTimeMillis() + Math.round(500 * adjustment);
-        backGate.setPosition(target);
-        return new Progress() {
-            @Override
-            public boolean isDone() {
-                return System.currentTimeMillis() >= doneBy;
-            }
-        };
-    }
-    public Progress moveWristForCapstone() {
-        double target = WRIST_CAPSTONE;
-        isWristParallel = true;
-        double adjustment = Math.abs(grabber.getPosition() - target);
-        debug("moveWrist(): target=%.2f, adjustment=%.2f", target, adjustment);
-        // entire move from parallel to vertical takes 2 seconds
-        final long doneBy = System.currentTimeMillis() + Math.round(500 * adjustment);
-        backGate.setPosition(target);
-        return new Progress() {
-            @Override
-            public boolean isDone() {
-                return System.currentTimeMillis() >= doneBy;
-            }
-        };
     }
 
     public void grabberInit() {
@@ -728,7 +694,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
                 TaskManager.add(new Task() {
                     @Override
                     public Progress start() {
-                        if (isWristParallel && isGrabberOpened) grabberClose();
+                        grabberClose();
                         return liftToPosition(LIFT_SAFE_SWING, false);
                     }
                 }, taskName);
@@ -840,7 +806,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
                 TaskManager.add(new Task() {
                     @Override
                     public Progress start() {
-                        if (isWristParallel && isGrabberOpened) grabberClose();
+                        if (isGrabberOpened) grabberClose();
                         return liftToPosition(LIFT_SAFE_SWING+150, false);
                     }
                 }, taskName);
@@ -892,15 +858,13 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
                 return moveGrabber(true);
             }
         }, taskName);
-        if (wristParallel!=isWristParallel) {
             TaskManager.add(new Task() {
                 @Override
                 public Progress start() {
-                    moveWrist(wristParallel);
                     return moveGrabber(true);
                 }
             }, taskName);
-        }
+
         if (leftLifter.getCurrentPosition()<LIFT_SAFE_SWING) {
             if (isAuto) {
                 TaskManager.add(new Task() {
@@ -1035,7 +999,6 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
                 @Override
                 public Progress start() {
                     capstoneServoOut();
-                    moveWristForCapstone();
                     return moveArm(ARM_CAPSTONE);
                 }
             }, taskName);
@@ -1063,7 +1026,12 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
                 @Override
                 public Progress start() {
                     capstoneServoInit();
-                    return moveWrist(true);
+                    return new Progress() {
+                        @Override
+                        public boolean isDone() {
+                            return true;
+                        }
+                    };
                 }
             }, taskName);
         // }
@@ -1240,16 +1208,6 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
-                final Progress wristProgress = moveWrist(true);
-                return new Progress() {
-                    @Override
-                    public boolean isDone() { return wristProgress.isDone();}
-                };
-            }
-        }, taskName);
-        TaskManager.add(new Task() {
-            @Override
-            public Progress start() {
                 grabberOpen();
                 return moveArm(ARM_READY_GRAB);
             }
@@ -1267,16 +1225,6 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
                 if (armWasIn)
                     position = LIFT_SAFE_BRIDGE;
                 return liftToPosition(position, false);
-            }
-        }, taskName);
-        TaskManager.add(new Task() {
-            @Override
-            public Progress start() {
-                final Progress wristProgress = moveWrist(true);
-                return new Progress() {
-                    @Override
-                    public boolean isDone() { return wristProgress.isDone();}
-                };
             }
         }, taskName);
         TaskManager.add(new Task() {
