@@ -403,14 +403,17 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         em.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
-                if (source.isPressed(Button.BACK)) { // back-X swap driving direction
-                    chassis.changeChassisDrivingDirection();
-                } else if (source.isPressed(Button.LEFT_BUMPER))
+                if (source.isPressed((Button.DPAD_UP))) {
+                    intake.gateServoPush();
+                } else if (source.isPressed(Button.LEFT_BUMPER)) {
                     stoneGrabber.armInCombo(!source.isPressed(Button.BACK), false);
-                else if (source.isPressed((Button.RIGHT_BUMPER)))
+                } else if (source.isPressed((Button.RIGHT_BUMPER))) {
                     intake.gateServoAuto();
-                else
+                } else if (source.isPressed(Button.BACK)) { // back-X swap driving direction
+                    chassis.changeChassisDrivingDirection();
+                } else {
                     stoneGrabber.grabberAuto();
+                }
             }
         }, new Button[]{Button.X});
 

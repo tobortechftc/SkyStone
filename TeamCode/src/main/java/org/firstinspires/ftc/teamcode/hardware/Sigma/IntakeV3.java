@@ -42,9 +42,10 @@ public class IntakeV3 extends Logger<IntakeV3> implements Configurable {
 
     private AdjustableServo gateServo;
 
-    private final double GATE_SERVO_INIT = 0.543;
-    private final double GATE_SERVO_OPEN = 0.543;
-    private final double GATE_SERVO_CLOSE = 0.1;
+    private final double GATE_SERVO_OPEN = 0.95;
+    private final double GATE_SERVO_INIT = GATE_SERVO_OPEN;
+    private final double GATE_SERVO_CLOSE = 0.39;
+    private final double GATE_SERVO_PUSH = 0.04;
 
     private boolean isGateOpen = true;
     private boolean feederMode = false;
@@ -145,6 +146,11 @@ public class IntakeV3 extends Logger<IntakeV3> implements Configurable {
     public void gateServoOpen(){
         gateServo.setPosition(GATE_SERVO_OPEN);
         isGateOpen = true;
+    }
+
+    public void gateServoPush(){
+        gateServo.setPosition(GATE_SERVO_PUSH);
+        isGateOpen = false;
     }
 
     public void gateServoClose(){
