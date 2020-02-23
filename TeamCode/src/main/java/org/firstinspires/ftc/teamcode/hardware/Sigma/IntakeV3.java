@@ -40,7 +40,7 @@ public class IntakeV3 extends Logger<IntakeV3> implements Configurable {
     private boolean intakeOn = false;
     private int intake_count = 0;
 
-    private AdjustableServo gateServo;
+    private AdjustableServo frontGate;
 
     private final double GATE_SERVO_OPEN = 0.95;
     private final double GATE_SERVO_INIT = GATE_SERVO_OPEN;
@@ -85,18 +85,18 @@ public class IntakeV3 extends Logger<IntakeV3> implements Configurable {
         if (rightIntakeMotor != null || leftIntakeMotor != null)
             intakeStop();
 
-        if(gateServo != null){
+        if(frontGate != null){
             gateServoInit();
         }
     }
 
     public void configure(Configuration configuration, boolean auto) {
 
-        gateServo = new AdjustableServo(0,1).configureLogging(
-                logTag + ":gateServo", logLevel
+        frontGate = new AdjustableServo(0,1).configureLogging(
+                logTag + ":frontGate", logLevel
         );
-        gateServo.configure(configuration.getHardwareMap(), "gateServo");
-        configuration.register(gateServo);
+        frontGate.configure(configuration.getHardwareMap(), "frontGate");
+        configuration.register(frontGate);
 
 
         rightIntakeDrop = new AdjustableServo(0,1).configureLogging(
@@ -139,23 +139,23 @@ public class IntakeV3 extends Logger<IntakeV3> implements Configurable {
     }
 
     public void gateServoInit(){
-        gateServo.setPosition(GATE_SERVO_INIT);
+        frontGate.setPosition(GATE_SERVO_INIT);
         isGateOpen = true;
     }
 
     public void gateServoOpen(){
-        gateServo.setPosition(GATE_SERVO_OPEN);
+        frontGate.setPosition(GATE_SERVO_OPEN);
         isGateOpen = true;
     }
 
     public void gateServoPush(){
-        gateServo.setPosition(GATE_SERVO_PUSH);
+        frontGate.setPosition(GATE_SERVO_PUSH);
         isGateOpen = false;
     }
 
     public void gateServoClose(){
         intakeStop();
-        gateServo.setPosition(GATE_SERVO_CLOSE);
+        frontGate.setPosition(GATE_SERVO_CLOSE);
         isGateOpen = false;
     }
 
@@ -245,8 +245,8 @@ public class IntakeV3 extends Logger<IntakeV3> implements Configurable {
            intakeIn(fast);
     }
     private Progress moveGate(double position) {
-        double adjustment = Math.abs(position - gateServo.getPosition());
-        gateServo.setPosition(position);
+        double adjustment = Math.abs(position - frontGate.getPosition());
+        frontGate.setPosition(position);
         if (position>=GATE_SERVO_OPEN-0.1)
             isGateOpen=true;
         else {

@@ -481,7 +481,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 else if (source.isPressed(Button.LEFT_BUMPER))
                     stoneGrabber.armOutCombo(0, false);
                 else if (!source.isPressed(Button.START))
-                    stoneGrabber.wristAuto();
+                    stoneGrabber.backGateAuto();
             }
         }, new Button[]{Button.B});
 
@@ -507,8 +507,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                     // left stick with idle right stick rotates robot in place
                     if (source.isPressed(Button.LEFT_BUMPER)) {
                         if (source.getStick(Events.Side.RIGHT, Events.Axis.X_ONLY) < 0)
-                            stoneGrabber.wristLeftInc();
-                        else stoneGrabber.wristRightInc();
+                            stoneGrabber.backGateUpInc();
+                        else stoneGrabber.backGateDownInc();
                     } else {
                         stoneGrabber.liftHold();
                     }
@@ -536,8 +536,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                     // left stick with idle right stick rotates robot in place
                     if (source.isPressed(Button.LEFT_BUMPER)) {
                         if (source.getStick(Events.Side.RIGHT, Events.Axis.X_ONLY) < 0)
-                            stoneGrabber.wristLeftInc();
-                        else stoneGrabber.wristRightInc();
+                            stoneGrabber.backGateUpInc();
+                        else stoneGrabber.backGateDownInc();
                     } else {
                         stoneGrabber.liftHold();
                     }
@@ -980,7 +980,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 else if (source.isPressed(Button.LEFT_BUMPER))
                     stoneGrabber.armOutCombo();
                 else if (!source.isPressed(Button.START))
-                    stoneGrabber.wristAuto();
+                    stoneGrabber.backGateAuto();
             }
         }, new Button[]{Button.B});
     }

@@ -63,7 +63,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     private final double WRIST_PARALLEL = 0.66;
     private final double WRIST_PERPENDICULAR = 0.08;
     private final double WRIST_INIT = WRIST_PERPENDICULAR;
-    private final double WRIST_INC_UNIT = 0.01;
+    private final double GATE_INC_UNIT = 0.01;
     private final double WRIST_CAPSTONE = WRIST_PARALLEL - 0.01;
 
     private final double GRABBER_CLOSE = 0.29;
@@ -72,7 +72,8 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     private final double GRABBER_VERTICAL = 0.5;
     private final double GRABBER_OPEN = 0.9;
     private final double GRABBER_OPEN_AUTO = 0.98;
-
+    private final double BACK_GATE_CLOSE = 0.5;
+    private final double BACK_GATE_OPEN = 0.5;
 
     private final int LIFT_THRESHOLD = 15;
     private final int LIFT_RUN_TO_POSITION_OFFSET = 100;  // V5.3, new control for goBilda 5205 motor
@@ -106,7 +107,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     private final double CAPSTONE_OUT = 0.6;
 
 
-
+    private boolean backGateIsOpen = false;
     private boolean armIsDown = false;
     private boolean armIsIn = true;
     private boolean isGrabberOpened = false;
@@ -138,12 +139,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
         if (arm != null)
             armInit(armOut);
         if (backGate !=null) {
-            if (armOut || Auto)
-                wristParallel();
-            else {
-                wristParallel();
-                // wristInit();
-            }
+            backGateClose();
         }
         if (grabber!=null)
             grabberInit();
@@ -162,7 +158,6 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
         );
         backGate.configure(configuration.getHardwareMap(), "backGate");
         configuration.register(backGate);
-        // wristInit();
 
         grabber = new AdjustableServo(0,1).configureLogging(
                 logTag + ":grabber", logLevel
@@ -204,6 +199,23 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
 
     public boolean isArmDown() {
         return armIsDown;
+    }
+
+    public void backGateOpen(){
+        backGate.setPosition(BACK_GATE_OPEN);
+        backGateIsOpen = true;
+    }
+
+    public void backGateClose(){
+        backGate.setPosition(BACK_GATE_CLOSE);
+        backGateIsOpen = false;
+    }
+
+    public void backGateAuto(){
+        if(backGateIsOpen)
+            backGateClose();
+        else
+            backGateOpen();
     }
 
     public void armInit(boolean armOut) {
@@ -280,32 +292,11 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
         }
     }
 
-    public void wristInit() {
-        if (backGate ==null) return;
-        backGate.setPosition(WRIST_INIT);
-        isWristParallel = false;
-    }
 
-    public void wristParallel () {
-        if (backGate ==null) return;
-        backGate.setPosition(WRIST_PARALLEL);
-        isWristParallel = true;
-    }
 
-    public void wristPerpendicular () {
-        if (backGate ==null) return;
-        backGate.setPosition(WRIST_PERPENDICULAR);
-        isWristParallel = false;
-    }
-
-    public void wristAuto() {
-        if (isWristParallel) wristPerpendicular();
-        else wristParallel();
-    }
-
-    public void wristLeftInc() {
+    public void backGateDownInc() {
         double cur_pos = backGate.getPosition();
-        cur_pos -= WRIST_INC_UNIT;
+        cur_pos -= GATE_INC_UNIT;
         if (cur_pos<0) cur_pos=0;
         backGate.setPosition(cur_pos);
         if (cur_pos<=(WRIST_PARALLEL+0.2))
@@ -314,9 +305,9 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
             isWristParallel = false;
 
     }
-    public void wristRightInc() {
+    public void backGateUpInc() {
         double cur_pos = backGate.getPosition();
-        cur_pos += WRIST_INC_UNIT;
+        cur_pos += GATE_INC_UNIT;
         if (cur_pos>1) cur_pos=1;
         backGate.setPosition(cur_pos);
         if (cur_pos>=(WRIST_PERPENDICULAR-0.2))
@@ -436,7 +427,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
 
     public void capstoneLeftInc() {
         double cur_pos = capstoneServo.getPosition();
-        cur_pos -= WRIST_INC_UNIT;
+        cur_pos -= GATE_INC_UNIT;
         if (cur_pos<0) cur_pos=0;
         capstoneServo.setPosition(cur_pos);
         if (Math.abs(cur_pos-CAPSTONE_OUT)<0.2)
@@ -447,7 +438,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
 
     public void capstoneRightInc() {
         double cur_pos = capstoneServo.getPosition();
-        cur_pos += WRIST_INC_UNIT;
+        cur_pos += GATE_INC_UNIT;
         if (cur_pos>1) cur_pos=1.0;
         capstoneServo.setPosition(cur_pos);
         if (Math.abs(cur_pos-CAPSTONE_OUT)<0.2)
