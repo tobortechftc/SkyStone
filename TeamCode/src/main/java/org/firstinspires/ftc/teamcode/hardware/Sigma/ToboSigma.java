@@ -27,7 +27,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     public CameraStoneDetector cameraStoneDetector;
     public FoundationHook foundationHook;
     public IntakeV3 intake;
-    public StoneGrabber stoneGrabber;
+    public StoneGrabberV2 stoneGrabber;
 
     public class AutoPara {
         boolean isBlue = true;
@@ -139,7 +139,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             foundationHook.hookUp();
         }
 
-        stoneGrabber = new StoneGrabber(this.core).configureLogging("StoneGrabber", logLevel);
+        stoneGrabber = new StoneGrabberV2(this.core).configureLogging("StoneGrabber", logLevel);
         stoneGrabber.configure(configuration, (autoColor != AutoTeamColor.NOT_AUTO));
         intake = new IntakeV3(this.core).configureLogging("IntakeV3", logLevel);
         intake.configure(configuration, (autoColor != AutoTeamColor.NOT_AUTO));
