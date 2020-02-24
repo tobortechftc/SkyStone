@@ -34,7 +34,6 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     private double waitSec;
 
     private final double ARM_OFFSET = .0; // must > -.04 and < .04)
-    private final double ARM_UP = 0.94+ARM_OFFSET;
     private final double ARM_READY_GRAB = 0.42+ARM_OFFSET;
     private final double ARM_DOWN = 0.55+ARM_OFFSET;  // right position to grab stone inside
     private final double ARM_DOWN_MORE = ARM_DOWN+ARM_OFFSET+0.06;  // right position to grab stone inside
@@ -57,7 +56,9 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     private final double ARM_DELIVER = 0.86+ARM_OFFSET;
     private final double ARM_DELIVER_HIGHER = 0.9+ARM_OFFSET;
     private final double ARM_DELIVER_THROW = 0.94+ARM_OFFSET;
+    private final double ARM_UP = 0.94+ARM_OFFSET;
     private final double ARM_MAX = 0.985+ARM_OFFSET;
+    private final double ARM_MIN = 0.4+ARM_OFFSET;
 
     private final double ARM_INC_UNIT = 0.02;
     private final double GATE_INC_UNIT = 0.01;
@@ -227,13 +228,13 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
         armIsIn = false;
     }
 
-    public void armDownInc() {
+    public void armUpInc() {
         double cur_pos = arm.getPosition();
         cur_pos += ARM_INC_UNIT;
-        if (cur_pos>1) cur_pos=1;
+        if (cur_pos>ARM_MAX) cur_pos=ARM_MAX;
         arm.setPosition(cur_pos);
         armIsDown = false;
-        if (cur_pos>ARM_IN)
+        if (cur_pos<ARM_IN)
             armIsIn = true;
         else
             armIsIn = false;
@@ -241,15 +242,15 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
             armIsDown = true;
     }
 
-    public void armUpInc(boolean force) {
+    public void armDownInc(boolean force) {
         double cur_pos = arm.getPosition();
         cur_pos -= ARM_INC_UNIT;
-        if ((cur_pos< ARM_MAX) && !force)
-            cur_pos= ARM_MAX;
+        if ((cur_pos< ARM_MIN) && !force)
+            cur_pos= ARM_MIN;
         if (cur_pos<0) cur_pos=0;
         arm.setPosition(cur_pos);
         armIsDown = false;
-        if (cur_pos<ARM_LOW)
+        if (cur_pos>ARM_LOW)
             armIsIn = false;
         else
             armIsIn = true;
