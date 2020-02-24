@@ -2184,6 +2184,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         }, new Button[]{Button.X});
     }
 
+
+
     public void simpleGetStoneTest() {
         ElapsedTime elapsedTime = new ElapsedTime();
         elapsedTime.startTime();

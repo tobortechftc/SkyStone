@@ -113,7 +113,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     private boolean swerveReverseDirection = false; // chassis front/back is reversed during Teleop
     private boolean setImuTelemetry = false;//unless debugging, don't set telemetry for imu
     private boolean setRangeSensorTelemetry = false;//unless debugging, don't set telemetry for range sensor
-    private boolean showColor = false;
+    private boolean showColor = true;
     private boolean slowMode = false;
     final double TICKS_PER_CM = 537.6 / (4.32 * 2.54 * Math.PI); // 16.86; //number of encoder ticks per cm of driving
     public final double DEFAULT_FAST_SCALE = 1.0;
@@ -1826,6 +1826,12 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                     }
                 });
             }
+            line.addData("stoneCollected = ", "%s", new Func<String>() {
+                @Override
+                public String value() {
+                    return (stoneCollected() ? "T" : "F");
+                }
+            });
         }
         telemetry.addLine().addData("M", new Func<String>() {
             @Override
@@ -1855,6 +1861,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                 }
             });
         }
+
     }
 
     public void resetOrientation() {
@@ -1937,5 +1944,17 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                 return Math.max(distL, distR) == distL ? ToboSigma.SkystoneLocation.LEFT : ToboSigma.SkystoneLocation.CENTER;
         }
         return ToboSigma.SkystoneLocation.UNKNOWN;
+    }
+
+    public boolean stoneCollected()
+    {
+        if (FRDistance==null) {
+            return false;
+        }
+        double dist = getDistanceColor(FRDistance);
+        if(dist>50)
+            return false;
+        else
+            return true;
     }
 }
