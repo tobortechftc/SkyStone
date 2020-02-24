@@ -49,14 +49,14 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
 
     private final double ARM_LOW = 0.71+ARM_OFFSET;
 
-    private final double ARM_OUT_INIT = 0.85+ARM_OFFSET;
-    private final double ARM_OUT = 0.855+ARM_OFFSET;
-    private final double ARM_OUT_MORE = 0.94+ARM_OFFSET;
-    private final double ARM_OUT_AUTO = 0.865+ARM_OFFSET; private final double ARM_DELIVER_LOW = 0.8+ARM_OFFSET;
-    private final double ARM_DELIVER = 0.86+ARM_OFFSET;
-    private final double ARM_DELIVER_HIGHER = 0.9+ARM_OFFSET;
-    private final double ARM_DELIVER_THROW = 0.94+ARM_OFFSET;
-    private final double ARM_UP = 0.94+ARM_OFFSET;
+    private final double ARM_OUT_INIT = 0.90+ARM_OFFSET;
+    private final double ARM_OUT = 0.94+ARM_OFFSET;
+    private final double ARM_OUT_MORE = 0.97+ARM_OFFSET;
+    private final double ARM_OUT_AUTO = 0.94+ARM_OFFSET; private final double ARM_DELIVER_LOW = 0.8+ARM_OFFSET;
+    private final double ARM_DELIVER = 0.94+ARM_OFFSET;
+    private final double ARM_DELIVER_HIGHER = 0.97+ARM_OFFSET;
+    private final double ARM_DELIVER_THROW = 0.98+ARM_OFFSET;
+    private final double ARM_UP = 0.98+ARM_OFFSET;
     private final double ARM_MAX = 0.985+ARM_OFFSET;
     private final double ARM_MIN = 0.4+ARM_OFFSET;
 
@@ -763,7 +763,6 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     public void grabInsideAndArmOutCombo(double delaySec, boolean auto) {
         final String taskName = "Grab Inside and Arm Out Combo";
         if (!TaskManager.isComplete(taskName)) return;
-        boolean armWasOut = !isArmInside();
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
@@ -796,7 +795,6 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
                 }
             }, taskName);
         }
-        if (!armWasOut) {
             TaskManager.add(new Task() {
                 @Override
                 public Progress start() {
@@ -812,7 +810,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
                     }
                 }, taskName);
             }
-        }
+
         if (auto) {
             TaskManager.add(new Task() {
                 @Override
@@ -1213,7 +1211,14 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
                 return moveArm(ARM_READY_GRAB);
             }
         }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                return liftToPosition(LIFT_DOWN_GRAB, false);
+            }
+        }, taskName);
     }
+
 
     public void armInLiftUpReadyGrabCombo() {
         final String taskName = "Arm In LiftUp Ready Grab Combo";
