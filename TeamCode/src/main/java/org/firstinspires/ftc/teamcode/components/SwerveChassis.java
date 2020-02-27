@@ -273,9 +273,9 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
 
 
             FRColor = configuration.getHardwareMap().get(ColorSensor.class, "FRColor");
-            FLColor = configuration.getHardwareMap().get(ColorSensor.class, "FLColor");
+            // FLColor = configuration.getHardwareMap().get(ColorSensor.class, "FLColor");
             FRDistance = configuration.getHardwareMap().get(DistanceSensor.class, "FRColor");
-            FLDistance = configuration.getHardwareMap().get(DistanceSensor.class, "FLColor");
+            // FLDistance = configuration.getHardwareMap().get(DistanceSensor.class, "FLColor");
         }
         // register chassis as configurable component
         configuration.register(this);

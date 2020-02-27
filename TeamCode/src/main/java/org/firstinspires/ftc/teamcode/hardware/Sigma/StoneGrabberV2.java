@@ -35,10 +35,10 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
 
     private final double ARM_OFFSET = .0; // must > -.04 and < .04)
     private final double ARM_READY_GRAB = 0.42+ARM_OFFSET;
-    private final double ARM_DOWN = 0.55+ARM_OFFSET;  // right position to grab stone inside
+    private final double ARM_DOWN = 0.52+ARM_OFFSET;  // right position to grab stone inside
     private final double ARM_DOWN_MORE = ARM_DOWN+ARM_OFFSET+0.06;  // right position to grab stone inside
     private final double ARM_DOWN_MORE_CAP = ARM_DOWN+ARM_OFFSET+0.09;  // right position to grab stone inside
-    private final double ARM_DOWN_SAFE = 0.55+ARM_OFFSET;
+    private final double ARM_DOWN_SAFE = 0.52+ARM_OFFSET;
     private final double ARM_DOWN_WITH_STONE = 0.51+ARM_OFFSET;
     // private final double ARM_INITIAL = 0.16+ARM_OFFSET;
     private final double ARM_INITIAL = ARM_READY_GRAB;
@@ -65,13 +65,13 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
 
     private final double GRABBER_CLOSE = 0.27;
     private final double GRABBER_OPEN_IN = 0.5;
-    private final double GRABBER_INIT = GRABBER_OPEN_IN;
     private final double GRABBER_VERTICAL = 0.451;
+    private final double GRABBER_INIT = GRABBER_VERTICAL;
     private final double GRABBER_OPEN = 0.616;
     private final double GRABBER_OPEN_AUTO = 0.75;
 
-    private final double BACK_GATE_CLOSE = 0.76;
-    private final double BACK_GATE_OPEN = 0.24;
+    private final double BACK_GATE_CLOSE = 0.98;
+    private final double BACK_GATE_OPEN = 0.11;
     private final double BACK_GATE_PARALLEL = 0.61;
 
     private final int LIFT_THRESHOLD = 15;
