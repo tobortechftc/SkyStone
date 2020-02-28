@@ -78,7 +78,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     private final double BACK_GATE_PARALLEL = 0.4;
 
     private final int LIFT_THRESHOLD = 15;
-    private final int LIFT_RUN_TO_POSITION_OFFSET = 100;  // V5.3, new control for goBilda 5205 motor
+    private final int LIFT_RUN_TO_POSITION_OFFSET = 50;  // V5.3, new control for goBilda 5205 motor
     private final int LIFT_DOWN_GRAB = 0;
     private final int LIFT_DOWN = 0;
     private final int LIFT_DOWN_GRAB_INSIDE = 150;
@@ -140,7 +140,10 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
         if (arm != null)
             armInit(armOut);
         if (backGate !=null) {
-            backGateClose();
+            if (Auto)
+                backGateClose();
+            else
+                backGateOpen();
         }
         if (grabber!=null)
             grabberInit();
@@ -631,7 +634,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     private Progress moveArm(double position) {
         double adjustment = Math.abs(position - arm.getPosition());
         arm.setPosition(position);
-        if (position>=ARM_IN)
+        if (position<=ARM_IN)
             armIsIn=true;
         else
             armIsIn=false;
@@ -1087,20 +1090,13 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
             @Override
             public Progress start() {
                 // armDown();
-                return liftToPosition(LIFT_DOWN_GRAB_INSIDE, true);
+                return liftToPosition(LIFT_DOWN, true);
             }
         }, taskName);
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
                 return moveArm(ARM_DOWN_SAFE);
-            }
-        }, taskName);
-        TaskManager.add(new Task() {
-            @Override
-            public Progress start() {
-                armDown();
-                return liftToPosition(LIFT_DOWN, false);
             }
         }, taskName);
         TaskManager.add(new Task() {

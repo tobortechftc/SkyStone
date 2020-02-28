@@ -43,6 +43,7 @@ public class SigmaTeleOp extends LinearOpMode implements YieldHandler {
             robot.configure(configuration, telemetry, ToboSigma.AutoTeamColor.NOT_AUTO);
             configuration.apply();
             robot.reset(false, false);
+            robot.intake.intakeDropDown();
 
             eventManager1 = new EventManager(gamepad1, true);
             eventManager2 = new EventManager(gamepad2, true);
@@ -62,6 +63,7 @@ public class SigmaTeleOp extends LinearOpMode implements YieldHandler {
 
         robot.foundationHook.hookUp();
         robot.stoneGrabber.grabberOpen();
+        robot.stoneGrabber.backGateClose();
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             try {
