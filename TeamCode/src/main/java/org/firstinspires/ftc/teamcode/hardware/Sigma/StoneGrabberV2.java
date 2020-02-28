@@ -34,7 +34,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     private double waitSec;
 
     private final double ARM_OFFSET = .0; // must > -.04 and < .04)
-    private final double ARM_READY_GRAB = 0.42+ARM_OFFSET;
+    private final double ARM_READY_GRAB = 0.36+ARM_OFFSET;
     private final double ARM_DOWN = 0.52+ARM_OFFSET;  // right position to grab stone inside
     private final double ARM_DOWN_MORE = ARM_DOWN+ARM_OFFSET+0.06;  // right position to grab stone inside
     private final double ARM_DOWN_MORE_CAP = ARM_DOWN+ARM_OFFSET+0.09;  // right position to grab stone inside
@@ -59,7 +59,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     private final double ARM_DELIVER_THROW = 0.98+ARM_OFFSET;
     private final double ARM_UP = 0.98+ARM_OFFSET;
     private final double ARM_MAX = 0.985+ARM_OFFSET;
-    private final double ARM_MIN = 0.4+ARM_OFFSET;
+    private final double ARM_MIN = 0.3+ARM_OFFSET;
 
     private final double ARM_INC_UNIT = 0.02;
     private final double GATE_INC_UNIT = 0.01;
@@ -87,8 +87,8 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     private final int LIFT_GRAB_AUTO = 20;
     private final int LIFT_MIN = 0;
     private final int LIFT_MAX = 3200;
-    private final int LIFT_SAFE_SWING_AUTO = 500;
-    private final int LIFT_SAFE_SWING = 500;
+    private final int LIFT_SAFE_SWING_AUTO = 300;
+    private final int LIFT_SAFE_SWING = 300;
     private final int LIFT_SAFE_BRIDGE = 540;
     private final int LIFT_SAFE_SWING_IN = 600;
     private final int LIFT_SAFE_DELIVERY = 250;
