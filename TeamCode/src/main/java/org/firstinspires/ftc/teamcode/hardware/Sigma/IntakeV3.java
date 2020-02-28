@@ -44,7 +44,7 @@ public class IntakeV3 extends Logger<IntakeV3> implements Configurable {
 
     private final double FRONT_GATE_OPEN = 0.95;
     private final double FRONT_GATE_INIT = FRONT_GATE_OPEN;
-    private final double FRONT_GATE_CLOSE = 0.3;
+    private final double FRONT_GATE_CLOSE = 0.26;
     private final double FRONT_GATE_PUSH = 0.04;
 
     private boolean isGateOpen = true;

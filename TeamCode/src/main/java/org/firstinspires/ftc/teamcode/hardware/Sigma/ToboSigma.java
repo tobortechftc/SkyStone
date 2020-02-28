@@ -324,6 +324,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                         // intake.gateServoOpen();
                         chassis.setDefaultScale(chassis.DEFAULT_SLOW_SCALE);
                         // intake.intakeIn(!source.isPressed(Button.BACK));
+                        stoneGrabber.backGateClose();
                         intake.inTakeInCombo();
                     }
                 }
@@ -404,6 +405,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (source.isPressed((Button.DPAD_UP))) {
+                    stoneGrabber.backGateOpen();
                     intake.gateServoPush();
                 } else if (source.isPressed(Button.LEFT_BUMPER)) {
                     stoneGrabber.armInCombo(!source.isPressed(Button.BACK), false);
@@ -573,7 +575,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (source.isPressed(Button.RIGHT_BUMPER)) {
-                    stoneGrabber.grabCapStoneCombo();
+                    //stoneGrabber.grabCapStoneCombo();
+                    stoneGrabber.grabberReleaseCapstone();
                 }
             }
         }, new Button[]{Button.DPAD_UP});

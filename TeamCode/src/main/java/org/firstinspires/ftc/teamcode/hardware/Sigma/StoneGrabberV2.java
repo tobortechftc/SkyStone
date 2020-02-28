@@ -49,10 +49,11 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
 
     private final double ARM_LOW = 0.71+ARM_OFFSET;
 
-    private final double ARM_OUT_INIT = 0.90+ARM_OFFSET;
-    private final double ARM_OUT = 0.94+ARM_OFFSET;
-    private final double ARM_OUT_MORE = 0.97+ARM_OFFSET;
-    private final double ARM_OUT_AUTO = 0.94+ARM_OFFSET; private final double ARM_DELIVER_LOW = 0.8+ARM_OFFSET;
+    private final double ARM_OUT_INIT = 0.80+ARM_OFFSET;
+    private final double ARM_OUT = 0.84+ARM_OFFSET;
+    private final double ARM_OUT_MORE = 0.92+ARM_OFFSET;
+    private final double ARM_OUT_AUTO = 0.84f+ARM_OFFSET;
+    private final double ARM_DELIVER_LOW = 0.8+ARM_OFFSET;
     private final double ARM_DELIVER = 0.94+ARM_OFFSET;
     private final double ARM_DELIVER_HIGHER = 0.97+ARM_OFFSET;
     private final double ARM_DELIVER_THROW = 0.98+ARM_OFFSET;
@@ -69,10 +70,12 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     private final double GRABBER_INIT = GRABBER_VERTICAL;
     private final double GRABBER_OPEN = 0.616;
     private final double GRABBER_OPEN_AUTO = 0.75;
+    private final double GRABBER_RELEASE_CAPSTONE = 0.99;
 
-    private final double BACK_GATE_CLOSE = 0.98;
-    private final double BACK_GATE_OPEN = 0.11;
-    private final double BACK_GATE_PARALLEL = 0.61;
+    private final double BACK_GATE_UP = 0.01;
+    private final double BACK_GATE_CLOSE = 0.5;
+    private final double BACK_GATE_OPEN = 0.86;
+    private final double BACK_GATE_PARALLEL = 0.4;
 
     private final int LIFT_THRESHOLD = 15;
     private final int LIFT_RUN_TO_POSITION_OFFSET = 100;  // V5.3, new control for goBilda 5205 motor
@@ -354,13 +357,19 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
         else
             grabberOpen();
     }
+    public void grabberReleaseCapstone () {
+        if (grabber==null) return;
+        grabber.setPosition(GRABBER_RELEASE_CAPSTONE);
+        isGrabberOpened = true;
+    }
+
 
     public Progress moveGrabberPos(double target) {
         isGrabberOpened = (target>GRABBER_VERTICAL+0.05);
         double adjustment = Math.abs(grabber.getPosition() - target);
         debug("moveGrabber(): target=%.2f, adjustment=%.2f", target, adjustment);
         // entire move from up to down takes 1 seconds
-        final long doneBy = System.currentTimeMillis() + Math.round(500 * adjustment);
+        final long doneBy = System.currentTimeMillis() + Math.round(700 * adjustment);
         grabber.setPosition(target);
         return new Progress() {
             @Override
@@ -688,6 +697,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
             TaskManager.add(new Task() {
                 @Override
                 public Progress start() {
+                    backGateOpen();
                     return moveArm(ARM_DOWN_SAFE);
                 }
             }, taskName);
@@ -854,15 +864,10 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
+                backGateOpen();
                 return moveGrabber(true);
             }
         }, taskName);
-            TaskManager.add(new Task() {
-                @Override
-                public Progress start() {
-                    return moveGrabber(true);
-                }
-            }, taskName);
 
         if (leftLifter.getCurrentPosition()<LIFT_SAFE_SWING) {
             if (isAuto) {
@@ -1177,6 +1182,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
             TaskManager.add(new Task() {
                 @Override
                 public Progress start() {
+                    backGateOpen();
                     return moveGrabberPos(GRABBER_VERTICAL);
                 }
             }, taskName);
