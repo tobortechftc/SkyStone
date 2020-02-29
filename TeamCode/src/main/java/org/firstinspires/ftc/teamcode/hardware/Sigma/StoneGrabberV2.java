@@ -50,9 +50,9 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     private final double ARM_LOW = 0.71+ARM_OFFSET;
 
     private final double ARM_OUT_INIT = 0.80+ARM_OFFSET;
-    private final double ARM_OUT = 0.84+ARM_OFFSET;
+    private final double ARM_OUT = 0.82+ARM_OFFSET;
     private final double ARM_OUT_MORE = 0.92+ARM_OFFSET;
-    private final double ARM_OUT_AUTO = 0.84f+ARM_OFFSET;
+    private final double ARM_OUT_AUTO = 0.82+ARM_OFFSET;
     private final double ARM_DELIVER_LOW = 0.8+ARM_OFFSET;
     private final double ARM_DELIVER = 0.94+ARM_OFFSET;
     private final double ARM_DELIVER_HIGHER = 0.97+ARM_OFFSET;
@@ -65,11 +65,11 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     private final double GATE_INC_UNIT = 0.01;
 
     private final double GRABBER_CLOSE = 0.27;
-    private final double GRABBER_OPEN_IN = 0.5;
+    private final double GRABBER_OPEN_IN = 0.48;
     private final double GRABBER_VERTICAL = 0.451;
     private final double GRABBER_INIT = GRABBER_VERTICAL;
-    private final double GRABBER_OPEN = 0.616;
-    private final double GRABBER_OPEN_AUTO = 0.75;
+    private final double GRABBER_OPEN = 0.5;
+    private final double GRABBER_OPEN_AUTO = 0.5;
     private final double GRABBER_RELEASE_CAPSTONE = 0.99;
 
     private final double BACK_GATE_UP = 0.01;

@@ -130,7 +130,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         return isTankDrive;
     }
 
-    public void  enableImuTelemetry(){
+    public void enableImuTelemetry() {
         setImuTelemetry = true;
     }
 
@@ -646,7 +646,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                 debug("driveStraight(): target=%+.2f, sensor=%+.2f, adjustment=%+.2f)",
                         targetHeading, sensorHeading, headingDeviation);
                 if (Math.abs(headingDeviation) > .5) {
-                    servoCorrection = headingDeviation/3 ;
+                    servoCorrection = headingDeviation / 3;
                     applyServoCorrection(octant, servoCorrection);
 
                 } else {
@@ -1425,10 +1425,14 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     }
 
     public void rotateTo(double power, double finalHeading, int timeout) throws InterruptedException {
+        rotateTo(power, finalHeading, timeout, false);
+    }
+
+    public void rotateTo(double power, double finalHeading, int timeout, boolean fixedPower) throws InterruptedException {
         if (Thread.interrupted()) return;
         if (power <= chassisAligmentPower) {//was 0.3
             rawRotateTo(power, finalHeading, false, timeout);//was power
-            if (power>chassisAligmentPower)
+            if (power > chassisAligmentPower)
                 rawRotateTo(chassisAligmentPower, finalHeading, false, timeout);
             return;
         }
@@ -1443,6 +1447,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         } else {
             direction = +1;//rotating cw
         }
+        double lowPowerDegree = 8 + (power - 0.3) * 70;
         //break on reaching the target
         for (WheelAssembly wheel : wheels)
             wheel.motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -1456,9 +1461,10 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         double currentAbsDiff;
         boolean lowerPowerApplied = false;
         long iniTime = System.currentTimeMillis();
-        int loop=0;
+        int loop = 0;
         while (true) {
             currentHeading = orientationSensor.getHeading();
+//            info("RotateTo-%.1f, heading =%.3f, pw=%.2f(%s)", finalHeading,currentHeading,power,(lowerPowerApplied?"low":"hi"));
             crossProduct = cross(-currentHeading, -finalHeading);
             //break if target reached or exceeded
             if (direction == -1) {//rotating ccw
@@ -1467,7 +1473,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                 if (crossProduct >= 0) break;
             }
             currentAbsDiff = abs(finalHeading - currentHeading) > 180 ? 360 - abs(finalHeading - currentHeading) : abs(finalHeading - currentHeading);
-            if (!lowerPowerApplied && currentAbsDiff / iniAbsDiff < 0.40) {//damp power to 0.22 if in last 40%
+            if (!fixedPower && !lowerPowerApplied && currentAbsDiff <= lowPowerDegree) {//damp power to 0.22 if in last 40%, (currentAbsDiff / iniAbsDiff < 0.40)
                 rotate(0.0);
                 sleep(100);
                 rotate(direction * chassisAligmentPower);
@@ -1482,11 +1488,17 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         }
         for (WheelAssembly wheel : wheels)
             wheel.motor.setPower(0);
+        if (fixedPower) {
+            driveMode = DriveMode.STOP;
+            useScalePower = true;
+            return;
+        }
+        sleep(100);
         //**************Check for overshoot and correction**************
-//        currentHeading = orientationSensor.getHeading();
-//        currentAbsDiff = abs(finalHeading - currentHeading) > 180 ? 360 - abs(finalHeading - currentHeading) : abs(finalHeading - currentHeading);
-//        if (currentAbsDiff > 1.0)
-//            rawRotateTo(0.20, finalHeading, false, timeout);
+        currentHeading = orientationSensor.getHeading();
+        currentAbsDiff = abs(finalHeading - currentHeading) > 180 ? 360 - abs(finalHeading - currentHeading) : abs(finalHeading - currentHeading);
+        if (currentAbsDiff > 2.0)
+            rawRotateTo(0.25, finalHeading, false, 500);
         //**************End correction**************
         driveMode = DriveMode.STOP;
         useScalePower = true;
@@ -1794,7 +1806,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                     }
                 });
             }
-            if (FLDistance!=null) {
+            if (FLDistance != null) {
                 line.addData("FL-dist = ", "%.1f", new Func<Double>() {
                     @Override
                     public Double value() {
@@ -1802,7 +1814,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                     }
                 });
             }
-            if (FRDistance!=null) {
+            if (FRDistance != null) {
                 line.addData("FR-dist = ", "%.1f", new Func<Double>() {
                     @Override
                     public Double value() {
@@ -1914,45 +1926,43 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             if (motor != null) motor.setDirection(direction);
         }
     }
-    public double getDistanceColor(DistanceSensor sen) {
-       double dist = sen.getDistance(DistanceUnit.CM);
-       if (dist==(double)(Double.MAX_VALUE) || dist>128.0 || dist<=0.0 || dist==(double)distanceOutOfRange || dist==(double)(DistanceUnit.infinity))
-           dist=1024.0;
-       else if (Double.isNaN(dist))
-           dist=1024.0;
 
-       return dist;
+    public double getDistanceColor(DistanceSensor sen) {
+        double dist = sen.getDistance(DistanceUnit.CM);
+        if (dist == (double) (Double.MAX_VALUE) || dist > 128.0 || dist <= 0.0 || dist == (double) distanceOutOfRange || dist == (double) (DistanceUnit.infinity))
+            dist = 1024.0;
+        else if (Double.isNaN(dist))
+            dist = 1024.0;
+
+        return dist;
     }
 
-    public ToboSigma.SkystoneLocation getSkystonePositionColor(boolean redSide)
-    {
+    public ToboSigma.SkystoneLocation getSkystonePositionColor(boolean redSide) {
         double distL = getDistanceColor(FLDistance);
         double distR = getDistanceColor(FRDistance);
 
-        if(!redSide) // blue side
+        if (!redSide) // blue side
         {
             if (Math.abs(distL - distR) <= 10)
                 return ToboSigma.SkystoneLocation.LEFT;
-            else if (Math.max(distL, distR) >= Math.min(distL, distR)*1.5)
+            else if (Math.max(distL, distR) >= Math.min(distL, distR) * 1.5)
                 return Math.max(distL, distR) == distL ? ToboSigma.SkystoneLocation.CENTER : ToboSigma.SkystoneLocation.RIGHT;
-        }
-        else // red side
+        } else // red side
         {
             if (Math.abs(distL - distR) <= 10)
                 return ToboSigma.SkystoneLocation.RIGHT;
-            else if (Math.max(distL, distR) >= Math.min(distL, distR)*1.5)
+            else if (Math.max(distL, distR) >= Math.min(distL, distR) * 1.5)
                 return Math.max(distL, distR) == distL ? ToboSigma.SkystoneLocation.LEFT : ToboSigma.SkystoneLocation.CENTER;
         }
         return ToboSigma.SkystoneLocation.UNKNOWN;
     }
 
-    public boolean stoneCollected()
-    {
-        if (FRDistance==null) {
+    public boolean stoneCollected() {
+        if (FRDistance == null) {
             return false;
         }
         double dist = getDistanceColor(FRDistance);
-        if(dist>50)
+        if (dist > 50)
             return false;
         else
             return true;
