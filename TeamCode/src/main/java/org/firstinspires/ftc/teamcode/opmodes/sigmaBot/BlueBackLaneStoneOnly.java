@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmodes.sigmaBot;
 import android.util.Log;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
@@ -12,7 +13,7 @@ import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
 import org.firstinspires.ftc.teamcode.support.tasks.TaskManager;
 
 import java.util.List;
-
+@Disabled
 @Autonomous(name = "Blue Back Lane", group = "Sigma")
 public class BlueBackLaneStoneOnly extends LinearOpMode {
     private ToboSigma.SkystoneLocation StoneLoc;

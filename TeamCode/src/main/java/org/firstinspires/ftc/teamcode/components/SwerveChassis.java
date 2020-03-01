@@ -601,6 +601,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         //octant will determine which wheels to use to adjust heading deviation
         int octant = calculateOctant(distance, heading);
 
+        if (Thread.interrupted()) return;
 
         if (distance < 0) {
             power = -power;
@@ -620,6 +621,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         double[] newServoPositions = new double[4];
         Arrays.fill(newServoPositions, heading);
         changeServoPositions(newServoPositions);
+        if (Thread.interrupted()) return;
 
         //imu initialization
         orientationSensor.enableCorrections(true);
@@ -697,10 +699,10 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             // yield handler
             // this.core.yield();
         }
+        if (Thread.interrupted()) return;
         for (WheelAssembly wheel : wheels) wheel.motor.setPower(0);
         driveMode = DriveMode.STOP;
     }
-
 
     public void driveStraightAutoRunToPosition(double power, double cm, double heading, int timeout) throws InterruptedException {
         driveStraightAutoRunToPosition(power, cm, heading, 0.0, timeout);
@@ -734,6 +736,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                 overshoot = 1.1;
             }
         }
+        if (Thread.interrupted()) return;
         driveStraightAuto(power, cm / overshoot, heading, timeout);
     }
 
@@ -1425,13 +1428,14 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     }
 
     public void rotateTo(double power, double finalHeading, int timeout) throws InterruptedException {
-        rotateTo(power, finalHeading, timeout, false);
+        rotateTo(power, finalHeading, timeout, true,true);
     }
 
-    public void rotateTo(double power, double finalHeading, int timeout, boolean fixedPower) throws InterruptedException {
+    public void rotateTo(double power, double finalHeading, int timeout, boolean changePower, boolean finalCorrection) throws InterruptedException {
         if (Thread.interrupted()) return;
         if (power <= chassisAligmentPower) {//was 0.3
             rawRotateTo(power, finalHeading, false, timeout);//was power
+            if (Thread.interrupted()) return;
             if (power > chassisAligmentPower)
                 rawRotateTo(chassisAligmentPower, finalHeading, false, timeout);
             return;
@@ -1455,6 +1459,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         driveMode = DriveMode.STOP;
         useScalePower = false;
         //power the wheels
+        if (Thread.interrupted()) return;
         rotate(direction * power);
         double currentHeading;
         double crossProduct;
@@ -1473,7 +1478,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                 if (crossProduct >= 0) break;
             }
             currentAbsDiff = abs(finalHeading - currentHeading) > 180 ? 360 - abs(finalHeading - currentHeading) : abs(finalHeading - currentHeading);
-            if (!fixedPower && !lowerPowerApplied && currentAbsDiff <= lowPowerDegree) {//damp power to 0.22 if in last 40%, (currentAbsDiff / iniAbsDiff < 0.40)
+            if (changePower && !lowerPowerApplied && currentAbsDiff <= lowPowerDegree) {//damp power to 0.22 if in last 40%, (currentAbsDiff / iniAbsDiff < 0.40)
                 rotate(0.0);
                 sleep(100);
                 rotate(direction * chassisAligmentPower);
@@ -1488,17 +1493,20 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         }
         for (WheelAssembly wheel : wheels)
             wheel.motor.setPower(0);
-        if (fixedPower) {
+        if (!finalCorrection) {
             driveMode = DriveMode.STOP;
             useScalePower = true;
             return;
         }
+        if (Thread.interrupted()) return;
         sleep(100);
         //**************Check for overshoot and correction**************
         currentHeading = orientationSensor.getHeading();
         currentAbsDiff = abs(finalHeading - currentHeading) > 180 ? 360 - abs(finalHeading - currentHeading) : abs(finalHeading - currentHeading);
-        if (currentAbsDiff > 2.0)
-            rawRotateTo(0.25, finalHeading, false, 500);
+        if ((currentAbsDiff > 2.0) && !Thread.interrupted()) {
+            rawRotateTo(0.22, finalHeading, false, 500);
+        }
+        if (Thread.interrupted()) return;
         //**************End correction**************
         driveMode = DriveMode.STOP;
         useScalePower = true;

@@ -62,11 +62,16 @@ public class RedTwoSSIntake extends LinearOpMode {
                 if (StoneLoc2 != ToboSigma.SkystoneLocation.UNKNOWN) {
                     StoneLoc = StoneLoc2;
                 }
-                robot.wheelIntakeFirstStoneRed(StoneLoc);
+                robot.wheelIntakeFirstStone(StoneLoc,false);
+                if (!opModeIsActive()) return;
                 robot.rotateFoundation(false);
+                if (!opModeIsActive()) return;
                 robot.wheelIntakeSecondStone(2, StoneLoc == ToboSigma.SkystoneLocation.LEFT ? 1 : (StoneLoc == ToboSigma.SkystoneLocation.CENTER ? 2 : 3), false);
+                if (!opModeIsActive()) return;
                 robot.stoneGrabber.lifterDownCombo();
+                if (!opModeIsActive()) return;
                 robot.chassis.driveAuto(0.8,-100,0,3000);
+                if (!opModeIsActive()) return;
             } catch (Exception E) {
                 telemetry.addData("Error in event handler", E.getMessage());
                 handleException(E);

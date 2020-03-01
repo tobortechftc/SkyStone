@@ -62,7 +62,7 @@ public class BlueTwoSSIntake extends LinearOpMode {
                 if (StoneLoc2 != ToboSigma.SkystoneLocation.UNKNOWN) {
                     StoneLoc = StoneLoc2;
                 }
-                robot.wheelIntakeFirstStone(StoneLoc);
+                robot.wheelIntakeFirstStone(StoneLoc,true);
                 robot.rotateFoundation(true);
                 robot.wheelIntakeSecondStone(2, StoneLoc == ToboSigma.SkystoneLocation.LEFT ? 1 : (StoneLoc == ToboSigma.SkystoneLocation.CENTER ? 2 : 3), true);
                 robot.stoneGrabber.lifterDownCombo();

@@ -44,7 +44,7 @@ public class SigmaTeleOpAllOut extends LinearOpMode implements YieldHandler {
             configuration.apply();
             robot.reset(false, true);
             robot.intake.intakeDropDown();
-            robot.stoneGrabber.backGateClose();
+            robot.stoneGrabber.outGateClose();
 
             eventManager1 = new EventManager(gamepad1, true);
             eventManager2 = new EventManager(gamepad2, true);

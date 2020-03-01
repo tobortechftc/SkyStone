@@ -27,7 +27,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     private DcMotor leftLifter;
     private DcMotor rightLifter;
     private AdjustableServo arm;
-    private AdjustableServo backGate;
+    private AdjustableServo outGate;
     private AdjustableServo grabber;
     private AdjustableServo capstoneServo;
     private ElapsedTime SGTimer = new ElapsedTime();
@@ -72,10 +72,10 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     private final double GRABBER_OPEN_AUTO = 0.5;
     private final double GRABBER_RELEASE_CAPSTONE = 0.99;
 
-    private final double BACK_GATE_UP = 0.01;
-    private final double BACK_GATE_CLOSE = 0.5;
-    private final double BACK_GATE_OPEN = 0.86;
-    private final double BACK_GATE_PARALLEL = 0.4;
+    private final double OUT_GATE_UP = 0.01;
+    private final double OUT_GATE_CLOSE = 0.5;
+    private final double OUT_GATE_OPEN = 0.86;
+    private final double OUT_GATE_PARALLEL = 0.4;
 
     private final int LIFT_THRESHOLD = 15;
     private final int LIFT_RUN_TO_POSITION_OFFSET = 50;  // V5.3, new control for goBilda 5205 motor
@@ -109,7 +109,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     private final double CAPSTONE_OUT = 0.6;
 
 
-    private boolean backGateIsOpen = false;
+    private boolean outGateIsOpen = false;
     private boolean armIsDown = false;
     private boolean armIsIn = true;
     private boolean isGrabberOpened = false;
@@ -139,11 +139,11 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     public void reset(boolean Auto, boolean armOut) {
         if (arm != null)
             armInit(armOut);
-        if (backGate !=null) {
+        if (outGate !=null) {
             if (Auto)
-                backGateClose();
+                outGateClose();
             else
-                backGateOpen();
+                outGateOpen();
         }
         if (grabber!=null)
             grabberInit();
@@ -157,11 +157,11 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
         configuration.register(arm);
         // armInit(false);
 
-        backGate = new AdjustableServo(0,1).configureLogging(
-                logTag + ":backGate", logLevel
+        outGate = new AdjustableServo(0,1).configureLogging(
+                logTag + ":outGate", logLevel
         );
-        backGate.configure(configuration.getHardwareMap(), "backGate");
-        configuration.register(backGate);
+        outGate.configure(configuration.getHardwareMap(), "backGate");
+        configuration.register(outGate);
 
         grabber = new AdjustableServo(0,1).configureLogging(
                 logTag + ":grabber", logLevel
@@ -205,21 +205,21 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
         return armIsDown;
     }
 
-    public void backGateOpen(){
-        backGate.setPosition(BACK_GATE_OPEN);
-        backGateIsOpen = true;
+    public void outGateOpen(){
+        outGate.setPosition(OUT_GATE_OPEN);
+        outGateIsOpen = true;
     }
 
-    public void backGateClose(){
-        backGate.setPosition(BACK_GATE_CLOSE);
-        backGateIsOpen = false;
+    public void outGateClose(){
+        outGate.setPosition(OUT_GATE_CLOSE);
+        outGateIsOpen = false;
     }
 
-    public void backGateAuto(){
-        if(backGateIsOpen)
-            backGateClose();
+    public void outGateAuto(){
+        if(outGateIsOpen)
+            outGateClose();
         else
-            backGateOpen();
+            outGateOpen();
     }
 
     public void armInit(boolean armOut) {
@@ -298,26 +298,26 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
 
 
 
-    public void backGateDownInc() {
-        double cur_pos = backGate.getPosition();
+    public void outGateDownInc() {
+        double cur_pos = outGate.getPosition();
         cur_pos -= GATE_INC_UNIT;
         if (cur_pos<0) cur_pos=0;
-        backGate.setPosition(cur_pos);
-        if (cur_pos<=(BACK_GATE_OPEN+0.2))
-            backGateIsOpen = true;
+        outGate.setPosition(cur_pos);
+        if (cur_pos<=(OUT_GATE_OPEN +0.2))
+            outGateIsOpen = true;
         else
-            backGateIsOpen = false;
+            outGateIsOpen = false;
 
     }
-    public void backGateUpInc() {
-        double cur_pos = backGate.getPosition();
+    public void outGateUpInc() {
+        double cur_pos = outGate.getPosition();
         cur_pos += GATE_INC_UNIT;
         if (cur_pos>1) cur_pos=1;
-        backGate.setPosition(cur_pos);
-        if (cur_pos>=(BACK_GATE_CLOSE-0.2))
-            backGateIsOpen = false;
+        outGate.setPosition(cur_pos);
+        if (cur_pos>=(OUT_GATE_CLOSE -0.2))
+            outGateIsOpen = false;
         else
-            backGateIsOpen = true;
+            outGateIsOpen = true;
 
     }
 
@@ -700,7 +700,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
             TaskManager.add(new Task() {
                 @Override
                 public Progress start() {
-                    backGateOpen();
+                    outGateOpen();
                     return moveArm(ARM_DOWN_SAFE);
                 }
             }, taskName);
@@ -867,7 +867,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
-                backGateOpen();
+                outGateOpen();
                 return moveGrabber(true);
             }
         }, taskName);
@@ -1178,7 +1178,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
             TaskManager.add(new Task() {
                 @Override
                 public Progress start() {
-                    backGateOpen();
+                    outGateOpen();
                     return moveGrabberPos(GRABBER_VERTICAL);
                 }
             }, taskName);
@@ -1372,11 +1372,11 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
                 }
             });
         }
-        if (backGate != null) {
-            line.addData("backGate", "pos=%.2f", new Func<Double>() {
+        if (outGate != null) {
+            line.addData("outGate", "pos=%.2f", new Func<Double>() {
                 @Override
                 public Double value() {
-                    return backGate.getPosition();
+                    return outGate.getPosition();
                 }
             });
         }

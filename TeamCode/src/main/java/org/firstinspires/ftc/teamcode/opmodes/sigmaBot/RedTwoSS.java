@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmodes.sigmaBot;
 import android.util.Log;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
@@ -15,6 +16,7 @@ import java.util.List;
 /**
  * Created by 28761 on 6/29/2019.
  */
+@Disabled
 @Autonomous(name = "Red 2SS", group = "Sigma")
 public class RedTwoSS extends LinearOpMode {
     private ToboSigma.SkystoneLocation StoneLoc;

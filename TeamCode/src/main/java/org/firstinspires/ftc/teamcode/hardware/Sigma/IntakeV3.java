@@ -86,7 +86,7 @@ public class IntakeV3 extends Logger<IntakeV3> implements Configurable {
             intakeStop();
 
         if(frontGate != null){
-            gateServoInit();
+            ingateInit();
         }
     }
 
@@ -138,32 +138,32 @@ public class IntakeV3 extends Logger<IntakeV3> implements Configurable {
         }
     }
 
-    public void gateServoInit(){
+    public void ingateInit(){
         frontGate.setPosition(FRONT_GATE_INIT);
         isGateOpen = true;
     }
 
-    public void gateServoOpen(){
+    public void ingateOpen(){
         frontGate.setPosition(FRONT_GATE_OPEN);
         isGateOpen = true;
     }
 
-    public void gateServoPush(){
+    public void ingatePush(){
         frontGate.setPosition(FRONT_GATE_PUSH);
         isGateOpen = false;
     }
 
-    public void gateServoClose(){
+    public void ingateClose(){
         intakeStop();
         frontGate.setPosition(FRONT_GATE_CLOSE);
         isGateOpen = false;
     }
 
-    public void gateServoAuto(){
+    public void ingateAuto(){
         if(isGateOpen)
-            gateServoClose();
+            ingateClose();
         else
-            gateServoOpen();
+            ingateOpen();
     }
 
     public void intakeDropDown(){

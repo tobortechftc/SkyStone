@@ -63,7 +63,7 @@ public class SigmaTeleOp extends LinearOpMode implements YieldHandler {
 
         robot.foundationHook.hookUp();
         robot.stoneGrabber.grabberOpen();
-        robot.stoneGrabber.backGateClose();
+        robot.stoneGrabber.outGateClose();
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             try {
