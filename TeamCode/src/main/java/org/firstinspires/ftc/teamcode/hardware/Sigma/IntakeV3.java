@@ -110,13 +110,13 @@ public class IntakeV3 extends Logger<IntakeV3> implements Configurable {
 
         rightIntakeMotor = configuration.getHardwareMap().tryGet(DcMotor.class, "rightIntakeMotor");
         if (rightIntakeMotor != null) {
-            rightIntakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+            rightIntakeMotor.setDirection(DcMotorSimple.Direction.FORWARD);
             rightIntakeMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
 
         leftIntakeMotor = configuration.getHardwareMap().tryGet(DcMotor.class, "leftIntakeMotor");
         if (leftIntakeMotor != null) {
-            leftIntakeMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+            leftIntakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
             leftIntakeMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         }
 

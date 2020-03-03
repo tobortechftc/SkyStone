@@ -521,12 +521,14 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 } else if (Math.abs(source.getStick(Events.Side.RIGHT, Events.Axis.Y_ONLY)) > 0.2 &&
                         (!source.isPressed(Button.LEFT_BUMPER))) {
                     // left stick with idle right stick rotates robot in place
-                    if (source.getStick(Events.Side.RIGHT, Events.Axis.Y_ONLY) > 0)
-                        stoneGrabber.liftUp(source.isPressed(Button.BACK), source.isPressed(Button.RIGHT_BUMPER));
+                    double ratio = source.getStick(Events.Side.RIGHT, Events.Axis.Y_ONLY);
+                    if ( ratio> 0)
+                        stoneGrabber.liftUp(source.isPressed(Button.BACK), source.isPressed(Button.RIGHT_BUMPER), ratio);
                     else
-                        stoneGrabber.liftDown(source.isPressed(Button.BACK), source.isPressed(Button.RIGHT_BUMPER));
+                        stoneGrabber.liftDown(source.isPressed(Button.BACK), source.isPressed(Button.RIGHT_BUMPER), ratio);
                 } else {
                     stoneGrabber.liftStop();
+                    stoneGrabber.liftHold();
                     if (source.isPressed(Button.LEFT_BUMPER)) {
                         stoneGrabber.liftHold();
                     }

@@ -72,10 +72,10 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     private final double GRABBER_OPEN_AUTO = 0.5;
     private final double GRABBER_RELEASE_CAPSTONE = 0.99;
 
-    private final double OUT_GATE_UP = 0.01;
-    private final double OUT_GATE_CLOSE = 0.5;
-    private final double OUT_GATE_OPEN = 0.86;
-    private final double OUT_GATE_PARALLEL = 0.4;
+    private final double OUT_GATE_UP = 0.001;
+    private final double OUT_GATE_CLOSE = 0.14;
+    private final double OUT_GATE_OPEN = 0.54;
+    private final double OUT_GATE_PARALLEL = 0.001;
 
     private final int LIFT_THRESHOLD = 15;
     private final int LIFT_RUN_TO_POSITION_OFFSET = 50;  // V5.3, new control for goBilda 5205 motor
@@ -86,7 +86,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     private final int LIFT_GRAB = 180;
     private final int LIFT_GRAB_AUTO = 20;
     private final int LIFT_MIN = 0;
-    private final int LIFT_MAX = 3200;
+    private final int LIFT_MAX = 3000;
     private final int LIFT_SAFE_SWING_AUTO = 300;
     private final int LIFT_SAFE_SWING = 300;
     private final int LIFT_SAFE_BRIDGE = 540;
@@ -98,11 +98,11 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     private final int LIFT_UP_FINAL_CAP = 1050;
     //private final double LIFT_POWER = 0.5;   // V5.2
     private final double LIFT_POWER = 1.0;  // V5.3
-    private final double LIFT_POWER_DOWN = 0.8;
-    private final double LIFT_POWER_COMBO = 0.6;
+    private final double LIFT_POWER_DOWN = 0.9;
+    private final double LIFT_POWER_COMBO = 0.9;
     private final double LIFT_POWER_HOLD = 0.3;
     private final double LIFT_POWER_SLOW = 0.6;
-    private final double LIFT_POWER_SLOW_DOWN = 0.3;
+    private final double LIFT_POWER_SLOW_DOWN = 0.5;
     private final int LIFT_DELIVER = 1000;
 
     private final double CAPSTONE_INIT = 0.0;
@@ -463,7 +463,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
 //        leftLifter.setPower(power);
 //    }
 
-    public void liftUp (boolean slow, boolean force)  {
+    public void liftUp (boolean slow, boolean force, double ratio)  {
         if (leftLifter == null || rightLifter == null) return;
         // leftLifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         leftLifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -477,18 +477,19 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
             }
         }
         if (slow || force){
-            leftLifter.setPower(LIFT_POWER_SLOW);
-            rightLifter.setPower(LIFT_POWER_SLOW);
+            leftLifter.setPower(LIFT_POWER_SLOW*Math.abs(ratio));
+            rightLifter.setPower(LIFT_POWER_SLOW*Math.abs(ratio));
         }
         else{
-            leftLifter.setPower(LIFT_POWER);
-            rightLifter.setPower(LIFT_POWER);
+            leftLifter.setPower(LIFT_POWER*Math.abs(ratio));
+            rightLifter.setPower(LIFT_POWER*Math.abs(ratio));
         }
     }
 
-    public void liftDown(boolean slow, boolean force) {
+    public void liftDown(boolean slow, boolean force, double ratio) {
         if (leftLifter ==null || rightLifter == null) return;
-        // leftLifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        //leftLifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        //rightLifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         leftLifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightLifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         if (!force) {
@@ -499,12 +500,12 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
             }
         }
         if (slow || force){
-            leftLifter.setPower(-LIFT_POWER_SLOW_DOWN);
-            rightLifter.setPower(-LIFT_POWER_SLOW_DOWN);
+            leftLifter.setPower(-LIFT_POWER_SLOW_DOWN*Math.abs(ratio));
+            rightLifter.setPower(-LIFT_POWER_SLOW_DOWN*Math.abs(ratio));
         }
         else{
-            leftLifter.setPower(-LIFT_POWER_DOWN);
-            rightLifter.setPower(-LIFT_POWER_DOWN);
+            leftLifter.setPower(-LIFT_POWER_DOWN*Math.abs(ratio));
+            rightLifter.setPower(-LIFT_POWER_DOWN*Math.abs(ratio));
         }
     }
 
@@ -514,7 +515,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
         leftLifter.setPower(0);
         rightLifter.setPower(0);
         //int pos = leftLifter.getCurrentPosition();
-        // liftToPosition(pos, true);
+        //liftToPosition(pos, true);
         // leftLifter.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         // leftLifter.setTargetPosition(pos);
         // leftLifter.setPower(LIFT_POWER_HOLD);
@@ -643,7 +644,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
         else
             armIsDown = false;
         // 3.3ms per degree of rotation
-        final long doneBy = System.currentTimeMillis() + Math.round(adjustment * 600);
+        final long doneBy = System.currentTimeMillis() + Math.round(adjustment * 700);
         return new Progress() {
             @Override
             public boolean isDone() {
