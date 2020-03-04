@@ -237,13 +237,6 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                     }
                     debug("sticksOnly(): straight, pwr: %.2f, head: %.2f", power, heading);
                     chassis.driveAndSteer(power * powerAdjustment(source), heading, true);
-                } else if (Math.abs(source.getStick(Events.Side.LEFT, Events.Axis.Y_ONLY)) > 0.2 && Math.abs(currentY) < 0.1) {
-                    // Orbit mode: right-stickY is small and both right-stickX left-StickY have value
-                    double power = Math.abs(source.getStick(Events.Side.RIGHT, Events.Axis.X_ONLY));
-                    double curvature = Math.abs(source.getStick(Events.Side.LEFT, Events.Axis.Y_ONLY));
-                    power *= power * source.getStick(Events.Side.RIGHT, Events.Axis.X_ONLY); // square power to stick
-                    if (chassis.isReversed()) power *= -1;
-                    // chassis.orbit(power * powerAdjustment(source), curvature);
                 } else {
                     // right stick with left stick operates robot in "car" mode
                     double heading = source.getStick(Events.Side.LEFT, Events.Axis.X_ONLY) * 90;

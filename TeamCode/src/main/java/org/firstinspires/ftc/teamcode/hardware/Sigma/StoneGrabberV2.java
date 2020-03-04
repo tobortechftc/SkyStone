@@ -98,8 +98,8 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     private final int LIFT_UP_FINAL_CAP = 1050;
     //private final double LIFT_POWER = 0.5;   // V5.2
     private final double LIFT_POWER = 1.0;  // V5.3
-    private final double LIFT_POWER_DOWN = 0.9;
-    private final double LIFT_POWER_COMBO = 0.9;
+    private final double LIFT_POWER_DOWN = 1.0;
+    private final double LIFT_POWER_COMBO = 1.0;
     private final double LIFT_POWER_HOLD = 0.3;
     private final double LIFT_POWER_SLOW = 0.6;
     private final double LIFT_POWER_SLOW_DOWN = 0.5;
