@@ -1986,7 +1986,6 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             toTake = a[stoneNum - 2];
         }
         if (Thread.currentThread().isInterrupted()) return;
-        if (Thread.currentThread().isInterrupted()) return;
         intake.intakeDropDown();
         intake.ingateOpen();
         chassis.rotateTo(.22, isBlue ? +90 : -90);

@@ -95,6 +95,8 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     public DistanceSensor backRangeSensor;
     public DistanceSensor leftRangeSensor;
     public DistanceSensor rightRangeSensor;
+    public DistanceSensor leftHiRangeSensor;
+    public DistanceSensor rightHiRangeSensor;
 
     public ColorSensor FRColor;
     public ColorSensor FLColor;
@@ -270,7 +272,8 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             backRangeSensor = configuration.getHardwareMap().get(DistanceSensor.class, "backRange");
             leftRangeSensor = configuration.getHardwareMap().get(DistanceSensor.class, "leftRange");
             rightRangeSensor = configuration.getHardwareMap().get(DistanceSensor.class, "rightRange");
-
+            leftHiRangeSensor = configuration.getHardwareMap().get(DistanceSensor.class, "leftHiRange");
+            rightHiRangeSensor = configuration.getHardwareMap().get(DistanceSensor.class, "rightHiRange");
 
             FRColor = configuration.getHardwareMap().get(ColorSensor.class, "FRColor");
             // FLColor = configuration.getHardwareMap().get(ColorSensor.class, "FLColor");
@@ -310,6 +313,12 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                 break;
             case BACK:
                 rangeSensor = backRangeSensor;
+                break;
+            case RIGHT_HI:
+                rangeSensor = rightHiRangeSensor;
+                break;
+            case LEFT_HI:
+                rangeSensor = leftHiRangeSensor;
                 break;
             default:
                 rangeSensor = null;
@@ -1130,7 +1139,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
 
 
     public enum Direction {
-        FRONT, LEFT, RIGHT, BACK, FRONT_LEFT, FRONT_RIGHT;
+        FRONT, LEFT, RIGHT, BACK, FRONT_LEFT, FRONT_RIGHT, LEFT_HI, RIGHT_HI;
     }
 
     public double getCurHeading() {
@@ -1734,11 +1743,27 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
                     }
                 });
             }
+            if (rightHiRangeSensor != null) {
+                line.addData("rangeRH", "%.1f", new Func<Double>() {
+                    @Override
+                    public Double value() {
+                        return rightHiRangeSensor.getDistance(DistanceUnit.CM);
+                    }
+                });
+            }
             if (leftRangeSensor != null) {
                 line.addData("rangeL", "%.1f", new Func<Double>() {
                     @Override
                     public Double value() {
                         return leftRangeSensor.getDistance(DistanceUnit.CM);
+                    }
+                });
+            }
+            if (leftHiRangeSensor != null) {
+                line.addData("rangeLH", "%.1f", new Func<Double>() {
+                    @Override
+                    public Double value() {
+                        return leftHiRangeSensor.getDistance(DistanceUnit.CM);
                     }
                 });
             }
