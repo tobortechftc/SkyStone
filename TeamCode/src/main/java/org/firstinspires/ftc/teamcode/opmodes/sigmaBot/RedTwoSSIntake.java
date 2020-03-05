@@ -66,7 +66,7 @@ public class RedTwoSSIntake extends LinearOpMode {
                 if (!opModeIsActive()) return;
                 robot.rotateFoundation(false);
                 if (!opModeIsActive()) return;
-                robot.wheelIntakeSecondStone(2, StoneLoc == ToboSigma.SkystoneLocation.LEFT ? 1 : (StoneLoc == ToboSigma.SkystoneLocation.CENTER ? 2 : 3), false);
+                robot.wheelIntakeSecondStone(2, StoneLoc == ToboSigma.SkystoneLocation.LEFT ? 3 : (StoneLoc == ToboSigma.SkystoneLocation.CENTER ? 2 : 1), false);
                 if (!opModeIsActive()) return;
                 robot.stoneGrabber.lifterDownCombo();
                 if (!opModeIsActive()) return;

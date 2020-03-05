@@ -34,7 +34,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     private double waitSec;
 
     private final double ARM_OFFSET = .0; // must > -.04 and < .04)
-    private final double ARM_READY_GRAB = 0.36+ARM_OFFSET;
+    private final double ARM_READY_GRAB = 0.37+ARM_OFFSET;
     private final double ARM_DOWN = 0.52+ARM_OFFSET;  // right position to grab stone inside
     private final double ARM_DOWN_MORE = ARM_DOWN+ARM_OFFSET+0.06;  // right position to grab stone inside
     private final double ARM_DOWN_MORE_CAP = ARM_DOWN+ARM_OFFSET+0.09;  // right position to grab stone inside
@@ -781,6 +781,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
             @Override
             public Progress start() {
                 armDown();
+                grabberOpen();
                 return liftToPosition(LIFT_DOWN, false);
             }
         }, taskName);
@@ -812,6 +813,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
             TaskManager.add(new Task() {
                 @Override
                 public Progress start() {
+                    outGateOpen();
                     return moveArm(ARM_DOWN_SAFE);
                 }
             }, taskName);
@@ -829,7 +831,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
             TaskManager.add(new Task() {
                 @Override
                 public Progress start() {
-                    return moveArm(ARM_OUT_AUTO);
+                    return moveArm(ARM_OUT_MORE);
                 }
             }, taskName);
         }

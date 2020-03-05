@@ -66,7 +66,7 @@ public class BlueTwoSSIntake extends LinearOpMode {
                 robot.rotateFoundation(true);
                 robot.wheelIntakeSecondStone(2, StoneLoc == ToboSigma.SkystoneLocation.LEFT ? 1 : (StoneLoc == ToboSigma.SkystoneLocation.CENTER ? 2 : 3), true);
                 robot.stoneGrabber.lifterDownCombo();
-                robot.chassis.driveAuto(0.9,-100,2,2500);
+                robot.chassis.driveAuto(0.9,-110,2,2500);
                 robot.stoneGrabber.armInCombo(true,true);
             } catch (Exception E) {
                 telemetry.addData("Error in event handler", E.getMessage());
