@@ -70,7 +70,7 @@ public class RedTwoSSIntake extends LinearOpMode {
                 if (!opModeIsActive()) return;
                 robot.stoneGrabber.lifterDownCombo();
                 if (!opModeIsActive()) return;
-                robot.chassis.driveAuto(0.8,-100,0,3000);
+                robot.chassis.driveAuto(0.8,-120,0,3000);
                 if (!opModeIsActive()) return;
             } catch (Exception E) {
                 telemetry.addData("Error in event handler", E.getMessage());

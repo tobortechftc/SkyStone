@@ -1026,7 +1026,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         intake.intakeStop();
         //chassis.rotateTo(.5, 0);
         if (Thread.currentThread().isInterrupted()) return;
-        chassis.driveAuto(.8, 21, 0, 5000);
+        chassis.driveAuto(.8, 19, 0, 5000);//was 21
         if (Thread.currentThread().isInterrupted()) return;
         chassis.rotateTo(.7, isBlue ? 90 : -90, 3000);//facing the building Zone
         if (Thread.currentThread().isInterrupted()) return;
@@ -1035,7 +1035,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         if (ssLoc == SkystoneLocation.LEFT) {
             chassis.driveAuto(.9, isBlue ? 220 : 240, 0, 3000);//going to the foundation
         } else if (ssLoc == SkystoneLocation.CENTER) {
-            chassis.driveAuto(.9, isBlue? 235:210, 0, 3000);//going to the foundation
+            chassis.driveAuto(.9, isBlue? 235 : 200, 0, 3000);//going to the foundation
         } else {
             chassis.driveAuto(.9, isBlue ? 230 : 220, 0, 3000);//going to the foundation
         }
@@ -2004,7 +2004,16 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         chassis.rotateTo(.20, isBlue ? +90 : -90);
 
         if (Thread.currentThread().isInterrupted()) return;
-        chassis.driveAuto(.9, -220, 0, 5000);//drive all the way to the wall
+        if (toTake==6){
+            chassis.driveAuto(.9, -200, 0, 5000);//                          changeeeeeeeeeeeee
+
+        }else if(toTake == 5){
+            chassis.driveAuto(.9, -180, 0, 5000);//                          changeeeeeeeeeeeee
+        }else {
+            chassis.driveAuto(.9, -180, 0, 5000);//                          changeeeeeeeeeeeee
+
+        }
+
         if (Thread.currentThread().isInterrupted()) return;
 //        chassis.driveAuto(.4, -10, 0, 500);
         //bold move
@@ -2013,20 +2022,26 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 //            chassis.driveAuto(.5, -dist + 15, 0, 2000);//adjust distant to back wall
         if (Thread.currentThread().isInterrupted()) return;
         chassis.rotateTo(.22, isBlue ? +90 : -90, 1000);
+        /*
         dist = chassis.getDistance(isBlue ? SwerveChassis.Direction.RIGHT : SwerveChassis.Direction.LEFT);
-
         chassis.driveAuto(.5, dist - 12, isBlue ? +90 : -90, 2000);//adjust distance to stone  was 12
-        if (Thread.currentThread().isInterrupted()) return;
-        sleep(100);
+        */
+
+
         dist = chassis.getDistance(SwerveChassis.Direction.BACK);
         chassis.driveAuto(.5, -dist + 27 + (6 - toTake) * 20.3, 0, 2000);//adjust distant to back wall
 
+        if (Thread.currentThread().isInterrupted()) return;
+        sleep(100);
+
+        dist = chassis.getDistance(isBlue ? SwerveChassis.Direction.LEFT_HI : SwerveChassis.Direction.RIGHT_HI);
+        chassis.driveAuto(.5, isBlue ? 75 -dist : 68 -dist, isBlue ? +90 : -90, 2000);// changeeeeeeeeeeeeeeeeeeeeeeeeedddddddddddd
         if (Thread.currentThread().isInterrupted()) return;
 
         chassis.rotateTo(.5, isBlue ? +45 : -45);
         if (Thread.currentThread().isInterrupted()) return;
         intakeInAuto(true);
-        chassis.driveAuto(.4, isBlue ? -30 : -28, 0, 2000);//suck in the stone
+        chassis.driveAuto(.4, isBlue ? -35 : -33, 0, 2000);//suck in the stone
         //******wait till stone is in
         long iniTime = System.currentTimeMillis();
         while (!chassis.stoneCollected() && (System.currentTimeMillis() - iniTime) < 500) {
@@ -2037,9 +2052,9 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         if (Thread.currentThread().isInterrupted()) return;
         intake.intakeStop();
         //******
-        chassis.driveAuto(.9, isBlue ? 27 : 30, 0, 2000);//was 30
+        chassis.driveAuto(.9, isBlue ? 26 : 37, 0, 2000);//was 30
         if (Thread.currentThread().isInterrupted()) return;
-        chassis.rotateTo(.5, (isBlue ? 90 : -90));//was 90.5
+        chassis.rotateTo(.5, (isBlue ? 90 : -88));//was 90.5
         if (Thread.currentThread().isInterrupted()) return;
 //        dist = chassis.getDistance(isBlue ? SwerveChassis.Direction.LEFT : SwerveChassis.Direction.RIGHT);
 //        chassis.driveAuto(.4, -dist + 56, 90* side, 1000);
@@ -2073,7 +2088,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         stoneGrabber.grabberOpenAuto();//place skystone
         if (Thread.currentThread().isInterrupted()) return;
         sleep(200);
-        chassis.rotateTo(0.22, isBlue ? 90.5 : -88, 500);//fine adjustment
+        //chassis.rotateTo(0.22, isBlue ? 92 : -88, 500);//fine adjustment
         if (Thread.interrupted()) return;
     }
 
