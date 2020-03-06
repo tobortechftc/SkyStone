@@ -5,6 +5,7 @@ import android.util.Log;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.teamcode.components.SwerveChassis;
 import org.firstinspires.ftc.teamcode.hardware.Sigma.ToboSigma;
 import org.firstinspires.ftc.teamcode.support.Logger;
 import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
@@ -62,7 +63,7 @@ public class RedTwoSSIntake extends LinearOpMode {
                 if (StoneLoc2 != ToboSigma.SkystoneLocation.UNKNOWN) {
                     StoneLoc = StoneLoc2;
                 }
-                robot.wheelIntakeFirstStone(StoneLoc,false);
+                robot.wheelIntakeFirstStone(StoneLoc, false);
                 if (!opModeIsActive()) return;
                 robot.rotateFoundation(false);
                 if (!opModeIsActive()) return;
@@ -70,8 +71,11 @@ public class RedTwoSSIntake extends LinearOpMode {
                 if (!opModeIsActive()) return;
                 robot.stoneGrabber.lifterDownCombo();
                 if (!opModeIsActive()) return;
-                robot.chassis.driveAuto(0.8,-120,0,3000);
+                double disToRight = robot.chassis.getDistance(SwerveChassis.Direction.RIGHT_HI);
+                if (disToRight > 70 || disToRight < 50)
+                    robot.chassis.driveAuto(0.4, disToRight - 65, +90, 1000);
                 if (!opModeIsActive()) return;
+                robot.chassis.driveAuto(0.8, -120, 0, 3000);
             } catch (Exception E) {
                 telemetry.addData("Error in event handler", E.getMessage());
                 handleException(E);

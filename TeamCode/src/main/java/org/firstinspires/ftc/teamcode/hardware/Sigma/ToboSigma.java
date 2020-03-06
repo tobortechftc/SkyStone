@@ -1033,11 +1033,11 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         stoneGrabber.grabStoneInsideCombo();
         if (Thread.currentThread().isInterrupted()) return;
         if (ssLoc == SkystoneLocation.LEFT) {
-            chassis.driveAuto(.9, isBlue ? 220 : 240, 0, 3000);//going to the foundation
+            chassis.driveAuto(.9, isBlue ? 220 : 220, 0, 3000);//going to the foundation
         } else if (ssLoc == SkystoneLocation.CENTER) {
             chassis.driveAuto(.9, isBlue? 235 : 200, 0, 3000);//going to the foundation
         } else {
-            chassis.driveAuto(.9, isBlue ? 230 : 220, 0, 3000);//going to the foundation
+            chassis.driveAuto(.9, isBlue ? 230 : 210, 0, 3000);//going to the foundation
         }
         if (Thread.currentThread().isInterrupted()) return;
         chassis.rotateTo(.7, 179.9, 3000, true, false);
@@ -1793,7 +1793,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         //if (Thread.interrupted()) return;
         int side = isBlue ? 1 : -1;
         double dist = Math.min(chassis.getDistance(SwerveChassis.Direction.FRONT_RIGHT), chassis.getDistance(SwerveChassis.Direction.FRONT_LEFT));
-        chassis.driveAuto(0.5, dist + 5, 0, 1000);//isBlue ? 23 : 28
+        chassis.driveAuto(0.4, dist + 5, 0, 1000);//isBlue ? 23 : 28
         foundationHook.hookDown();
         //if (Thread.interrupted()) return;
         chassis.driveStraightSec(0.25, 0.2, false);
@@ -1807,11 +1807,11 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         //stoneGrabber.wristPerpendicular();
         //if (Thread.interrupted()) return;
         chassis.changeStopBehavior(false);
-        chassis.driveStraightSec(-.9, 0.1, true);
+        chassis.driveStraightSec(-.7, 0.05, true);//<======gain momentum
         if (Thread.interrupted()) return;
         stoneGrabber.deliverStoneCombo(true);
 //        chassis.rawRotateTo(.80, 85 * side, true, 2000);
-        chassis.rotateTo(0.9, 100 * side, 1700, false, false); // was 85 and 2000
+        chassis.rotateTo(0.9, 105 * side, 1700, false, false); // was 85 and 2000
         //stoneGrabber.deliverStoneCombo(true);
         if (Thread.interrupted()) return;
         chassis.changeStopBehavior(true);
@@ -2029,13 +2029,13 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
 
         dist = chassis.getDistance(SwerveChassis.Direction.BACK);
-        chassis.driveAuto(.5, -dist + 27 + (6 - toTake) * 20.3, 0, 2000);//adjust distant to back wall
+        chassis.driveAuto(.5, -dist + (isBlue? 27:29) + (6 - toTake) * 20.3, 0, 2000);//adjust distant to back wall
 
         if (Thread.currentThread().isInterrupted()) return;
         sleep(100);
 
         dist = chassis.getDistance(isBlue ? SwerveChassis.Direction.LEFT_HI : SwerveChassis.Direction.RIGHT_HI);
-        chassis.driveAuto(.5, isBlue ? 75 -dist : 68 -dist, isBlue ? +90 : -90, 2000);// changeeeeeeeeeeeeeeeeeeeeeeeeedddddddddddd
+        chassis.driveAuto(.4, isBlue ? 73 -dist : 71 -dist, isBlue ? +90 : -90, 1000);// changeeeeeeeeeeeeeeeeeeeeeeeeedddddddddddd
         if (Thread.currentThread().isInterrupted()) return;
 
         chassis.rotateTo(.5, isBlue ? +45 : -45);
@@ -2052,7 +2052,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         if (Thread.currentThread().isInterrupted()) return;
         intake.intakeStop();
         //******
-        chassis.driveAuto(.9, isBlue ? 26 : 37, 0, 2000);//was 30
+        chassis.driveAuto(.9, isBlue ? 30 : 41, 0, 2000);//was 30
         if (Thread.currentThread().isInterrupted()) return;
         chassis.rotateTo(.5, (isBlue ? 90 : -88));//was 90.5
         if (Thread.currentThread().isInterrupted()) return;
@@ -2088,8 +2088,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         stoneGrabber.grabberOpenAuto();//place skystone
         if (Thread.currentThread().isInterrupted()) return;
         sleep(200);
-        //chassis.rotateTo(0.22, isBlue ? 92 : -88, 500);//fine adjustment
-        if (Thread.interrupted()) return;
+        chassis.rotateTo(0.22, isBlue ? 89 : -91, 500);//fine adjustment
+
     }
 
     public void park2SSwithWall() throws InterruptedException {
