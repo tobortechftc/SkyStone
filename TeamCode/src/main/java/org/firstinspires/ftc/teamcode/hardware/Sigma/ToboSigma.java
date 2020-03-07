@@ -75,6 +75,17 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         }
     }
 
+    public class CDist{
+        double angle;
+        double distance;
+        public double getAngle(){
+            return angle;
+        }
+        public double getDistance(){
+            return distance;
+        }
+    }
+
     public AutoPara autoPara = null;
     public TensorPara tensorPara = null;
 
@@ -2006,28 +2017,32 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     public void align(double distBack, double distLeft, double desiredDistBack, double desiredDistLeft)throws InterruptedException{
         double dx = desiredDistBack -distBack; // vertical
         double dy = desiredDistLeft -distLeft;// horizontal
+        CDist move  = diagonalMove(dx, dy);
+        chassis.driveAuto(.4, move.distance, move.angle, 3000);
+
+    }
+    public CDist diagonalMove(double dx, double dy){
+        CDist move = new CDist();
         int s = 1;
-        telemetry.addLine("dx:" + dx + "  dy:" + dy);
-        telemetry.update();
+        //telemetry.addLine("dx:" + dx + "  dy:" + dy);
+        //telemetry.update();
         //sleep(10000);
         double angle;
         if (dx > 0 && dy > 0){
-            angle = 90 - Math.atan(dx/dy)/Math.PI*180;
+            move.angle = 90 - Math.atan(dx/dy)/Math.PI*180;
         } else if (dx > 0 && dy <= 0){
-            angle = -90 + Math.atan(Math.abs(dx/dy))/Math.PI*180;
+            move.angle = -90 + Math.atan(Math.abs(dx/dy))/Math.PI*180;
         } else if (dx < 0 && dy > 0){
-            angle = -90 + Math.atan(Math.abs(dx/dy))/Math.PI*180;
+            move.angle = -90 + Math.atan(Math.abs(dx/dy))/Math.PI*180;
             s = -1;
         } else {
-            angle = 90 - Math.atan(Math.abs(dx/dy))/Math.PI*180;
+            move.angle = 90 - Math.atan(Math.abs(dx/dy))/Math.PI*180;
             s = -1;
         }
-        double dist = Math.sqrt(dx * dx + dy * dy);
-        telemetry.addLine("pow:" + .4 + "  dist:" + dist * s + "   angle:" + angle);
-        telemetry.update();
-        //sleep(10000);
-        chassis.driveAuto(.4, dist* s, angle, 3000);
-
+        move.distance = Math.sqrt(dx * dx + dy * dy);
+        //telemetry.addLine("pow:" + .4 + "  dist:" + dist * s + "   angle:" + angle);
+        //telemetry.update();
+        return move;
     }
 
     public void wheelIntakeSecondStone(int stoneNum, int ss_pos, boolean isBlue) throws InterruptedException {
