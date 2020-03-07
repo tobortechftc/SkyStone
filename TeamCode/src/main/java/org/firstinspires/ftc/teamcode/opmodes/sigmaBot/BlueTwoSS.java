@@ -76,7 +76,7 @@ public class BlueTwoSS extends LinearOpMode {
                         if (opModeIsActive())
                             robot.getWallStone(isBlue);
                         if ((robot.runtimeAuto.seconds() < 29.0) && opModeIsActive()) {
-                            robot.park2SSwithWall();
+                            robot.park2SSwithWall(true);///???????????????????
                         }
                     } else {
                         boolean place2ndSS = robot.runtimeAuto.seconds() < 17;

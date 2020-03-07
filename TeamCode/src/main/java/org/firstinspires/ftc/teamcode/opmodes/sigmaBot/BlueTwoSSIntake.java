@@ -71,8 +71,10 @@ public class BlueTwoSSIntake extends LinearOpMode {
                 if (!opModeIsActive()) return;
                 robot.stoneGrabber.lifterDownCombo();
                 if (!opModeIsActive()) return;
-                robot.chassis.driveAuto(0.9,-110,2,2500);
-                robot.stoneGrabber.armInCombo(true,true);
+                //robot.chassis.driveAuto(0.9,-110,2,2500);
+                robot.park2SSwithWall(isBlue);
+                if (!opModeIsActive()) return;
+                //robot.stoneGrabber.armInCombo(true,true);
             } catch (Exception E) {
                 telemetry.addData("Error in event handler", E.getMessage());
                 handleException(E);
