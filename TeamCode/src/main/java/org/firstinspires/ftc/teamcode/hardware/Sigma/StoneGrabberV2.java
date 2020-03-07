@@ -41,7 +41,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     private final double ARM_DOWN_SAFE = 0.52+ARM_OFFSET;
     private final double ARM_DOWN_WITH_STONE = 0.51+ARM_OFFSET;
     // private final double ARM_INITIAL = 0.16+ARM_OFFSET;
-    private final double ARM_INITIAL = ARM_READY_GRAB;
+    private final double ARM_INITIAL = ARM_READY_GRAB+0.03;
     private final double ARM_IN = 0.65+ARM_OFFSET;
     private final double ARM_DOWN_FOR_CAP = 0.69+ARM_OFFSET;
     private final double ARM_CAPSTONE = 0.63+ARM_OFFSET;

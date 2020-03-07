@@ -119,6 +119,11 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         return getClass().getSimpleName();
     }
 
+    public double getAutoTimeLeft() {
+        // initially assuming 29.5 second left
+        return (29.5 - runtimeAuto.seconds());
+    }
+
     @Override
     public void configure(Configuration configuration, Telemetry telemetry, AutoTeamColor autoColor) {
         runtime.reset();
@@ -677,6 +682,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
     @MenuEntry(label = "Auto drive straight", group = "Test Chassis")
     public void testStraightSkyStone(EventManager em) {
+        if (Thread.interrupted()) return;
         telemetry.addLine().addData("(BACK) Y/A", "+/- Power(%.2f)", auto_chassis_power).setRetained(true);
         telemetry.addLine().addData("(BACK)(L-BUMP) X/B", "+/- dist(%.2f)", auto_chassis_dist).setRetained(true);
         telemetry.addLine().addData("(BACK) D-UP/DOWN", "+/- heading(%.2f)", auto_chassis_heading).setRetained(true);
@@ -787,6 +793,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
     @MenuEntry(label = "Auto Rotation", group = "Test Chassis")
     public void testRotationSkyStone(EventManager em) {
+        if (Thread.interrupted()) return;
         telemetry.addLine().addData("(BACK) Y/A", "+/- Power(%.2f)", auto_chassis_power).setRetained(true);
         telemetry.addLine().addData("(BACK) X/B", "+/- degree(%.2f)", auto_rotate_degree).setRetained(true);
         chassis.setupTelemetry(telemetry);
@@ -837,6 +844,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
     // @MenuEntry(label = "New Auto Straight", group = "Test Chassis")
     public void testStraightNewSkyStone(EventManager em) {
+        if (Thread.interrupted()) return;
 
         try {
             chassis.tl = telemetry;
@@ -885,6 +893,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
     //@MenuEntry(label = "Drive Straight", group = "Test Chassis")
     public void testStraight(EventManager em) {
+        if (Thread.interrupted()) return;
         telemetry.addLine().addData("(LS)", "Drive").setRetained(true)
                 .addData("Hold [LB]/[RB]", "45 degree").setRetained(true);
         chassis.setupTelemetry(telemetry);
@@ -919,6 +928,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
     // @MenuEntry(label = "Rotate in Place", group = "Test Chassis")
     public void testRotate(EventManager em) {
+        if (Thread.interrupted()) return;
         telemetry.addLine().addData(" < (LS) >", "Power").setRetained(true);
         chassis.setupTelemetry(telemetry);
         em.updateTelemetry(telemetry, 100);
@@ -933,6 +943,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
     @MenuEntry(label = "Crab", group = "Test Chassis")
     public void testCrab(EventManager em) {
+        if (Thread.interrupted()) return;
         telemetry.addLine().addData(" < (LS) >", "Direction").setRetained(true);
         chassis.setupTelemetry(telemetry);
         em.updateTelemetry(telemetry, 100);
@@ -947,6 +958,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
     @MenuEntry(label = "Wheel Intake", group = "Test Chassis")
     public void testWheelIntake(EventManager em) {
+        if (Thread.interrupted()) return;
         telemetry.addLine().addData(" < (LS) >", "Power").setRetained(true);
         chassis.setupTelemetry(telemetry);
         em.updateTelemetry(telemetry, 100);
@@ -1137,6 +1149,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
     @MenuEntry(label = "Wheel Auto Blue", group = "Test Chassis")
     public void testWheelAutoBlue(EventManager em) {
+        if (Thread.interrupted()) return;
         telemetry.addLine().addData(" < (LS) >", "Power").setRetained(true);
         chassis.setupTelemetry(telemetry);
         em.updateTelemetry(telemetry, 100);
