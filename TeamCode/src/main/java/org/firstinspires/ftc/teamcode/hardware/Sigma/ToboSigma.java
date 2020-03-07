@@ -572,7 +572,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                 else if (source.isPressed(Button.LEFT_BUMPER))
                     stoneGrabber.regrabStoneCombo(true);
                 else
-                    stoneGrabber.capstoneServoAuto();
+                    stoneGrabber.parkingServoAuto();
             }
         }, new Button[]{Button.DPAD_RIGHT});
 

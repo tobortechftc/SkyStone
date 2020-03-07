@@ -29,7 +29,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     private AdjustableServo arm;
     private AdjustableServo outGate;
     private AdjustableServo grabber;
-    private AdjustableServo capstoneServo;
+    private AdjustableServo parkingServo;
     private ElapsedTime SGTimer = new ElapsedTime();
     private double waitSec;
 
@@ -105,15 +105,15 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     private final double LIFT_POWER_SLOW_DOWN = 0.5;
     private final int LIFT_DELIVER = 1000;
 
-    private final double CAPSTONE_INIT = 0.0;
-    private final double CAPSTONE_OUT = 0.6;
+    private final double PARKING_INIT = 0.221;
+    private final double PARKING_OUT = 0.876;
 
 
     private boolean outGateIsOpen = false;
     private boolean armIsDown = false;
     private boolean armIsIn = true;
     private boolean isGrabberOpened = false;
-    private boolean isCapstoneServoOut = false;
+    private boolean isParkingServoOut = false;
     private ElapsedTime runtime = new ElapsedTime();
     private int lift_target_pos;
 
@@ -170,12 +170,12 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
         configuration.register(grabber);
         grabberInit();
 
-        capstoneServo = new AdjustableServo(0,1).configureLogging(
-                logTag + ":capstoneServo", logLevel
+        parkingServo = new AdjustableServo(0,1).configureLogging(
+                logTag + ":parkingServo", logLevel
         );
-        capstoneServo.configure(configuration.getHardwareMap(), "capstoneServo");
-        configuration.register(capstoneServo);
-        capstoneServoInit();
+        parkingServo.configure(configuration.getHardwareMap(), "parkingServo");
+        configuration.register(parkingServo);
+        parkingServoInit();
 
         leftLifter = configuration.getHardwareMap().tryGet(DcMotor.class, "leftLifter");
         //if (leftLifter != null) leftLifter.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -405,42 +405,42 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     }
 
     public void capstoneLeftInc() {
-        double cur_pos = capstoneServo.getPosition();
+        double cur_pos = parkingServo.getPosition();
         cur_pos -= GATE_INC_UNIT;
         if (cur_pos<0) cur_pos=0;
-        capstoneServo.setPosition(cur_pos);
-        if (Math.abs(cur_pos-CAPSTONE_OUT)<0.2)
-            isCapstoneServoOut = true;
+        parkingServo.setPosition(cur_pos);
+        if (Math.abs(cur_pos- PARKING_OUT)<0.2)
+            isParkingServoOut = true;
         else
-            isCapstoneServoOut = false;
+            isParkingServoOut = false;
     }
 
     public void capstoneRightInc() {
-        double cur_pos = capstoneServo.getPosition();
+        double cur_pos = parkingServo.getPosition();
         cur_pos += GATE_INC_UNIT;
         if (cur_pos>1) cur_pos=1.0;
-        capstoneServo.setPosition(cur_pos);
-        if (Math.abs(cur_pos-CAPSTONE_OUT)<0.2)
-            isCapstoneServoOut = true;
+        parkingServo.setPosition(cur_pos);
+        if (Math.abs(cur_pos- PARKING_OUT)<0.2)
+            isParkingServoOut = true;
         else
-            isCapstoneServoOut = false;
+            isParkingServoOut = false;
     }
 
-    public void capstoneServoInit() {
-        capstoneServo.setPosition(CAPSTONE_INIT);
-        isCapstoneServoOut = false;
+    public void parkingServoInit() {
+        parkingServo.setPosition(PARKING_INIT);
+        isParkingServoOut = false;
     }
 
-    public void capstoneServoOut(){
-        capstoneServo.setPosition(CAPSTONE_OUT);
-        isCapstoneServoOut = true;
+    public void parkingServoOut(){
+        parkingServo.setPosition(PARKING_OUT);
+        isParkingServoOut = true;
     }
 
-    public void capstoneServoAuto(){
-        if(isCapstoneServoOut)
-            capstoneServoInit();
+    public void parkingServoAuto(){
+        if(isParkingServoOut)
+            parkingServoInit();
         else
-            capstoneServoOut();
+            parkingServoOut();
     }
 
     public void liftResetEncoder() {
@@ -1008,7 +1008,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
             TaskManager.add(new Task() {
                 @Override
                 public Progress start() {
-                    capstoneServoOut();
+                    parkingServoOut();
                     return moveArm(ARM_CAPSTONE);
                 }
             }, taskName);
@@ -1035,7 +1035,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
             TaskManager.add(new Task() {
                 @Override
                 public Progress start() {
-                    capstoneServoInit();
+                    parkingServoInit();
                     return new Progress() {
                         @Override
                         public boolean isDone() {
