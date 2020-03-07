@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
 public class BlueTwoSSIntake extends LinearOpMode {
     private ToboSigma.SkystoneLocation StoneLoc;
 
-    protected static int LOG_LEVEL = Log.INFO;
+    protected static int LOG_LEVEL = Log.WARN; // change to Log.INFO for more messages at log
 
     private Configuration configuration;
     private Logger<Logger> log = new Logger<Logger>().configureLogging(getClass().getSimpleName(), LOG_LEVEL);

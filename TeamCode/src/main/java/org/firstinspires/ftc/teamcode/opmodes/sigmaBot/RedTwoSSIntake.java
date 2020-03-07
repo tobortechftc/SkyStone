@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
 public class RedTwoSSIntake extends LinearOpMode {
     private ToboSigma.SkystoneLocation StoneLoc;
 
-    protected static int LOG_LEVEL = Log.INFO;
+    protected static int LOG_LEVEL = Log.WARN; // change to Log.INFO to show more messages in log
 
     private Configuration configuration;
     private Logger<Logger> log = new Logger<Logger>().configureLogging(getClass().getSimpleName(), LOG_LEVEL);
@@ -73,11 +73,12 @@ public class RedTwoSSIntake extends LinearOpMode {
                 if (!opModeIsActive()) return;
                 robot.stoneGrabber.lifterDownCombo();
                 if (!opModeIsActive()) return;
-                double disToRight = robot.chassis.getDistance(SwerveChassis.Direction.RIGHT_HI);
-                if (disToRight > 70 || disToRight < 50)
-                    robot.chassis.driveAuto(0.4, disToRight - 65, +90, 1000);
-                if (!opModeIsActive()) return;
-                robot.chassis.driveAuto(0.8, -120, 0, 3000);
+                robot.park2SSwithWall(false);
+//                double disToRight = robot.chassis.getDistance(SwerveChassis.Direction.RIGHT_HI);
+//                if (disToRight > 70 || disToRight < 50)
+//                    robot.chassis.driveAuto(0.4, disToRight - 65, +90, 1000);
+//                if (!opModeIsActive()) return;
+//                robot.chassis.driveAuto(0.8, -120, 0, 3000);
             } catch (Exception E) {
                 telemetry.addData("Error in event handler", E.getMessage());
                 handleException(E);
