@@ -324,6 +324,13 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         em.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                stoneGrabber.parkingServoAuto();
+            }
+        }, Button.DPAD_DOWN);
+
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (source.isPressed(Button.A) || source.isPressed(Button.B) || source.isPressed(Button.Y) || source.isPressed(Button.X)) {
                     if (intake != null) intake.intakeStop();
                     return;
@@ -575,6 +582,13 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                     stoneGrabber.parkingServoAuto();
             }
         }, new Button[]{Button.DPAD_RIGHT});
+
+        em2.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                stoneGrabber.parkingServoAuto();
+            }
+        }, new Button[]{Button.DPAD_DOWN});
 
         em2.onButtonDown(new Events.Listener() {
             @Override
