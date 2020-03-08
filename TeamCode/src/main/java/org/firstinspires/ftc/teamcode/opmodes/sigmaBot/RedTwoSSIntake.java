@@ -5,7 +5,6 @@ import android.util.Log;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.teamcode.components.SwerveChassis;
 import org.firstinspires.ftc.teamcode.hardware.Sigma.ToboSigma;
 import org.firstinspires.ftc.teamcode.support.Logger;
 import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
@@ -71,9 +70,9 @@ public class RedTwoSSIntake extends LinearOpMode {
                 if (!opModeIsActive()) return;
                 robot.wheelIntakeSecondStone(2, StoneLoc == ToboSigma.SkystoneLocation.LEFT ? 3 : (StoneLoc == ToboSigma.SkystoneLocation.CENTER ? 2 : 1), false);
                 if (!opModeIsActive()) return;
-                robot.stoneGrabber.lifterDownCombo();
-                if (!opModeIsActive()) return;
-                robot.park2SSwithWall(false);
+//                robot.stoneGrabber.lifterDownCombo();
+//                if (!opModeIsActive()) return;
+                robot.deliverAndPark2SS(false,StoneLoc == ToboSigma.SkystoneLocation.LEFT ? 3 : (StoneLoc == ToboSigma.SkystoneLocation.CENTER ? 2 : 1));
 //                double disToRight = robot.chassis.getDistance(SwerveChassis.Direction.RIGHT_HI);
 //                if (disToRight > 70 || disToRight < 50)
 //                    robot.chassis.driveAuto(0.4, disToRight - 65, +90, 1000);

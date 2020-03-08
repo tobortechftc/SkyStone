@@ -63,16 +63,16 @@ public class BlueTwoSSIntake extends LinearOpMode {
                     StoneLoc = StoneLoc2;
                 }
                 if (!opModeIsActive()) return;
-                robot.wheelIntakeFirstStone(StoneLoc,true);
+                robot.wheelIntakeFirstStone(StoneLoc, true);
                 if (!opModeIsActive()) return;
                 robot.rotateFoundation(true);
                 if (!opModeIsActive()) return;
                 robot.wheelIntakeSecondStone(2, StoneLoc == ToboSigma.SkystoneLocation.LEFT ? 1 : (StoneLoc == ToboSigma.SkystoneLocation.CENTER ? 2 : 3), true);
                 if (!opModeIsActive()) return;
-                robot.stoneGrabber.lifterDownCombo();
-                if (!opModeIsActive()) return;
+//                robot.stoneGrabber.lifterDownCombo();
+//                if (!opModeIsActive()) return;
                 //robot.chassis.driveAuto(0.9,-110,2,2500);
-                robot.park2SSwithWall(isBlue);
+                robot.deliverAndPark2SS(isBlue, StoneLoc == ToboSigma.SkystoneLocation.LEFT ? 1 : (StoneLoc == ToboSigma.SkystoneLocation.CENTER ? 2 : 3));
                 if (!opModeIsActive()) return;
                 //robot.stoneGrabber.armInCombo(true,true);
             } catch (Exception E) {

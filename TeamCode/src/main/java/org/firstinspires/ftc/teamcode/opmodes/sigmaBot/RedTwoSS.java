@@ -6,12 +6,9 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.teamcode.hardware.Sigma.ToboSigma;
 import org.firstinspires.ftc.teamcode.support.Logger;
 import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
-
-import java.util.List;
 
 /**
  * Created by 28761 on 6/29/2019.
@@ -76,7 +73,7 @@ public class RedTwoSS extends LinearOpMode {
                             robot.getWallStone(isBlue);
                         }
                         if (robot.runtimeAuto.seconds() < 29.0) {
-                            robot.park2SSwithWall(false);//?????????
+                            robot.deliverAndPark2SS(false,ss_pos);//?????????
                         }
                     } else {
                         if (opModeIsActive()) {

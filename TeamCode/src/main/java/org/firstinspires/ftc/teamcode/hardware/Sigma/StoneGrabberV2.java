@@ -87,8 +87,8 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     private final int LIFT_GRAB_AUTO = 20;
     private final int LIFT_MIN = 0;
     private final int LIFT_MAX = 3000;
-    private final int LIFT_SAFE_SWING_AUTO = 300;
-    private final int LIFT_SAFE_SWING = 300;
+    private final int LIFT_SAFE_SWING_AUTO = 350;
+    private final int LIFT_SAFE_SWING = 350;
     private final int LIFT_SAFE_BRIDGE = 540;
     private final int LIFT_SAFE_SWING_IN = 600;
     private final int LIFT_SAFE_DELIVERY = 250;
@@ -559,7 +559,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     public Progress liftToPosition(int pos, boolean slow) {
         if (leftLifter ==null || rightLifter == null) return null;
         // if (Math.abs(leftLifter.getCurrentPosition()-pos)<20) return null;
-
+        if (pos<0) pos=0;
         leftLifter.setPower(0);
         rightLifter.setPower(0);
         leftLifter.setTargetPosition(pos);
@@ -655,7 +655,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
         else
             armIsDown = false;
         // 3.3ms per degree of rotation
-        final long doneBy = System.currentTimeMillis() + Math.round(adjustment * 700);
+        final long doneBy = System.currentTimeMillis() + Math.round(adjustment * 800);
         return new Progress() {
             @Override
             public boolean isDone() {
@@ -1326,7 +1326,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
             TaskManager.add(new Task() {
                 @Override
                 public Progress start() {
-                    return liftToPosition(LIFT_SAFE_SWING-400, false);
+                    return liftToPosition(LIFT_SAFE_SWING-350, false);
                 }
             }, taskName);
         TaskManager.add(new Task() {
