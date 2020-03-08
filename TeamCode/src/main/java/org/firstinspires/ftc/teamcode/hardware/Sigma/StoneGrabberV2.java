@@ -147,6 +147,9 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
         }
         if (grabber!=null)
             grabberInit();
+
+        parkingServoInit();
+
     }
 
     public void configure(Configuration configuration, boolean auto) {
@@ -175,7 +178,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
         );
         parkingServo.configure(configuration.getHardwareMap(), "parkingServo");
         configuration.register(parkingServo);
-        parkingServoInit();
+        // parkingServoInit();
 
         leftLifter = configuration.getHardwareMap().tryGet(DcMotor.class, "leftLifter");
         //if (leftLifter != null) leftLifter.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -427,6 +430,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     }
 
     public void parkingServoInit() {
+        if (parkingServo==null) return;
         parkingServo.setPosition(PARKING_INIT);
         isParkingServoOut = false;
     }
