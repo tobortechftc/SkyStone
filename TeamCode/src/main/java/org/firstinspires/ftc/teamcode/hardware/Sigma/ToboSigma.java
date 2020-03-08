@@ -342,7 +342,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                         if (intake != null) intake.intakeDropAuto();
                     } else {
                         // intake.ingateOpen();
-                        chassis.setDefaultScale(chassis.DEFAULT_SLOW_SCALE);
+                        // chassis.setDefaultScale(chassis.DEFAULT_SLOW_SCALE);
+                        chassis.setDefaultScale(0.25);
                         // intake.intakeIn(!source.isPressed(Button.BACK));
                         stoneGrabber.outGateClose();
                         intake.inTakeInCombo();

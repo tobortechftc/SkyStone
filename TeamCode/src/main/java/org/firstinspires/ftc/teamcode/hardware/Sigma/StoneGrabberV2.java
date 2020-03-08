@@ -102,7 +102,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     private final double LIFT_POWER_COMBO = 1.0;
     private final double LIFT_POWER_HOLD = 0.3;
     private final double LIFT_POWER_SLOW = 0.6;
-    private final double LIFT_POWER_SLOW_DOWN = 0.5;
+    private final double LIFT_POWER_SLOW_DOWN = 0.2;
     private final int LIFT_DELIVER = 1000;
 
     private final double PARKING_INIT = 0.221;
