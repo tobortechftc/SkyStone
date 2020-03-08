@@ -500,6 +500,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
             int bufferOffset = (slow?0:100);
             if (leftLifter.getCurrentPosition() < LIFT_MIN + bufferOffset|| rightLifter.getCurrentPosition() < LIFT_MIN + bufferOffset) {
                 liftStop();
+                liftHold();
                 return;
             }
         }
@@ -531,6 +532,12 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
         rightLifter.setPower(0);
         int posL = leftLifter.getCurrentPosition();
         int posR = rightLifter.getCurrentPosition();
+        if (posL<0) {
+            posL=0;
+        }
+        if (posR<0) {
+            posR=0;
+        }
         //int posL = rightLifter.getCurrentPosition();
         // liftToPosition(pos, true);
         leftLifter.setTargetPosition(posL);
