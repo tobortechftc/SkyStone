@@ -96,6 +96,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     private final int LIFT_UP_FOR_CAP = 640;
     private final int LIFT_UP_BEFORE_CAP = 500;
     private final int LIFT_UP_FINAL_CAP = 1050;
+    private final int LIFT_ONE_STONE = 540;
     //private final double LIFT_POWER = 0.5;   // V5.2
     private final double LIFT_POWER = 1.0;  // V5.3
     private final double LIFT_POWER_DOWN = 1.0;
@@ -108,15 +109,20 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     private final double PARKING_INIT = 0.221;
     private final double PARKING_OUT = 0.876;
 
-
     private boolean outGateIsOpen = false;
     private boolean armIsDown = false;
     private boolean armIsIn = true;
     private boolean isGrabberOpened = false;
     private boolean isParkingServoOut = false;
     private ElapsedTime runtime = new ElapsedTime();
+    private int last_stone_release_pos = 0;
     private int lift_target_pos;
 
+    public void record_pos() {
+        if (!armIsIn && isGrabberOpened) {
+            last_stone_release_pos = leftLifter.getCurrentPosition();
+        }
+    }
 
     @Override
     public String getUniqueName() {
@@ -334,8 +340,9 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
         if (grabber==null) return;
         if (armIsIn)
             grabber.setPosition(GRABBER_OPEN_IN);
-        else
+        else {
             grabber.setPosition(GRABBER_OPEN);
+        }
         isGrabberOpened = true;
     }
     public void grabberOpenAuto () {
@@ -360,8 +367,9 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     public void grabberAuto() {
         if (isGrabberOpened)
             grabberClose();
-        else
+        else {
             grabberOpen();
+        }
     }
     public void grabberReleaseCapstone () {
         if (grabber==null) return;
@@ -466,6 +474,20 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
 //        leftLifter.setTargetPosition(pos);
 //        leftLifter.setPower(power);
 //    }
+
+    public void liftUpCombo() {
+        final String taskName = "liftUp Combo";
+        if (!TaskManager.isComplete(taskName)) return;
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                int target_pos = last_stone_release_pos + LIFT_ONE_STONE;
+                if(target_pos > LIFT_MAX)
+                    target_pos = LIFT_MAX;
+                return liftToPosition(target_pos, false);
+            }
+        }, taskName);
+    }
 
     public void liftUp (boolean slow, boolean force, double ratio)  {
         if (leftLifter == null || rightLifter == null) return;
@@ -1379,10 +1401,16 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
                     return arm.getPosition();
                 }
             });
-            line.addData("/armIn", "=%s", new Func<String>() {
+            line.addData("/armIn", "=%s",new Func<String>() {
                 @Override
                 public String value() {
-                    return ((armIsIn?"T":"F"));
+                     return ((armIsIn?"T":"F"));
+                }
+            });
+            line.addData("last-stone-pos", "=%d", new Func<Integer>() {
+                @Override
+                public Integer value() {
+                    return last_stone_release_pos;
                 }
             });
         }

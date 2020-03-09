@@ -495,8 +495,10 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (source.isPressed(Button.LEFT_BUMPER))
                     stoneGrabber.armInCombo(!source.isPressed(Button.BACK), false);
-                else
+                else {
                     stoneGrabber.grabberAuto();
+                    stoneGrabber.record_pos();
+                }
             }
         }, new Button[]{Button.X});
 
@@ -539,20 +541,21 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
                     } else {
                         stoneGrabber.liftHold();
                     }
-                } else if (Math.abs(source.getStick(Events.Side.RIGHT, Events.Axis.Y_ONLY)) > 0.2 &&
-                        (!source.isPressed(Button.LEFT_BUMPER))) {
+                } else if (Math.abs(source.getStick(Events.Side.RIGHT, Events.Axis.Y_ONLY)) > 0.2) {
                     // left stick with idle right stick rotates robot in place
                     double ratio = source.getStick(Events.Side.RIGHT, Events.Axis.Y_ONLY);
-                    if (ratio > 0)
-                        stoneGrabber.liftUp(source.isPressed(Button.BACK), source.isPressed(Button.RIGHT_BUMPER), ratio);
-                    else
+                    if (ratio > 0) {
+                        if (source.isPressed(Button.LEFT_BUMPER)) {
+                            stoneGrabber.liftUpCombo();
+                        } else {
+                            stoneGrabber.liftUp(source.isPressed(Button.BACK), source.isPressed(Button.RIGHT_BUMPER), ratio);
+                        }
+                    } else {
                         stoneGrabber.liftDown(source.isPressed(Button.BACK), source.isPressed(Button.RIGHT_BUMPER), ratio);
+                    }
                 } else {
                     stoneGrabber.liftStop();
                     stoneGrabber.liftHold();
-                    if (source.isPressed(Button.LEFT_BUMPER)) {
-                        stoneGrabber.liftHold();
-                    }
                 }
             }
         }, Events.Axis.BOTH, Events.Side.RIGHT);
