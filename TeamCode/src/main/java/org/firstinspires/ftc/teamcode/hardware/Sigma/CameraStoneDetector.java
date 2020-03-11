@@ -56,7 +56,7 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
     private static final String VUFORIA_KEY = "AS0FKrL/////AAABmTcBCNs1gE8uh4tntGA7HSgXRT5npDQpV2pw5tlqbZCI6WJQRf0bKf458A218bGkQJCWkJzvJy6UtNnhziraRVDDZSnTSZGSD7s3WN9jNYqBiSoO3CVE6FU2dX1yuJNa1zfiEhcGT8ChTd+kucE/q3sXsy/nw1KqlW/7uEaEeRwaCPseqsbNrc1HZ1bi18PzwQpCaypDruqqVEyZ3dvTqDmjPg7WFBe2kStPR/qTtcLSXdE804RxxkgTGUtDMIG7TTbAdirInGVZw2p2APZKAQdYofYW2E0Ss5hZCeL55zflSuQK0QcW1sAyvaTUMd/fDse4FgqxhnfK0ip0Kc+ZqZ6XJpof/Nowwxv3IgDWZJzO";
     private VuforiaLocalizer vuforia;
     private TFObjectDetector tfod;
-    private double stoneYpos = 390;
+    private double stoneYpos = 250;//390
 
     //    private CameraSystem camSys;
     private String lastError;
@@ -221,7 +221,7 @@ public class CameraStoneDetector extends Logger<CameraStoneDetector> implements 
 //            e.printStackTrace();
 //        }
         tl.addData("stoneYpos", stoneYpos);
-        for (int i = 0; i < width; i++) {
+        for (int i = 34; i < width-34; i++) {
             int color = bitmap.getPixel(i, (int) stoneYpos);//was fixed at 280
 //            int R = (int) (((color >> 11) & 0x1F) * 255.0 / 31.0 + 0.5);
 //            int G = (int) (((color >> 5) & 0x3F) * 255.0 / 63.0 + 0.5);

@@ -1082,11 +1082,11 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         intake.ingateOpen();
         if (Thread.currentThread().isInterrupted()) return;
         if (ssLoc == SkystoneLocation.LEFT) {
-            chassis.driveAuto(.6, isBlue ? -75 : -73, -12, 5000);//going to a stone
+            chassis.driveAuto(.6, isBlue ? -74 : -74, -12, 5000);//going to a stone
         } else if (ssLoc == SkystoneLocation.RIGHT) {
-            chassis.driveAuto(.6, isBlue ? -71.5 : -69, -4, 5000);//going to a stone
+            chassis.driveAuto(.6, isBlue ? -70.5 : -70, -4, 5000);//going to a stone
         } else {
-            chassis.driveAuto(.6, isBlue ? -71.5 : -70, 4, 5000);//going to a stone
+            chassis.driveAuto(.6, isBlue ? -70.5 : -71, 4, 5000);//going to a stone
         }
         if (Thread.currentThread().isInterrupted()) return;
         //chassis.driveAuto(.6, 45, 90, 5000);
@@ -1116,11 +1116,11 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         stoneGrabber.grabStoneInsideCombo();
         if (Thread.currentThread().isInterrupted()) return;
         if (ssLoc == SkystoneLocation.LEFT) {
-            chassis.driveAuto(.9, isBlue ? 220 : 220, 0, 3000);//going to the foundation
+            chassis.driveAuto(.95, isBlue ? 220 : 220, 0, 3000);//going to the foundation
         } else if (ssLoc == SkystoneLocation.CENTER) {
-            chassis.driveAuto(.9, isBlue ? 235 : 200, 0, 3000);//going to the foundation
+            chassis.driveAuto(.95, isBlue ? 235 : 200, 0, 3000);//going to the foundation
         } else {
-            chassis.driveAuto(.9, isBlue ? 230 : 210, 0, 3000);//going to the foundation
+            chassis.driveAuto(.95, isBlue ? 230 : 210, 0, 3000);//going to the foundation
         }
         if (Thread.currentThread().isInterrupted()) return;
         chassis.rotateTo(.7, 179.9, 3000, true, false);
@@ -2057,8 +2057,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         if (Thread.currentThread().isInterrupted()) return;
         double dx = desiredDistBack - distBack; // vertical
         double dy = desiredDistLeft - distLeft;// horizontal
-        telemetry.addLine("ddb: " + desiredDistBack + "db" + distBack + "ddl" + desiredDistLeft + "dl" + distLeft);
-        telemetry.update();
+//        telemetry.addLine("ddb: " + desiredDistBack + "db" + distBack + "ddl" + desiredDistLeft + "dl" + distLeft);
+//        telemetry.update();
         //sleep(7000);
         if (Thread.currentThread().isInterrupted()) return;
         CDist move = diagonalMove(dx, dy);
@@ -2112,7 +2112,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         intake.ingateOpen();
         chassis.rotateTo(.22, isBlue ? +90 : -90);
         if (Thread.currentThread().isInterrupted()) return;
-        double dist = chassis.getDistance(isBlue ? SwerveChassis.Direction.LEFT : SwerveChassis.Direction.RIGHT);
+        double dist = chassis.getDistance(isBlue ? SwerveChassis.Direction.LEFT_HI : SwerveChassis.Direction.RIGHT_HI);
         if (Thread.currentThread().isInterrupted()) return;
         chassis.driveAuto(.6, -dist + (isBlue ? 62 : 58), isBlue ? +90 : -90, 2000);
         if (Thread.currentThread().isInterrupted()) return;
@@ -2128,12 +2128,12 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
 
         if (Thread.currentThread().isInterrupted()) return;
         if (toTake == 6) {
-            chassis.driveAuto(.9, -200, 0, 5000);//                          changeeeeeeeeeeeee
+            chassis.driveAuto(.90, -200, 0, 5000);//                          changeeeeeeeeeeeee
 
         } else if (toTake == 5) {
-            chassis.driveAuto(.9, -180, 0, 5000);//                          changeeeeeeeeeeeee
+            chassis.driveAuto(.90, -190, 0, 5000);//                          changeeeeeeeeeeeee
         } else {
-            chassis.driveAuto(.9, -180, 0, 5000);//                          changeeeeeeeeeeeee
+            chassis.driveAuto(.90, -180, 0, 5000);//                          changeeeeeeeeeeeee
 
         }
 

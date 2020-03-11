@@ -34,32 +34,32 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     private double waitSec;
 
     private final double ARM_OFFSET = .0; // must > -.04 and < .04)
-    private final double ARM_READY_GRAB = 0.37+ARM_OFFSET;
-    private final double ARM_DOWN = 0.52+ARM_OFFSET;  // right position to grab stone inside
-    private final double ARM_DOWN_MORE = ARM_DOWN+ARM_OFFSET+0.06;  // right position to grab stone inside
-    private final double ARM_DOWN_MORE_CAP = ARM_DOWN+ARM_OFFSET+0.09;  // right position to grab stone inside
-    private final double ARM_DOWN_SAFE = 0.52+ARM_OFFSET;
-    private final double ARM_DOWN_WITH_STONE = 0.51+ARM_OFFSET;
+    private final double ARM_READY_GRAB = 0.37 + ARM_OFFSET;
+    private final double ARM_DOWN = 0.52 + ARM_OFFSET;  // right position to grab stone inside
+    private final double ARM_DOWN_MORE = ARM_DOWN + ARM_OFFSET + 0.06;  // right position to grab stone inside
+    private final double ARM_DOWN_MORE_CAP = ARM_DOWN + ARM_OFFSET + 0.09;  // right position to grab stone inside
+    private final double ARM_DOWN_SAFE = 0.52 + ARM_OFFSET;
+    private final double ARM_DOWN_WITH_STONE = 0.51 + ARM_OFFSET;
     // private final double ARM_INITIAL = 0.16+ARM_OFFSET;
-    private final double ARM_INITIAL = ARM_READY_GRAB+0.03;
-    private final double ARM_IN = 0.65+ARM_OFFSET;
-    private final double ARM_DOWN_FOR_CAP = 0.69+ARM_OFFSET;
-    private final double ARM_CAPSTONE = 0.63+ARM_OFFSET;
-    private final double ARM_CAPSTONE_MORE = 0.4+ARM_OFFSET;
+    private final double ARM_INITIAL = ARM_READY_GRAB + 0.03;
+    private final double ARM_IN = 0.65 + ARM_OFFSET;
+    private final double ARM_DOWN_FOR_CAP = 0.69 + ARM_OFFSET;
+    private final double ARM_CAPSTONE = 0.63 + ARM_OFFSET;
+    private final double ARM_CAPSTONE_MORE = 0.4 + ARM_OFFSET;
 
-    private final double ARM_LOW = 0.71+ARM_OFFSET;
+    private final double ARM_LOW = 0.71 + ARM_OFFSET;
 
-    private final double ARM_OUT_INIT = 0.80+ARM_OFFSET;
-    private final double ARM_OUT = 0.82+ARM_OFFSET;
-    private final double ARM_OUT_MORE = 0.92+ARM_OFFSET;
-    private final double ARM_OUT_AUTO = 0.82+ARM_OFFSET;
-    private final double ARM_DELIVER_LOW = 0.8+ARM_OFFSET;
-    private final double ARM_DELIVER = 0.94+ARM_OFFSET;
-    private final double ARM_DELIVER_HIGHER = 0.97+ARM_OFFSET;
-    private final double ARM_DELIVER_THROW = 0.98+ARM_OFFSET;
-    private final double ARM_UP = 0.98+ARM_OFFSET;
-    private final double ARM_MAX = 0.985+ARM_OFFSET;
-    private final double ARM_MIN = 0.3+ARM_OFFSET;
+    private final double ARM_OUT_INIT = 0.80 + ARM_OFFSET;
+    private final double ARM_OUT = 0.82 + ARM_OFFSET;
+    private final double ARM_OUT_MORE = 0.92 + ARM_OFFSET;
+    private final double ARM_OUT_AUTO = 0.82 + ARM_OFFSET;
+    private final double ARM_DELIVER_LOW = 0.8 + ARM_OFFSET;
+    private final double ARM_DELIVER = 0.94 + ARM_OFFSET;
+    private final double ARM_DELIVER_HIGHER = 0.97 + ARM_OFFSET;
+    private final double ARM_DELIVER_THROW = 0.98 + ARM_OFFSET;
+    private final double ARM_UP = 0.98 + ARM_OFFSET;
+    private final double ARM_MAX = 0.985 + ARM_OFFSET;
+    private final double ARM_MIN = 0.3 + ARM_OFFSET;
 
     private final double ARM_INC_UNIT = 0.02;
     private final double GATE_INC_UNIT = 0.01;
@@ -145,13 +145,13 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     public void reset(boolean Auto, boolean armOut) {
         if (arm != null)
             armInit(armOut);
-        if (outGate !=null) {
+        if (outGate != null) {
             if (Auto)
                 outGateClose();
             else
                 outGateOpen();
         }
-        if (grabber!=null)
+        if (grabber != null)
             grabberInit();
 
         parkingServoInit();
@@ -159,27 +159,27 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     }
 
     public void configure(Configuration configuration, boolean auto) {
-        arm = new AdjustableServo(0,1).configureLogging(
+        arm = new AdjustableServo(0, 1).configureLogging(
                 logTag + ":arm", logLevel
         );
         arm.configure(configuration.getHardwareMap(), "arm");
         configuration.register(arm);
         // armInit(false);
 
-        outGate = new AdjustableServo(0,1).configureLogging(
+        outGate = new AdjustableServo(0, 1).configureLogging(
                 logTag + ":outGate", logLevel
         );
         outGate.configure(configuration.getHardwareMap(), "backGate");
         configuration.register(outGate);
 
-        grabber = new AdjustableServo(0,1).configureLogging(
+        grabber = new AdjustableServo(0, 1).configureLogging(
                 logTag + ":grabber", logLevel
         );
         grabber.configure(configuration.getHardwareMap(), "grabber");
         configuration.register(grabber);
         grabberInit();
 
-        parkingServo = new AdjustableServo(0,1).configureLogging(
+        parkingServo = new AdjustableServo(0, 1).configureLogging(
                 logTag + ":parkingServo", logLevel
         );
         parkingServo.configure(configuration.getHardwareMap(), "parkingServo");
@@ -203,7 +203,8 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
             // rightLifter.setDirection(DcMotorSimple.Direction.REVERSE);
             rightLifter.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
             rightLifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            rightLifter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);}
+            rightLifter.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        }
     }
 
     public boolean isArmInside() {
@@ -214,25 +215,25 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
         return armIsDown;
     }
 
-    public void outGateOpen(){
+    public void outGateOpen() {
         outGate.setPosition(OUT_GATE_OPEN);
         outGateIsOpen = true;
     }
 
-    public void outGateClose(){
+    public void outGateClose() {
         outGate.setPosition(OUT_GATE_CLOSE);
         outGateIsOpen = false;
     }
 
-    public void outGateAuto(){
-        if(outGateIsOpen)
+    public void outGateAuto() {
+        if (outGateIsOpen)
             outGateClose();
         else
             outGateOpen();
     }
 
     public void armInit(boolean armOut) {
-        arm.setPosition((armOut?ARM_OUT_INIT:ARM_INITIAL));
+        arm.setPosition((armOut ? ARM_OUT_INIT : ARM_INITIAL));
         armIsDown = false;
         armIsIn = !armOut;
     }
@@ -246,30 +247,30 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     public void armUpInc() {
         double cur_pos = arm.getPosition();
         cur_pos += ARM_INC_UNIT;
-        if (cur_pos>ARM_MAX) cur_pos=ARM_MAX;
+        if (cur_pos > ARM_MAX) cur_pos = ARM_MAX;
         arm.setPosition(cur_pos);
         armIsDown = false;
-        if (cur_pos<ARM_IN)
+        if (cur_pos < ARM_IN)
             armIsIn = true;
         else
             armIsIn = false;
-        if (Math.abs(cur_pos-ARM_DOWN)<0.2)
+        if (Math.abs(cur_pos - ARM_DOWN) < 0.2)
             armIsDown = true;
     }
 
     public void armDownInc(boolean force) {
         double cur_pos = arm.getPosition();
         cur_pos -= ARM_INC_UNIT;
-        if ((cur_pos< ARM_MIN) && !force)
-            cur_pos= ARM_MIN;
-        if (cur_pos<0) cur_pos=0;
+        if ((cur_pos < ARM_MIN) && !force)
+            cur_pos = ARM_MIN;
+        if (cur_pos < 0) cur_pos = 0;
         arm.setPosition(cur_pos);
         armIsDown = false;
-        if (cur_pos>ARM_LOW)
+        if (cur_pos > ARM_LOW)
             armIsIn = false;
         else
             armIsIn = true;
-        if (Math.abs(cur_pos-ARM_DOWN)<0.2)
+        if (Math.abs(cur_pos - ARM_DOWN) < 0.2)
             armIsDown = true;
     }
 
@@ -306,24 +307,24 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     }
 
 
-
     public void outGateDownInc() {
         double cur_pos = outGate.getPosition();
         cur_pos -= GATE_INC_UNIT;
-        if (cur_pos<0) cur_pos=0;
+        if (cur_pos < 0) cur_pos = 0;
         outGate.setPosition(cur_pos);
-        if (cur_pos<=(OUT_GATE_OPEN +0.2))
+        if (cur_pos <= (OUT_GATE_OPEN + 0.2))
             outGateIsOpen = true;
         else
             outGateIsOpen = false;
 
     }
+
     public void outGateUpInc() {
         double cur_pos = outGate.getPosition();
         cur_pos += GATE_INC_UNIT;
-        if (cur_pos>1) cur_pos=1;
+        if (cur_pos > 1) cur_pos = 1;
         outGate.setPosition(cur_pos);
-        if (cur_pos>=(OUT_GATE_CLOSE -0.2))
+        if (cur_pos >= (OUT_GATE_CLOSE - 0.2))
             outGateIsOpen = false;
         else
             outGateIsOpen = true;
@@ -331,13 +332,13 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     }
 
     public void grabberInit() {
-        if (grabber==null) return;
+        if (grabber == null) return;
         grabber.setPosition(GRABBER_INIT);
         isGrabberOpened = true;
     }
 
-    public void grabberOpen () {
-        if (grabber==null) return;
+    public void grabberOpen() {
+        if (grabber == null) return;
         if (armIsIn)
             grabber.setPosition(GRABBER_OPEN_IN);
         else {
@@ -345,21 +346,22 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
         }
         isGrabberOpened = true;
     }
-    public void grabberOpenAuto () {
+
+    public void grabberOpenAuto() {
         grabber.setPosition(GRABBER_OPEN_AUTO);
         isGrabberOpened = true;
     }
 
-    public void grabberReGrab () {
-        if (grabber==null) return;
+    public void grabberReGrab() {
+        if (grabber == null) return;
         grabberOpen();
-        for(int i=0; i<1000; i++) // add some dummy delay
+        for (int i = 0; i < 1000; i++) // add some dummy delay
             grabber.getPosition();
         grabberClose();
     }
 
-    public void grabberClose () {
-        if (grabber==null) return;
+    public void grabberClose() {
+        if (grabber == null) return;
         grabber.setPosition(GRABBER_CLOSE);
         isGrabberOpened = false;
     }
@@ -371,15 +373,16 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
             grabberOpen();
         }
     }
-    public void grabberReleaseCapstone () {
-        if (grabber==null) return;
+
+    public void grabberReleaseCapstone() {
+        if (grabber == null) return;
         grabber.setPosition(GRABBER_RELEASE_CAPSTONE);
         isGrabberOpened = true;
     }
 
 
     public Progress moveGrabberPos(double target) {
-        isGrabberOpened = (target>GRABBER_VERTICAL+0.05);
+        isGrabberOpened = (target > GRABBER_VERTICAL + 0.05);
         double adjustment = Math.abs(grabber.getPosition() - target);
         debug("moveGrabber(): target=%.2f, adjustment=%.2f", target, adjustment);
         // entire move from up to down takes 1 seconds
@@ -396,10 +399,10 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     public Progress moveGrabber(boolean closed) {
         double target = GRABBER_CLOSE;
         if (!closed) {
-           if (armIsIn)
-               target = GRABBER_OPEN_IN;
-           else
-               target = GRABBER_OPEN;
+            if (armIsIn)
+                target = GRABBER_OPEN_IN;
+            else
+                target = GRABBER_OPEN;
         }
         isGrabberOpened = !closed;
         double adjustment = Math.abs(grabber.getPosition() - target);
@@ -418,9 +421,9 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     public void capstoneLeftInc() {
         double cur_pos = parkingServo.getPosition();
         cur_pos -= GATE_INC_UNIT;
-        if (cur_pos<0) cur_pos=0;
+        if (cur_pos < 0) cur_pos = 0;
         parkingServo.setPosition(cur_pos);
-        if (Math.abs(cur_pos- PARKING_OUT)<0.2)
+        if (Math.abs(cur_pos - PARKING_OUT) < 0.2)
             isParkingServoOut = true;
         else
             isParkingServoOut = false;
@@ -429,27 +432,27 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     public void capstoneRightInc() {
         double cur_pos = parkingServo.getPosition();
         cur_pos += GATE_INC_UNIT;
-        if (cur_pos>1) cur_pos=1.0;
+        if (cur_pos > 1) cur_pos = 1.0;
         parkingServo.setPosition(cur_pos);
-        if (Math.abs(cur_pos- PARKING_OUT)<0.2)
+        if (Math.abs(cur_pos - PARKING_OUT) < 0.2)
             isParkingServoOut = true;
         else
             isParkingServoOut = false;
     }
 
     public void parkingServoInit() {
-        if (parkingServo==null) return;
+        if (parkingServo == null) return;
         parkingServo.setPosition(PARKING_INIT);
         isParkingServoOut = false;
     }
 
-    public void parkingServoOut(){
+    public void parkingServoOut() {
         parkingServo.setPosition(PARKING_OUT);
         isParkingServoOut = true;
     }
 
-    public void parkingServoAuto(){
-        if(isParkingServoOut)
+    public void parkingServoAuto() {
+        if (isParkingServoOut)
             parkingServoInit();
         else
             parkingServoOut();
@@ -482,14 +485,14 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
             @Override
             public Progress start() {
                 int target_pos = last_stone_release_pos + LIFT_ONE_STONE;
-                if(target_pos > LIFT_MAX)
+                if (target_pos > LIFT_MAX)
                     target_pos = LIFT_MAX;
                 return liftToPosition(target_pos, false);
             }
         }, taskName);
     }
 
-    public void liftUp (boolean slow, boolean force, double ratio)  {
+    public void liftUp(boolean slow, boolean force, double ratio) {
         if (leftLifter == null || rightLifter == null) return;
         // leftLifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         leftLifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -502,42 +505,40 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
                 return;
             }
         }
-        if (slow || force){
-            leftLifter.setPower(LIFT_POWER_SLOW*Math.abs(ratio));
-            rightLifter.setPower(LIFT_POWER_SLOW*Math.abs(ratio));
-        }
-        else{
-            leftLifter.setPower(LIFT_POWER*Math.abs(ratio));
-            rightLifter.setPower(LIFT_POWER*Math.abs(ratio));
+        if (slow || force) {
+            leftLifter.setPower(LIFT_POWER_SLOW * Math.abs(ratio));
+            rightLifter.setPower(LIFT_POWER_SLOW * Math.abs(ratio));
+        } else {
+            leftLifter.setPower(LIFT_POWER * Math.abs(ratio));
+            rightLifter.setPower(LIFT_POWER * Math.abs(ratio));
         }
     }
 
     public void liftDown(boolean slow, boolean force, double ratio) {
-        if (leftLifter ==null || rightLifter == null) return;
+        if (leftLifter == null || rightLifter == null) return;
         //leftLifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         //rightLifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         leftLifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         rightLifter.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         if (!force) {
-            int bufferOffset = (slow?0:100);
-            if (leftLifter.getCurrentPosition() < LIFT_MIN + bufferOffset|| rightLifter.getCurrentPosition() < LIFT_MIN + bufferOffset) {
+            int bufferOffset = (slow ? 0 : 100);
+            if (leftLifter.getCurrentPosition() < LIFT_MIN + bufferOffset || rightLifter.getCurrentPosition() < LIFT_MIN + bufferOffset) {
                 liftStop();
                 liftHold();
                 return;
             }
         }
-        if (slow || force){
-            leftLifter.setPower(-LIFT_POWER_SLOW_DOWN*Math.abs(ratio));
-            rightLifter.setPower(-LIFT_POWER_SLOW_DOWN*Math.abs(ratio));
-        }
-        else{
-            leftLifter.setPower(-LIFT_POWER_DOWN*Math.abs(ratio));
-            rightLifter.setPower(-LIFT_POWER_DOWN*Math.abs(ratio));
+        if (slow || force) {
+            leftLifter.setPower(-LIFT_POWER_SLOW_DOWN * Math.abs(ratio));
+            rightLifter.setPower(-LIFT_POWER_SLOW_DOWN * Math.abs(ratio));
+        } else {
+            leftLifter.setPower(-LIFT_POWER_DOWN * Math.abs(ratio));
+            rightLifter.setPower(-LIFT_POWER_DOWN * Math.abs(ratio));
         }
     }
 
     public void liftStop() {
-        if (leftLifter ==null || rightLifter == null) return;
+        if (leftLifter == null || rightLifter == null) return;
         // leftLifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         leftLifter.setPower(0);
         rightLifter.setPower(0);
@@ -547,18 +548,19 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
         // leftLifter.setTargetPosition(pos);
         // leftLifter.setPower(LIFT_POWER_HOLD);
     }
+
     public void liftHold() {
-        if (leftLifter ==null || rightLifter == null) return;
+        if (leftLifter == null || rightLifter == null) return;
         // leftLifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         leftLifter.setPower(0);
         rightLifter.setPower(0);
         int posL = leftLifter.getCurrentPosition();
         int posR = rightLifter.getCurrentPosition();
-        if (posL<0) {
-            posL=0;
+        if (posL < 0) {
+            posL = 0;
         }
-        if (posR<0) {
-            posR=0;
+        if (posR < 0) {
+            posR = 0;
         }
         //int posL = rightLifter.getCurrentPosition();
         // liftToPosition(pos, true);
@@ -579,9 +581,9 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     }
 
     public Progress liftToPosition(int pos, boolean slow) {
-        if (leftLifter ==null || rightLifter == null) return null;
+        if (leftLifter == null || rightLifter == null) return null;
         // if (Math.abs(leftLifter.getCurrentPosition()-pos)<20) return null;
-        if (pos<0) pos=0;
+        if (pos < 0) pos = 0;
         leftLifter.setPower(0);
         rightLifter.setPower(0);
         leftLifter.setTargetPosition(pos);
@@ -600,8 +602,8 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
         return new Progress() {
             public boolean isDone() {
                 int lpos = leftLifter.getCurrentPosition();
-                if (Math.abs(leftLifter.getCurrentPosition()-lift_target_pos)<LIFT_RUN_TO_POSITION_OFFSET) {
-                    if (lpos>200) {
+                if (Math.abs(leftLifter.getCurrentPosition() - lift_target_pos) < LIFT_RUN_TO_POSITION_OFFSET) {
+                    if (lpos > 200) {
                         leftLifter.setPower(0);
                         rightLifter.setPower(0);
                         liftHold();
@@ -614,7 +616,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     }
 
     public Progress liftToPositionQuick(int pos, boolean slow) {
-        if (leftLifter ==null || rightLifter == null) return null;
+        if (leftLifter == null || rightLifter == null) return null;
         // if (Math.abs(leftLifter.getCurrentPosition()-pos)<20) return null;
 
         leftLifter.setPower(0);
@@ -627,33 +629,31 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
         rightLifter.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         lift_target_pos = pos;
         //if (Math.abs(leftLifter.getCurrentPosition()-lift_target_pos)<LIFT_THRESHOLD || Math.abs(rightLifter.getCurrentPosition()-lift_target_pos)<LIFT_THRESHOLD){
-        if (Math.abs(leftLifter.getCurrentPosition()-lift_target_pos)<LIFT_THRESHOLD){
+        if (Math.abs(leftLifter.getCurrentPosition() - lift_target_pos) < LIFT_THRESHOLD) {
             leftLifter.setPower(0);// liftStop();
             rightLifter.setPower(0);
-        }
-        else if (leftLifter.getCurrentPosition()<pos){
-            leftLifter.setPower((slow?LIFT_POWER_SLOW:LIFT_POWER_COMBO));
-            rightLifter.setPower((slow?LIFT_POWER_SLOW:LIFT_POWER_COMBO));
-        }
-        else{
-            leftLifter.setPower((slow?-LIFT_POWER_SLOW:-LIFT_POWER_COMBO));
-            rightLifter.setPower((slow?-LIFT_POWER_SLOW:-LIFT_POWER_COMBO));
+        } else if (leftLifter.getCurrentPosition() < pos) {
+            leftLifter.setPower((slow ? LIFT_POWER_SLOW : LIFT_POWER_COMBO));
+            rightLifter.setPower((slow ? LIFT_POWER_SLOW : LIFT_POWER_COMBO));
+        } else {
+            leftLifter.setPower((slow ? -LIFT_POWER_SLOW : -LIFT_POWER_COMBO));
+            rightLifter.setPower((slow ? -LIFT_POWER_SLOW : -LIFT_POWER_COMBO));
         }
         return new Progress() {
             public boolean isDone() {
                 int lpos = leftLifter.getCurrentPosition();
-                if (Math.abs(lpos-lift_target_pos)<LIFT_THRESHOLD) {
+                if (Math.abs(lpos - lift_target_pos) < LIFT_THRESHOLD) {
                     leftLifter.setPower(0);
                     rightLifter.setPower(0);
                     liftHold();
                     return true;
-                } else if ((lpos<lift_target_pos && leftLifter.getPower()<0)||
-                        lpos>lift_target_pos && leftLifter.getPower()>0) { // over shoot
+                } else if ((lpos < lift_target_pos && leftLifter.getPower() < 0) ||
+                        lpos > lift_target_pos && leftLifter.getPower() > 0) { // over shoot
                     leftLifter.setPower(0);
                     rightLifter.setPower(0);
                     liftHold();
                     return true;
-                } else if (lpos>LIFT_MAX-200||lpos<(LIFT_MIN-10)) {
+                } else if (lpos > LIFT_MAX - 200 || lpos < (LIFT_MIN - 10)) {
                     leftLifter.setPower(0);
                     rightLifter.setPower(0);
                     liftHold();
@@ -668,11 +668,11 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     private Progress moveArm(double position) {
         double adjustment = Math.abs(position - arm.getPosition());
         arm.setPosition(position);
-        if (position<=ARM_IN)
-            armIsIn=true;
+        if (position <= ARM_IN)
+            armIsIn = true;
         else
-            armIsIn=false;
-        if (Math.abs(position-ARM_DOWN)<0.2)
+            armIsIn = false;
+        if (Math.abs(position - ARM_DOWN) < 0.2)
             armIsDown = true;
         else
             armIsDown = false;
@@ -704,20 +704,24 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
                 SGTimer.reset();
                 return new Progress() {
                     @Override
-                    public boolean isDone() { return (SGTimer.seconds() >= waitSec); }
+                    public boolean isDone() {
+                        return (SGTimer.seconds() >= waitSec);
+                    }
                 };
             }
         }, taskName);
     }
-    public void armOutCombo(){
+
+    public void armOutCombo() {
         armOutCombo(0, true);
     }
+
     public void armOutCombo(double delaySec, boolean auto) {
         final String taskName = "Arm Out Combo";
         if (!TaskManager.isComplete(taskName)) return;
         boolean grabIsOpened = isGrabberOpened;
         boolean armWasOut = !isArmInside();
-        if (delaySec>0) {
+        if (delaySec > 0) {
             waitSec = delaySec;
             TaskManager.add(new Task() {
                 @Override
@@ -725,7 +729,9 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
                     SGTimer.reset();
                     return new Progress() {
                         @Override
-                        public boolean isDone() { return (SGTimer.seconds() >= waitSec); }
+                        public boolean isDone() {
+                            return (SGTimer.seconds() >= waitSec);
+                        }
                     };
                 }
             }, taskName);
@@ -738,7 +744,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
                     return moveArm(ARM_DOWN_SAFE);
                 }
             }, taskName);
-            if (leftLifter.getCurrentPosition()<LIFT_SAFE_SWING) {
+            if (leftLifter.getCurrentPosition() < LIFT_SAFE_SWING) {
                 TaskManager.add(new Task() {
                     @Override
                     public Progress start() {
@@ -755,7 +761,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
                     return moveArm(ARM_OUT_AUTO);
                 }
             }, taskName);
-        } else if (armWasOut){
+        } else if (armWasOut) {
             TaskManager.add(new Task() {
                 @Override
                 public Progress start() {
@@ -770,7 +776,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
                 }
             }, taskName);
         }
-        if (leftLifter.getCurrentPosition()<=LIFT_SAFE_SWING) {
+        if (leftLifter.getCurrentPosition() <= LIFT_SAFE_SWING) {
             TaskManager.add(new Task() {
                 @Override
                 public Progress start() {
@@ -787,6 +793,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
             }, taskName);
         }
     }
+
     public void armOutReadyGrabAutoCombo() {
         final String taskName = "Arm Out Auto Combo";
         if (!TaskManager.isComplete(taskName)) return;
@@ -797,7 +804,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
                 grabberOpenAuto();
                 return moveArm(ARM_OUT_AUTO);
             }
-            }, taskName);
+        }, taskName);
 
         TaskManager.add(new Task() {
             @Override
@@ -813,8 +820,13 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
+                return moveGrabber(false);
+            }
+        }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
                 armDown();
-                grabberOpen();
                 return liftToPosition(LIFT_DOWN, false);
             }
         }, taskName);
@@ -830,7 +842,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
                 return moveGrabber(true);
             }
         }, taskName);
-        if (delaySec>0) {
+        if (delaySec > 0) {
             waitSec = delaySec;
             TaskManager.add(new Task() {
                 @Override
@@ -838,27 +850,29 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
                     SGTimer.reset();
                     return new Progress() {
                         @Override
-                        public boolean isDone() { return (SGTimer.seconds() >= waitSec); }
+                        public boolean isDone() {
+                            return (SGTimer.seconds() >= waitSec);
+                        }
                     };
                 }
             }, taskName);
         }
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                outGateOpen();
+                return moveArm(ARM_DOWN_SAFE);
+            }
+        }, taskName);
+        if (leftLifter.getCurrentPosition() < LIFT_SAFE_SWING) {
             TaskManager.add(new Task() {
                 @Override
                 public Progress start() {
-                    outGateOpen();
-                    return moveArm(ARM_DOWN_SAFE);
+                    if (isGrabberOpened) grabberClose();
+                    return liftToPosition(LIFT_SAFE_SWING + 300, false);
                 }
             }, taskName);
-            if (leftLifter.getCurrentPosition()<LIFT_SAFE_SWING) {
-                TaskManager.add(new Task() {
-                    @Override
-                    public Progress start() {
-                        if (isGrabberOpened) grabberClose();
-                        return liftToPosition(LIFT_SAFE_SWING+150, false);
-                    }
-                }, taskName);
-            }
+        }
 
         if (auto) {
             TaskManager.add(new Task() {
@@ -869,6 +883,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
             }, taskName);
         }
     }
+
     public void releaseStoneCombo() {
         final String taskName = "Release Stone Combo";
         if (!TaskManager.isComplete(taskName)) return;
@@ -884,12 +899,13 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
 
                 int cur_pos = leftLifter.getCurrentPosition();
                 int target_pos = cur_pos + 300;
-                if(target_pos > LIFT_MAX)
+                if (target_pos > LIFT_MAX)
                     target_pos = LIFT_MAX;
                 return liftToPosition(target_pos, true);
             }
         }, taskName);
     }
+
     public void armInComboAuto(final boolean wristParallel) {
         if (currentThread().isInterrupted()) return;
         armInCombo(wristParallel, true);
@@ -897,6 +913,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
             TaskManager.processTasks();
         }
     }
+
     public void armInCombo(final boolean wristParallel, boolean isAuto) {
         final String taskName = "Arm In Combo";
         if (!TaskManager.isComplete(taskName)) return;
@@ -908,7 +925,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
             }
         }, taskName);
 
-        if (leftLifter.getCurrentPosition()<LIFT_SAFE_SWING) {
+        if (leftLifter.getCurrentPosition() < LIFT_SAFE_SWING) {
             if (isAuto) {
                 TaskManager.add(new Task() {
                     @Override
@@ -941,15 +958,18 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
 
         waitSec = 0.3;
         TaskManager.add(new Task() {
-                @Override
-                public Progress start() {
-                    grabberOpen();
-                    SGTimer.reset();
-                    return new Progress() {
-                        @Override
-                        public boolean isDone() { return (SGTimer.seconds() >= waitSec); }
-                    }; }
-                    }, taskName);
+            @Override
+            public Progress start() {
+                grabberOpen();
+                SGTimer.reset();
+                return new Progress() {
+                    @Override
+                    public boolean isDone() {
+                        return (SGTimer.seconds() >= waitSec);
+                    }
+                };
+            }
+        }, taskName);
 
         TaskManager.add(new Task() {
             @Override
@@ -957,7 +977,9 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
                 grabberClose();
                 return new Progress() {
                     @Override
-                    public boolean isDone() { return true; }
+                    public boolean isDone() {
+                        return true;
+                    }
                 };
             }
         }, taskName);
@@ -970,6 +992,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
             TaskManager.processTasks();
         }
     }
+
     public void grabStoneCombo() { // grab stone from outside used by auto
         final String taskName = "Grab Stone Combo";
         if (!TaskManager.isComplete(taskName)) return;
@@ -994,7 +1017,9 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
                 final Progress grabberProgress = moveGrabber(true);
                 return new Progress() {
                     @Override
-                    public boolean isDone() { return grabberProgress.isDone();}
+                    public boolean isDone() {
+                        return grabberProgress.isDone();
+                    }
                 };
             }
         }, taskName);
@@ -1012,7 +1037,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
     public void grabCapStoneCombo() {
         final String taskName = "Grab Cap Stone Combo";
         if (!TaskManager.isComplete(taskName)) return;
-        boolean isLiftUp = (leftLifter.getCurrentPosition()>=LIFT_GRAB);
+        boolean isLiftUp = (leftLifter.getCurrentPosition() >= LIFT_GRAB);
         if (!isLiftUp) { // stage-1
             TaskManager.add(new Task() {
                 @Override
@@ -1023,7 +1048,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
             TaskManager.add(new Task() {
                 @Override
                 public Progress start() {
-                    return liftToPosition(LIFT_GRAB_READY_CAPSTONE,false);
+                    return liftToPosition(LIFT_GRAB_READY_CAPSTONE, false);
                 }
             }, taskName);
             TaskManager.add(new Task() {
@@ -1059,24 +1084,24 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
             }, taskName);
         }
         // else { // stage-2
-            TaskManager.add(new Task() {
-                @Override
-                public Progress start() {
-                    return liftToPosition(LIFT_UP_FINAL_CAP, true);
-                }
-            }, taskName);
-            TaskManager.add(new Task() {
-                @Override
-                public Progress start() {
-                    parkingServoInit();
-                    return new Progress() {
-                        @Override
-                        public boolean isDone() {
-                            return true;
-                        }
-                    };
-                }
-            }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                return liftToPosition(LIFT_UP_FINAL_CAP, true);
+            }
+        }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                parkingServoInit();
+                return new Progress() {
+                    @Override
+                    public boolean isDone() {
+                        return true;
+                    }
+                };
+            }
+        }, taskName);
         // }
 //        TaskManager.add(new Task() {
 //            @Override
@@ -1218,7 +1243,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
                     return moveGrabberPos(GRABBER_VERTICAL);
                 }
             }, taskName);
-            if (leftLifter.getCurrentPosition()<LIFT_SAFE_SWING) {
+            if (leftLifter.getCurrentPosition() < LIFT_SAFE_SWING) {
                 TaskManager.add(new Task() {
                     @Override
                     public Progress start() {
@@ -1338,19 +1363,19 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
         final String taskName = "Deliver Stone Throw Combo";
         if (!TaskManager.isComplete(taskName)) return;
 
-            TaskManager.add(new Task() {
-                @Override
-                public Progress start() {
-                    return moveArm(ARM_DELIVER);
-                }
-            }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                return moveArm(ARM_DELIVER);
+            }
+        }, taskName);
 
-            TaskManager.add(new Task() {
-                @Override
-                public Progress start() {
-                    return liftToPosition(LIFT_SAFE_SWING-350, false);
-                }
-            }, taskName);
+        TaskManager.add(new Task() {
+            @Override
+            public Progress start() {
+                return liftToPosition(LIFT_SAFE_SWING - 350, false);
+            }
+        }, taskName);
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
@@ -1359,13 +1384,15 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
             }
         }, taskName);
     }
+
     public void lifterDownCombo() {
         lifterDownCombo(0.0);
     }
+
     public void lifterDownCombo(double delaySec) {
         final String taskName = "Lifter Down Combo";
         if (!TaskManager.isComplete(taskName)) return;
-        if (delaySec>0) {
+        if (delaySec > 0) {
             waitSec = delaySec;
             TaskManager.add(new Task() {
                 @Override
@@ -1373,7 +1400,9 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
                     SGTimer.reset();
                     return new Progress() {
                         @Override
-                        public boolean isDone() { return (SGTimer.seconds() >= waitSec); }
+                        public boolean isDone() {
+                            return (SGTimer.seconds() >= waitSec);
+                        }
                     };
                 }
             }, taskName);
@@ -1385,6 +1414,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
             }
         }, taskName);
     }
+
     /*
      * Set up telemetry lines for chassis metrics
      * Shows current motor power, orientation sensors,
@@ -1401,10 +1431,10 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
                     return arm.getPosition();
                 }
             });
-            line.addData("/armIn", "=%s",new Func<String>() {
+            line.addData("/armIn", "=%s", new Func<String>() {
                 @Override
                 public String value() {
-                     return ((armIsIn?"T":"F"));
+                    return ((armIsIn ? "T" : "F"));
                 }
             });
             line.addData("last-stone-pos", "=%d", new Func<Integer>() {
@@ -1448,14 +1478,15 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
         }
 
     }
-    public void grabStoneComboHigher(){
+
+    public void grabStoneComboHigher() {
         final String taskName = "Grab Stone Combo";
         if (!TaskManager.isComplete(taskName)) return;
 
         TaskManager.add(new Task() {
             @Override
             public Progress start() {
-                return liftToPosition(LIFT_DOWN_GRAB,true);
+                return liftToPosition(LIFT_DOWN_GRAB, true);
             }
         }, taskName);
         TaskManager.add(new Task() {
@@ -1470,7 +1501,9 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
                 final Progress grabberProgress = moveGrabber(true);
                 return new Progress() {
                     @Override
-                    public boolean isDone() { return grabberProgress.isDone();}
+                    public boolean isDone() {
+                        return grabberProgress.isDone();
+                    }
                 };
             }
         }, taskName);
@@ -1479,7 +1512,7 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
             public Progress start() {
                 grabberClose();
                 arm.setPosition(ARM_DELIVER_HIGHER);
-                return liftToPosition(LIFT_DOWN+800,false);
+                return liftToPosition(LIFT_DOWN + 800, false);
             }
         }, taskName);
     }
@@ -1491,7 +1524,8 @@ public class StoneGrabberV2 extends Logger<StoneGrabberV2> implements Configurab
             TaskManager.processTasks();
         }
     }
-    public void deliverAndArmIn(){
+
+    public void deliverAndArmIn() {
         deliverStoneCombo(true);
         armInCombo(true, true);
     }
