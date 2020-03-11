@@ -1078,7 +1078,9 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     public void wheelIntakeFirstStone(SkystoneLocation ssLoc, boolean isBlue) throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) return;
         stoneGrabber.armInReadyGrabCombo();
+        if (Thread.currentThread().isInterrupted()) return;
         intake.intakeDropDown();
+        if (Thread.currentThread().isInterrupted()) return;
         intake.ingateOpen();
         if (Thread.currentThread().isInterrupted()) return;
         if (ssLoc == SkystoneLocation.LEFT) {
@@ -1092,6 +1094,7 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         //chassis.driveAuto(.6, 45, 90, 5000);
         intakeInAuto(true);
         //rotate skew to get ready wheel intake
+        if (Thread.currentThread().isInterrupted()) return;
         if (ssLoc == SkystoneLocation.LEFT) {
             chassis.rotateTo(.4, -21, 2000, true, false);
         } else if (ssLoc == SkystoneLocation.CENTER) {
@@ -1101,11 +1104,14 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         }
         if (Thread.currentThread().isInterrupted()) return;
         chassis.driveAuto(.4, -12, 0, 5000);//go take the stone
+        if (Thread.currentThread().isInterrupted()) return;
+
         long iniTime = System.currentTimeMillis();
         while (!chassis.stoneCollected() && (System.currentTimeMillis() - iniTime) < 800) {
             if (Thread.interrupted()) return;
         }
         intake.ingateClose();
+        if (Thread.currentThread().isInterrupted()) return;
         intake.intakeStop();
         //chassis.rotateTo(.5, 0);
         if (Thread.currentThread().isInterrupted()) return;
@@ -2070,9 +2076,9 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
     public CDist diagonalMove(double dx, double dy) throws InterruptedException {
         CDist move = new CDist();
         int s = 1;
-        telemetry.addLine("dx:" + dx + "  dy:" + dy);
-        info("dx:" + dx + "  dy:" + dy);
-        telemetry.update();
+        //telemetry.addLine("dx:" + dx + "  dy:" + dy);
+        //info("dx:" + dx + "  dy:" + dy);
+        //telemetry.update();
         //sleep(5000);
         if (dx > 0 && dy > 0) {
             move.angle = 90 - Math.atan(dx / dy) / Math.PI * 180;

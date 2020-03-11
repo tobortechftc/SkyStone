@@ -621,6 +621,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         driveMode = DriveMode.STRAIGHT;
         int[] startingCount = new int[4];
         for (int i = 0; i < 4; i++) {
+            if (Thread.interrupted()) return;
             wheels[i].motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             wheels[i].motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
             startingCount[i] = wheels[i].motor.getCurrentPosition();
@@ -674,6 +675,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             //determine if target distance is reached
             int maxTraveled = Integer.MIN_VALUE;
             for (int i = 0; i < 4; i++) {
+                if (Thread.interrupted()) return;
                 maxTraveled = Math.abs(Math.max(maxTraveled, wheels[i].motor.getCurrentPosition() - startingCount[i]));
             }
             double traveledPercent = maxTraveled / Math.abs(distance);
@@ -1460,6 +1462,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         } else {
             direction = +1;//rotating cw
         }
+        if (Thread.interrupted()) return;
         double lowPowerDegree = 8 + (power - 0.3) * 70;
         //break on reaching the target
         for (WheelAssembly wheel : wheels)
@@ -1477,6 +1480,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         long iniTime = System.currentTimeMillis();
         int loop = 0;
         while (true) {
+            if (Thread.interrupted()) return;
             currentHeading = orientationSensor.getHeading();
 //            info("RotateTo-%.1f, heading =%.3f, pw=%.2f(%s)", finalHeading,currentHeading,power,(lowerPowerApplied?"low":"hi"));
             crossProduct = cross(-currentHeading, -finalHeading);
@@ -1488,8 +1492,10 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             }
             currentAbsDiff = abs(finalHeading - currentHeading) > 180 ? 360 - abs(finalHeading - currentHeading) : abs(finalHeading - currentHeading);
             if (changePower && !lowerPowerApplied && currentAbsDiff <= lowPowerDegree) {//damp power to 0.22 if in last 40%, (currentAbsDiff / iniAbsDiff < 0.40)
+                if (Thread.interrupted()) return;
                 rotate(0.0);
                 sleep(100);
+                if (Thread.interrupted()) return;
                 rotate(direction * chassisAligmentPower);
                 lowerPowerApplied = true;
             }
@@ -1500,6 +1506,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             TaskManager.processTasks();
             loop++;
         }
+        if (Thread.interrupted()) return;
         for (WheelAssembly wheel : wheels)
             wheel.motor.setPower(0);
         if (!finalCorrection) {
@@ -1542,6 +1549,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             debug("Adjusted finalHeading: %.1f, deltaD: %.1f)", finalHeading, deltaD);
         }
         //break on reaching the target
+        if (Thread.interrupted()) return;
         for (WheelAssembly wheel : wheels)
             wheel.motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         //ensure the condition before calling rotate()
@@ -1554,6 +1562,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
         double lastReading = orientationSensor.getHeading();
         long iniTime = System.currentTimeMillis();
         while (true) {
+            if (Thread.interrupted()) return;
             double currentHeading = orientationSensor.getHeading();
             //we cross the +-180 mark if and only if the product below is a very negative number
             if ((currentHeading * lastReading < -100.0) || (Math.abs(currentHeading - lastReading) > 180.0)) {
@@ -1577,6 +1586,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
             TaskManager.processTasks();
             this.core.yield();
         }
+        if (Thread.interrupted()) return;
         for (WheelAssembly wheel : wheels)
             wheel.motor.setPower(0);
         driveMode = DriveMode.STOP;
@@ -1656,6 +1666,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
      *                     front left, front right, back left, back right
      */
     private void changeServoPositions(double[] newPositions) throws InterruptedException {
+        if (Thread.interrupted()) return;
         double maxServoAdjustment = 0;
         for (int index = 0; index < newPositions.length; index++) {
             double servoAdjustment = Math.abs(newPositions[index] - wheels[index].servo.getPosition());
@@ -1961,6 +1972,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     }
 
     public double getDistanceColor(DistanceSensor sen) {
+        if (Thread.interrupted()) return 0;
         double dist = sen.getDistance(DistanceUnit.CM);
         if (dist == (double) (Double.MAX_VALUE) || dist > 128.0 || dist <= 0.0 || dist == (double) distanceOutOfRange || dist == (double) (DistanceUnit.infinity))
             dist = 1024.0;
@@ -1971,6 +1983,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     }
 
     public ToboSigma.SkystoneLocation getSkystonePositionColor(boolean redSide) {
+        if (Thread.interrupted()) return ToboSigma.SkystoneLocation.UNKNOWN;
         double distL = getDistanceColor(FLDistance);
         double distR = getDistanceColor(FRDistance);
 
@@ -1991,6 +2004,7 @@ public class SwerveChassis extends Logger<SwerveChassis> implements Configurable
     }
 
     public boolean stoneCollected() {
+        if (Thread.interrupted()) return false;
         if (FRDistance == null) {
             return false;
         }

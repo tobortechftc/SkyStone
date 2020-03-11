@@ -12,6 +12,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.teamcode.hardware.Sigma.ToboSigma;
 import org.firstinspires.ftc.teamcode.support.Logger;
 
 import java.util.LinkedHashMap;
@@ -95,6 +96,8 @@ public class CombinedOrientationSensor extends Logger<CombinedOrientationSensor>
      * @see CombinedOrientationSensor#enableCorrections(boolean)
      */
     public double getHeading() {
+        if (Thread.interrupted()) return 0.0d;
+
         if (sensors.isEmpty()) return 0.0d;
 
         double reading1 = hardwareReading(sensors.get("imu"));

@@ -20,7 +20,7 @@ public class AutoBackup extends LinearOpMode {
     private ToboSigma.SkystoneLocation StoneLoc;
     private EventManager em1;
 
-    protected static int LOG_LEVEL = Log.INFO;
+    protected static int LOG_LEVEL = Log.WARN;
 
     private Configuration configuration;
     private Logger<Logger> log = new Logger<Logger>().configureLogging(getClass().getSimpleName(), LOG_LEVEL);
