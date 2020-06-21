@@ -41,6 +41,8 @@ import static java.lang.Thread.sleep;
  * Servos: servoFrontLeft, servoFrontRight, servoBackLeft, servoBackRight.<br />
  * Motors: motorFrontLeft, motorFrontRight, motorBackLeft, motorBackRight.<br />
  * Orientation sensors (optional): imu, imu2
+ *
+ * A change, don't worry Hans I'll change this later
  */
 public class SwerveChassis extends Logger<SwerveChassis> implements Configurable {
 
