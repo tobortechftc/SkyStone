@@ -58,6 +58,9 @@ public class BlueTwoSS extends LinearOpMode {
         // run until the end of the match (driver presses STOP or timeout)
         if (opModeIsActive()) {
             try {
+
+
+
                 boolean isBlue = true;
                 StoneLoc = robot.cameraStoneDetector.getSkystonePositionTF(false);
                 ToboSigma.SkystoneLocation StoneLoc2 = StoneLoc = robot.cameraStoneDetector.getSkystonePositionElementary(telemetry, false, ToboSigma.AutoTeamColor.AUTO_BLUE);
