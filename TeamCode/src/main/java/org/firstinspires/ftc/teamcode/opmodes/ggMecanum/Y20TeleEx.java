@@ -49,7 +49,10 @@ public class Y20TeleEx extends Y20CommonEx {
       telemetry.addData("Y20TeleEx::init_loop()", "%s; Time: %.1fsec; loop_cnt=%d, loop_time= %.3fsec", (isRedTeam()?"RED":"BLUE"), timer_.seconds(),loop_cnt_,timer_.seconds()/loop_cnt_);
       if( range_stone_!=null ) telemetry.addData("StoneRange", "dist="+String.format("%.2fm", getRangeDist(RangeName.RANGE_STONE))+"; init="+String.format("%.2fm",range_stone_dist_init_));
       if( USE_RGBV3_FOR_STONE && rgb_range_stone_!=null ) telemetry.addData("StoneRgbV3Range", "dist="+String.format("%.2fm", getRangeDist(RangeName.RGB_RANGE_STONE))+"; init="+String.format("%.2fm",rgb_range_stone_dist_init_));
-      telemetry.update(); 
+       telemetry.addData("Vertical left encoder position:", verticalLeftEncoder.getCurrentPosition());
+       telemetry.addData("Vertical right encoder position:", verticalRightEncoder.getCurrentPosition());
+       telemetry.addData("horizontal encoder position:", horizontalEncoder.getCurrentPosition());
+      telemetry.update();
    }
 
    /// This method will be called once when the PLAY button is first pressed.

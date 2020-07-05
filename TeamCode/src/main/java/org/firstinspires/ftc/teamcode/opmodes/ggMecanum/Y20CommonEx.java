@@ -72,6 +72,16 @@ public class Y20CommonEx extends OpMode {
    DcMotorEx motorRF_; //port 2
    DcMotorEx motorRB_; //port 3
 
+    //odometry motors
+    DcMotorEx verticalLeftEncoder;
+    DcMotorEx verticalRightEncoder;
+    DcMotorEx horizontalEncoder;
+
+    String rfName = "motorRF" , lfName = "motorLF";
+    String rbName = "motorRB";
+    String lbName = "motorLB";
+    String verticalLeftEncoderName = lfName, verticalRightEncoderName = rfName, horizontalEncoderName = rbName;
+
    double ENCODER_MAX_DRIVE_POWER = 1.0;
    double ENCODER_MAX_ROTATE_POWER = 0.7;
    //double ENCODER_MAX_SIDEWALK_POWER = 0.5;
@@ -385,12 +395,17 @@ public class Y20CommonEx extends OpMode {
 
       /// Use the hardwareMap to get the dc motors and servos by name.
 
-      motorLF_ = hardwareMap.get(DcMotorEx.class, "motorLF");
-      motorLB_ = hardwareMap.get(DcMotorEx.class, "motorLB");
-      motorRF_ = hardwareMap.get(DcMotorEx.class, "motorRF");
-      motorRB_ = hardwareMap.get(DcMotorEx.class, "motorRB");
+      motorLF_ = hardwareMap.get(DcMotorEx.class, lfName);
+      motorLB_ = hardwareMap.get(DcMotorEx.class, lbName);
+      motorRF_ = hardwareMap.get(DcMotorEx.class, rfName);
+      motorRB_ = hardwareMap.get(DcMotorEx.class, rbName);
       motorLF_.setDirection(DcMotor.Direction.REVERSE);
       motorRB_.setDirection(DcMotor.Direction.REVERSE);
+
+      // map odometry encoders
+       verticalLeftEncoder = hardwareMap.get(DcMotorEx.class, verticalLeftEncoderName);
+       verticalRightEncoder = hardwareMap.get(DcMotorEx.class, verticalRightEncoderName);
+       horizontalEncoder = hardwareMap.get(DcMotorEx.class, horizontalEncoderName);
 
       if( USE_ENCODER_FOR_TELEOP ) {
          motorLF_.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
