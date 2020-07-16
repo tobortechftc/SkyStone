@@ -49,9 +49,6 @@ public class Y20TeleEx extends Y20CommonEx {
       telemetry.addData("Y20TeleEx::init_loop()", "%s; Time: %.1fsec; loop_cnt=%d, loop_time= %.3fsec", (isRedTeam()?"RED":"BLUE"), timer_.seconds(),loop_cnt_,timer_.seconds()/loop_cnt_);
       if( range_stone_!=null ) telemetry.addData("StoneRange", "dist="+String.format("%.2fm", getRangeDist(RangeName.RANGE_STONE))+"; init="+String.format("%.2fm",range_stone_dist_init_));
       if( USE_RGBV3_FOR_STONE && rgb_range_stone_!=null ) telemetry.addData("StoneRgbV3Range", "dist="+String.format("%.2fm", getRangeDist(RangeName.RGB_RANGE_STONE))+"; init="+String.format("%.2fm",rgb_range_stone_dist_init_));
-       telemetry.addData("Vertical left encoder position:", verticalLeftEncoder.getCurrentPosition());
-       telemetry.addData("Vertical right encoder position:", verticalRightEncoder.getCurrentPosition());
-       telemetry.addData("horizontal encoder position:", horizontalEncoder.getCurrentPosition());
       telemetry.update();
    }
 
@@ -148,7 +145,7 @@ public class Y20TeleEx extends Y20CommonEx {
             lsy = 0; 
          }
          power_lf = lsx + lsy;
-         power_rf = lsx - lsy;
+         power_rf = -lsx + lsy;
 
          // clip the power_rf/power_lf values so that the values never exceed +/- 1.0
          power_rf = Range.clip(power_rf, -1, 1);
@@ -163,52 +160,52 @@ public class Y20TeleEx extends Y20CommonEx {
             power_lf = (double) scaleDrivePower(power_lf, drive_power_f); 
          }
 
-         power_rf = Range.clip(power_rf, -1, 1);
-         power_lf = Range.clip(power_lf, -1, 1);
+         power_rf = Range.clip(power_rf, -ENCODER_MAX_DRIVE_POWER, ENCODER_MAX_DRIVE_POWER);
+         power_lf = Range.clip(power_lf, -ENCODER_MAX_DRIVE_POWER, ENCODER_MAX_DRIVE_POWER);
 
          /// LB is same as LF, RB is same as RF
-         power_lb = power_lf;
-         power_rb = power_rf;
+         power_lb = power_rf;
+         power_rb = power_lf;
 
-         boolean workaround_v53_carmode = true; 
-         if(  Math.abs(lsx)<JOYSTICK_DEAD_ZONE ) {
-            // go forward/backward
-         } else if( WORKAROUND_V53_BUG && Math.abs(lsy)<JOYSTICK_DEAD_ZONE ) {
-            // spin the robot
-            // Workaround for weired rotating bug for Mechanum wheel, Thx, 2019/11/03
-            power_lb *= -1; 
-            power_rf *= -1; 
-         } 
-         else if( USE_CAR_MODE && workaround_v53_carmode && Math.abs(lsx)>JOYSTICK_DEAD_ZONE && Math.abs(lsy)>JOYSTICK_DEAD_ZONE ) { 
-            // car mode
-            boolean left_joystick_3modes = true;
-            double ls_ratio = lsx/lsy; 
-            if( left_joystick_3modes || (Math.abs(ls_ratio)>0.5 && Math.abs(ls_ratio)<2) ) {
-               if( lsx>0 ) {
-                  if( lsy>0 ) {
-                     double t = power_rf; 
-                     power_rf = -power_lb; 
-                     power_lb = t; 
-                  } else {
-                     double t = power_lf; 
-                     power_lf = -power_rb; 
-                     power_rb = -t; 
-                  }
-                  power_lb*=-1;  // carmode, 2020/02/23 
-               } else {
-                  if( lsy>0 ) {
-                     double t = power_rf; 
-                     power_rf = power_lb; 
-                     power_lb = -t; 
-                  } else {
-                     double t = power_lf; 
-                     power_lf = power_rb; 
-                     power_rb = -t; 
-                  }
-                  power_rb*=-1;   // carmode, 2020/02/23 
-               }
-            }
-         } 
+//         boolean workaround_v53_carmode = true;
+//         if(  Math.abs(lsx)<JOYSTICK_DEAD_ZONE ) {
+//            // go forward/backward
+//         } else if( WORKAROUND_V53_BUG && Math.abs(lsy)<JOYSTICK_DEAD_ZONE ) {
+//            // spin the robot
+//            // Workaround for weired rotating bug for Mechanum wheel, Thx, 2019/11/03
+//            power_lb *= -1;
+//            power_rf *= -1;
+//         }
+//         else if( USE_CAR_MODE && workaround_v53_carmode && Math.abs(lsx)>JOYSTICK_DEAD_ZONE && Math.abs(lsy)>JOYSTICK_DEAD_ZONE ) {
+//            // car mode
+//            boolean left_joystick_3modes = true;
+//            double ls_ratio = lsx/lsy;
+//            if( left_joystick_3modes || (Math.abs(ls_ratio)>0.5 && Math.abs(ls_ratio)<2) ) {
+//               if( lsx>0 ) {
+//                  if( lsy>0 ) {
+//                     double t = power_rf;
+//                     power_rf = -power_lb;
+//                     power_lb = t;
+//                  } else {
+//                     double t = power_lf;
+//                     power_lf = -power_rb;
+//                     power_rb = -t;
+//                  }
+//                  power_lb*=-1;  // carmode, 2020/02/23
+//               } else {
+//                  if( lsy>0 ) {
+//                     double t = power_rf;
+//                     power_rf = power_lb;
+//                     power_lb = -t;
+//                  } else {
+//                     double t = power_lf;
+//                     power_lf = power_rb;
+//                     power_rb = -t;
+//                  }
+//                  power_rb*=-1;   // carmode, 2020/02/23
+//               }
+//            }
+//         }
       }
 
       boolean drive_sidewalk = true;
@@ -218,15 +215,15 @@ public class Y20TeleEx extends Y20CommonEx {
          if (USE_MECANUM_FOR_SIDEWALK_ONLY) lsy = 0;
          drive_sidewalk = true;
 
-         power_lf = lsy + lsx;
-         power_lb = lsy - lsx;
-         power_rf = -lsy + lsx;
-         power_rb = -lsy - lsx;
+         power_lf =  lsx;
+         power_lb =  lsx;
+         power_rf = -lsx;
+         power_rb = -lsx;
 
-         power_lf = Range.clip(power_lf, -1, 1);
-         power_lb = Range.clip(power_lb, -1, 1);
-         power_rf = Range.clip(power_rf, -1, 1);
-         power_rb = Range.clip(power_rb, -1, 1);
+         power_lf = Range.clip(power_lf, -ENCODER_MAX_DRIVE_POWER, ENCODER_MAX_DRIVE_POWER);
+         power_lb = Range.clip(power_lb, -ENCODER_MAX_DRIVE_POWER, ENCODER_MAX_DRIVE_POWER);
+         power_rf = Range.clip(power_rf, -ENCODER_MAX_DRIVE_POWER, ENCODER_MAX_DRIVE_POWER);
+         power_rb = Range.clip(power_rb, -ENCODER_MAX_DRIVE_POWER, ENCODER_MAX_DRIVE_POWER);
 
          if (USE_LOW_SEN_DRIVE && low_sen_drive_) {
             if(lsy<0.1) { // sidewalk
@@ -729,12 +726,18 @@ public class Y20TeleEx extends Y20CommonEx {
       boolean show_arm = USE_ARM && true; 
       boolean show_hooks = USE_HOOKS && false; 
       boolean show_parks = USE_PARKING_STICKS && false; 
-      boolean show_limit_switch = USE_STONE_LIMIT_SWITCH && true; 
+      boolean show_limit_switch = USE_STONE_LIMIT_SWITCH && true;
+      boolean show_odometry = true;
 
       int  TELEMTRY_MSG_FREQ = 10;      // show msg for every N loops to minimize impact on looptime
       if( show_msg && ((loop_cnt_%TELEMTRY_MSG_FREQ)==0) ) {
          if( show_title ) {
             telemetry.addData("Y20Tele: ", String.format("driver2=%s, drive1_override=%s; time=%.2fsec; loop_cnt=%d, loop_cycle=%.3fsec",String.valueOf(double_driver_),String.valueOf(driver1_override_enabled_),curr_time_,loop_cnt_,curr_time_/loop_cnt_)); 
+         }
+         if (show_odometry) {
+            telemetry.addData("Vertical left encoder position:", verticalLeftEncoder.getCurrentPosition());
+            telemetry.addData("Vertical right encoder position:", verticalRightEncoder.getCurrentPosition());
+            telemetry.addData("horizontal encoder position:", horizontalEncoder.getCurrentPosition());
          }
          if( show_drive ) {
             telemetry.addData("MotorPower: ", String.format("lsx/lsy=%.2f/%.2f; power_lf/lb/rf/rb=%.2f/%.2f/%.2f/%.2f",lsx,lsy,power_lf,power_lb,power_rf,power_rb));

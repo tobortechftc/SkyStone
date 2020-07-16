@@ -12,7 +12,6 @@ import org.firstinspires.ftc.teamcode.support.Logger;
 import org.firstinspires.ftc.teamcode.support.events.EventManager;
 import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
 import org.firstinspires.ftc.teamcode.support.tasks.TaskManager;
-@Disabled
 @TeleOp(name="Mec-TeleOp", group="MechBot")
 public class MecTeleOp extends LinearOpMode {
     protected static int LOG_LEVEL = Log.INFO;

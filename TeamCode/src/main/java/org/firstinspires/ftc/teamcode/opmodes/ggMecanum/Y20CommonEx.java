@@ -77,15 +77,15 @@ public class Y20CommonEx extends OpMode {
     DcMotorEx verticalRightEncoder;
     DcMotorEx horizontalEncoder;
 
-    String rfName = "motorRF" , lfName = "motorLF";
-    String rbName = "motorRB";
-    String lbName = "motorLB";
+    String rfName = "motorFR" , lfName = "motorFL";
+    String rbName = "motorBR";
+    String lbName = "motorBL";
     String verticalLeftEncoderName = lfName, verticalRightEncoderName = rfName, horizontalEncoderName = rbName;
 
-   double ENCODER_MAX_DRIVE_POWER = 1.0;
+   double ENCODER_MAX_DRIVE_POWER = 0.5;
    double ENCODER_MAX_ROTATE_POWER = 0.7;
    //double ENCODER_MAX_SIDEWALK_POWER = 0.5;
-   double ENCODER_MAX_SIDEWALK_POWER = 1.0;
+   double ENCODER_MAX_SIDEWALK_POWER = 0.5;
 
    /// Intake motors
    static boolean USE_INTAKE = false;
@@ -400,7 +400,7 @@ public class Y20CommonEx extends OpMode {
       motorRF_ = hardwareMap.get(DcMotorEx.class, rfName);
       motorRB_ = hardwareMap.get(DcMotorEx.class, rbName);
       motorLF_.setDirection(DcMotor.Direction.REVERSE);
-      motorRB_.setDirection(DcMotor.Direction.REVERSE);
+      motorLB_.setDirection(DcMotor.Direction.REVERSE);
 
       // map odometry encoders
        verticalLeftEncoder = hardwareMap.get(DcMotorEx.class, verticalLeftEncoderName);
