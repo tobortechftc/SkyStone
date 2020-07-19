@@ -73,16 +73,16 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
 
                 // adjust heading / power for driving backwards
                 if (currentX > 0.2) {
-                    chassis.xMove(1, Math.abs(currentX));
+                    chassis.xMove(1, Math.abs(currentX * currentX) * chassis.powerScale());
                 } else if (currentX < -0.2) {
-                    chassis.xMove(-1, Math.abs(currentX));
+                    chassis.xMove(-1, Math.abs(currentX * currentX) * chassis.powerScale());
                 } else if (Math.abs(currentY)>0.2) {
-                    chassis.yMove((currentY>0?1:-1), Math.abs(currentY));
+                    chassis.yMove((currentY>0?1:-1), Math.abs(currentY * currentY) * chassis.powerScale());
                 } else {
                     chassis.stop();
                 }
             }
-        }, Events.Axis.BOTH, Events.Side.RIGHT);
+        }, Events.Axis.BOTH, Events.Side.LEFT);
         em.onStick(new Events.Listener() {
             @Override
             public void stickMoved(EventManager source, Events.Side side, float currentX, float changeX, float currentY, float changeY) throws InterruptedException {
@@ -101,12 +101,12 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
 
                 // left joystick just control rotation
                 if (Math.abs(currentX)>0.2) {
-                    chassis.turn((currentX > 0 ? 1 : -1), Math.abs(currentX));
+                    chassis.turn((currentX > 0 ? 1 : -1), Math.abs(currentX * currentX) * chassis.powerScale());
                 } else {
                     chassis.stop();
                 }
             }
-        }, Events.Axis.BOTH, Events.Side.LEFT);
+        }, Events.Axis.BOTH, Events.Side.RIGHT);
     }
     private double toDegrees(double x, double y) {
         if (x == 0) return y >= 0 ? 0 : 180;

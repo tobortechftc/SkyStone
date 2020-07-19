@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.components;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.robotcore.external.Func;
@@ -47,11 +48,12 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     // maximum power that should be applied to the wheel motors
     private double maxPower = 0.99;
     private double maxRange = 127; // max range sensor detectable
+    private double powerScale = 0.5;
 
-    private DcMotor motorFL;
-    private DcMotor motorFR;
-    private DcMotor motorBL;
-    private DcMotor motorBR;
+    private DcMotorEx motorFL;
+    private DcMotorEx motorFR;
+    private DcMotorEx motorBL;
+    private DcMotorEx motorBR;
 
     // array contains the same wheel assemblies as above variables
     //  and is convenient to use when actions have to be performed on all 4
@@ -66,8 +68,27 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     private boolean useScalePower = true;//
     private boolean setImuTelemetry = false;//unless debugging, don't set telemetry for imu
     private boolean setRangeSensorTelemetry = false;//unless debugging, don't set telemetry for range sensor
+    public double powerScale() { return powerScale; }
+
+
+    //odometry motors
+    DcMotorEx verticalLeftEncoder;
+    DcMotorEx verticalRightEncoder;
+    DcMotorEx horizontalEncoder;
+
+
+    String rfName = "motorFR" , lfName = "motorFL";
+    String rbName = "motorBR";
+    String lbName = "motorBL";
+    String verticalLeftEncoderName = rbName, verticalRightEncoderName = lfName, horizontalEncoderName = rfName;
+
+
 
     final double TICKS_PER_CM = 16.86;//number of encoder ticks per cm of driving
+
+    public DcMotorEx verticalLeftEncoder(){ return verticalLeftEncoder; }
+    public DcMotorEx verticalRightEncoder(){ return verticalRightEncoder; }
+    public DcMotorEx horizontalEncoder(){ return horizontalEncoder; }
 
     public void enableRangeSensorTelemetry() { // must be call before reset() or setupTelemetry()
         setRangeSensorTelemetry = true;
@@ -159,13 +180,39 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     public void configure(Configuration configuration, boolean auto) {
         // set up motors / sensors as wheel assemblies
 
-        motorFL = configuration.getHardwareMap().tryGet(DcMotor.class, "motorFL");
-        motorFR = configuration.getHardwareMap().tryGet(DcMotor.class, "motorFR");
-        motorBL = configuration.getHardwareMap().tryGet(DcMotor.class, "motorBL");
-        motorBR = configuration.getHardwareMap().tryGet(DcMotor.class, "motorBR");
+        motorFL = configuration.getHardwareMap().tryGet(DcMotorEx.class, lfName);
+        motorFR = configuration.getHardwareMap().tryGet(DcMotorEx.class, rfName);
+        motorBL = configuration.getHardwareMap().tryGet(DcMotorEx.class, lbName);
+        motorBR = configuration.getHardwareMap().tryGet(DcMotorEx.class, rbName);
 
-        motorFR.setDirection(DcMotorSimple.Direction.REVERSE);
-        motorBR.setDirection(DcMotorSimple.Direction.REVERSE);
+        motorFL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motorFL.setMode ( DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        motorFR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motorFR.setMode ( DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        motorBL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motorBL.setMode ( DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        motorBR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motorBR.setMode ( DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        // map odometry encoders
+        verticalLeftEncoder = configuration.getHardwareMap().tryGet(DcMotorEx.class, verticalLeftEncoderName);
+        verticalRightEncoder = configuration.getHardwareMap().tryGet(DcMotorEx.class, verticalRightEncoderName);
+        horizontalEncoder = configuration.getHardwareMap().tryGet(DcMotorEx.class, horizontalEncoderName);
+
+        verticalLeftEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        verticalRightEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        horizontalEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        //verticalLeftEncoder.setDirection(DcMotorEx.Direction.REVERSE);
+        //verticalRightEncoder.setDirection(DcMotorEx.Direction.REVERSE);
+
+        motorFL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        motorFR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        motorBL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        motorBR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        motorFL.setDirection(DcMotorSimple.Direction.REVERSE);
+        motorBL.setDirection(DcMotorSimple.Direction.REVERSE);
 
         if (auto || setImuTelemetry) {
             orientationSensor = new CombinedOrientationSensor().configureLogging(logTag + "-sensor", logLevel);
@@ -451,6 +498,30 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
                 @Override
                 public Integer value() {
                     return motorBR.getCurrentPosition();
+                }
+            });
+        }
+        if (verticalLeftEncoder != null) {
+            line.addData("verticalLeftEncoder=", "%d", new Func<Integer>() {
+                @Override
+                public Integer value() {
+                    return verticalLeftEncoder.getCurrentPosition();
+                }
+            });
+        }
+        if (verticalRightEncoder != null) {
+            line.addData("verticalRightEncoder=", "%d", new Func<Integer>() {
+                @Override
+                public Integer value() {
+                    return verticalRightEncoder.getCurrentPosition();
+                }
+            });
+        }
+        if (horizontalEncoder != null) {
+            line.addData("horizontalEncoder=", "%d", new Func<Integer>() {
+                @Override
+                public Integer value() {
+                    return horizontalEncoder.getCurrentPosition();
                 }
             });
         }

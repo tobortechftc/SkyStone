@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.components.odometry.OdometryGlobalCoordinatePosition;
 import org.firstinspires.ftc.teamcode.hardware.MechBot.ToboMech;
 import org.firstinspires.ftc.teamcode.hardware.Sigma.ToboSigma;
 import org.firstinspires.ftc.teamcode.support.Logger;
@@ -21,6 +22,8 @@ public class MecTeleOp extends LinearOpMode {
 
     private EventManager eventManager1;
     private EventManager eventManager2;
+    final double COUNTS_PER_INCH = 307.699557;
+    OdometryGlobalCoordinatePosition globalPositionUpdate;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -31,6 +34,8 @@ public class MecTeleOp extends LinearOpMode {
         ToboMech robot = new ToboMech();
         robot.configureLogging(robot.getName(),LOG_LEVEL);
         configuration = new Configuration(hardwareMap, robot.getName()).configureLogging("Config", LOG_LEVEL);
+
+
         log.info("RoboRuck TeleOp finished configuration (CPU_time = %.2f sec)", getRuntime());
 
         try {
@@ -53,6 +58,12 @@ public class MecTeleOp extends LinearOpMode {
         log.info("RoboRuck TeleOp finished initialization (CPU_time = %.2f sec)", getRuntime());
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
+//        if (robot.chassis!=null) {
+//            globalPositionUpdate = new OdometryGlobalCoordinatePosition(robot.chassis.verticalLeftEncoder(), robot.chassis.verticalRightEncoder(), robot.chassis.horizontalEncoder(), COUNTS_PER_INCH, 75);
+//        }
+        Thread positionThread = (globalPositionUpdate==null? null: new Thread(globalPositionUpdate));
+        if (positionThread!=null)
+           positionThread.start();
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
@@ -66,6 +77,8 @@ public class MecTeleOp extends LinearOpMode {
                 Thread.sleep(5000);
             }
         }
+        if (globalPositionUpdate!=null)
+            globalPositionUpdate.stop();
     }
 
     protected void handleException(Throwable T) {

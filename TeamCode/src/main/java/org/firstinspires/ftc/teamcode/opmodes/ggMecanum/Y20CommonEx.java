@@ -80,7 +80,7 @@ public class Y20CommonEx extends OpMode {
     String rfName = "motorFR" , lfName = "motorFL";
     String rbName = "motorBR";
     String lbName = "motorBL";
-    String verticalLeftEncoderName = lfName, verticalRightEncoderName = rfName, horizontalEncoderName = rbName;
+    String verticalLeftEncoderName = rbName, verticalRightEncoderName = lfName, horizontalEncoderName = rfName;
 
    double ENCODER_MAX_DRIVE_POWER = 0.5;
    double ENCODER_MAX_ROTATE_POWER = 0.7;
@@ -409,18 +409,23 @@ public class Y20CommonEx extends OpMode {
 
       if( USE_ENCODER_FOR_TELEOP ) {
          motorLF_.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-         motorLF_.setMode ( DcMotor.RunMode.RUN_USING_ENCODER);
+         motorLF_.setMode ( DcMotor.RunMode.RUN_WITHOUT_ENCODER);
          motorLB_.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-         motorLB_.setMode ( DcMotor.RunMode.RUN_USING_ENCODER);
+         motorLB_.setMode ( DcMotor.RunMode.RUN_WITHOUT_ENCODER);
          motorRF_.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-         motorRF_.setMode ( DcMotor.RunMode.RUN_USING_ENCODER);
+         motorRF_.setMode ( DcMotor.RunMode.RUN_WITHOUT_ENCODER);
          motorRB_.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-         motorRB_.setMode ( DcMotor.RunMode.RUN_USING_ENCODER);
+         motorRB_.setMode ( DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+         verticalLeftEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+         verticalRightEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+         horizontalEncoder.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
          motorLF_.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
          motorLB_.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
          motorRF_.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
          motorRB_.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
       }
 
       if( USE_INTAKE ) {

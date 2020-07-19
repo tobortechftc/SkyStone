@@ -144,8 +144,8 @@ public class Y20TeleEx extends Y20CommonEx {
             // force it into spin mode
             lsy = 0; 
          }
-         power_lf = lsx + lsy;
-         power_rf = -lsx + lsy;
+         power_lf = lsx * Math.abs(lsx) + lsy * Math.abs(lsy);
+         power_rf = -lsx * Math.abs(lsx) + lsy * Math.abs(lsy);
 
          // clip the power_rf/power_lf values so that the values never exceed +/- 1.0
          power_rf = Range.clip(power_rf, -1, 1);
@@ -220,10 +220,10 @@ public class Y20TeleEx extends Y20CommonEx {
          power_rf = -lsx;
          power_rb = -lsx;
 
-         power_lf = Range.clip(power_lf, -ENCODER_MAX_DRIVE_POWER, ENCODER_MAX_DRIVE_POWER);
-         power_lb = Range.clip(power_lb, -ENCODER_MAX_DRIVE_POWER, ENCODER_MAX_DRIVE_POWER);
-         power_rf = Range.clip(power_rf, -ENCODER_MAX_DRIVE_POWER, ENCODER_MAX_DRIVE_POWER);
-         power_rb = Range.clip(power_rb, -ENCODER_MAX_DRIVE_POWER, ENCODER_MAX_DRIVE_POWER);
+//         power_lf = Range.clip(power_lf, -ENCODER_MAX_DRIVE_POWER, ENCODER_MAX_DRIVE_POWER);
+//         power_lb = Range.clip(power_lb, -ENCODER_MAX_DRIVE_POWER, ENCODER_MAX_DRIVE_POWER);
+//         power_rf = Range.clip(power_rf, -ENCODER_MAX_DRIVE_POWER, ENCODER_MAX_DRIVE_POWER);
+//         power_rb = Range.clip(power_rb, -ENCODER_MAX_DRIVE_POWER, ENCODER_MAX_DRIVE_POWER);
 
          if (USE_LOW_SEN_DRIVE && low_sen_drive_) {
             if(lsy<0.1) { // sidewalk
@@ -715,7 +715,7 @@ public class Y20TeleEx extends Y20CommonEx {
 
       boolean show_msg = true ;
       boolean show_title = true;
-      boolean show_drive = false;
+      boolean show_drive = true;
       boolean show_intake = USE_INTAKE && false; 
       boolean show_intake_mag_switch = USE_INTAKE_MAG_SWITCH && false; 
       boolean show_pusher_gater = false; 
