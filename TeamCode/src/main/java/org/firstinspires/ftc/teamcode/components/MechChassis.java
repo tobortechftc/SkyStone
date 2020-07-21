@@ -276,18 +276,33 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
      * @param turningFactor int range [-1,+1] (+1 for turning right, -1 for turning left)
      */
     public void carDrive(double power, double turningFactor) {
+
         if (turningFactor > 0) {
             turningFactor = 1 - turningFactor;
-            motorFL.setPower(power);
-            motorFR.setPower(turningFactor * power);
-            motorBL.setPower(power);
-            motorBR.setPower(turningFactor * power);
+            if (power>0) { // drive forward
+                motorFL.setPower(power);
+                motorFR.setPower(turningFactor * power);
+                motorBL.setPower(power);
+                motorBR.setPower(turningFactor * power);
+            } else {
+                motorFL.setPower(turningFactor * power);
+                motorFR.setPower(power);
+                motorBL.setPower(turningFactor * power);
+                motorBR.setPower(power);
+            }
         } else {
             turningFactor = 1 + turningFactor;
-            motorFL.setPower(turningFactor * power);
-            motorFR.setPower(power);
-            motorBL.setPower(turningFactor * power);
-            motorBR.setPower(power);
+            if (power>0) { // drive forward
+                motorFL.setPower(turningFactor * power);
+                motorFR.setPower(power);
+                motorBL.setPower(turningFactor * power);
+                motorBR.setPower(power);
+            } else {
+                motorFL.setPower(power);
+                motorFR.setPower(turningFactor * power);
+                motorBL.setPower(power);
+                motorBR.setPower(turningFactor * power);
+            }
         }
 
     }

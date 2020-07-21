@@ -56,12 +56,15 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
                 .addData("Hold [LB]/[RB]", "45 degree").setRetained(true);
         chassis.setupTelemetry(telemetry);
         em.updateTelemetry(telemetry, 1000);
-        em.onStick(new Events.Listener() {
+        em.onStick(new Events.Listener() { // Left-Joystick
             @Override
             public void stickMoved(EventManager source, Events.Side side, float currentX, float changeX, float currentY, float changeY) throws InterruptedException {
+                if (Math.abs(source.getStick(Events.Side.RIGHT, Events.Axis.Y_ONLY))>0.2 )
+                    return; // avoid conflicting drives
+
                 // Left joystick for forward/backward and turn
                 if (Math.abs(currentY)>0.2) { // car mode
-                    chassis.carDrive(currentY, currentX);
+                    chassis.carDrive(currentY*Math.abs(currentY), currentX);
                 }else if (Math.abs(currentX) > 0.2) {
                     chassis.turn((currentX > 0 ? 1 : -1), Math.abs(currentX * currentX) * chassis.powerScale());
                 } else if (Math.abs(currentY)>0.2) {
@@ -71,15 +74,18 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
                 }
             }
         }, Events.Axis.BOTH, Events.Side.LEFT);
-        em.onStick(new Events.Listener() {
+
+        em.onStick(new Events.Listener() { // Right-Joystick
             @Override
             public void stickMoved(EventManager source, Events.Side side, float currentX, float changeX, float currentY, float changeY) throws InterruptedException {
-                if (Math.abs(source.getStick(Events.Side.LEFT, Events.Axis.BOTH))>0.2 )
+                if (Math.abs(source.getStick(Events.Side.LEFT, Events.Axis.Y_ONLY))>0.2 )
                     return; // avoid conflicting drives
-
+                double left_x = source.getStick(Events.Side.LEFT, Events.Axis.X_ONLY);
                 // right joystick for free crabbing
-
-                if (Math.abs(currentX)+Math.abs(currentY)>0.2) {
+                if (Math.abs(left_x)>0.1 && Math.abs(currentY)>0.1) {
+                    // car drive
+                    chassis.carDrive(currentY*Math.abs(currentY), left_x);
+                } else if (Math.abs(currentX)+Math.abs(currentY)>0.2) {
                     double lsx = currentX;
                     double lsy = currentY;
                     double power_lf = lsy+lsx;
