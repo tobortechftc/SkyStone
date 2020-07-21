@@ -249,6 +249,13 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         motorBR.setPower(sgn * power);
     }
 
+    public void freeStyle(double fl, double fr, double bl, double br) {
+        motorFL.setPower(fl);
+        motorFR.setPower(fr);
+        motorBL.setPower(bl);
+        motorBR.setPower(br);
+    }
+
     /**
      * pivot and turn
      *
@@ -261,6 +268,30 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         motorBL.setPower(sgn * power);
         motorBR.setPower(-sgn * power);
     }
+
+    /**
+     * turning while driving
+     *
+     * @param power         must be in range [0,1]
+     * @param turningFactor int range [-1,+1] (+1 for turning right, -1 for turning left)
+     */
+    public void carDrive(double power, double turningFactor) {
+        if (turningFactor > 0) {
+            turningFactor = 1 - turningFactor;
+            motorFL.setPower(power);
+            motorFR.setPower(turningFactor * power);
+            motorBL.setPower(power);
+            motorBR.setPower(turningFactor * power);
+        } else {
+            turningFactor = 1 + turningFactor;
+            motorFL.setPower(turningFactor * power);
+            motorFR.setPower(power);
+            motorBL.setPower(turningFactor * power);
+            motorBR.setPower(power);
+        }
+
+    }
+
     public void driveStraightAuto(double power, double cm, int timeout) throws InterruptedException {
         if (Thread.currentThread().isInterrupted()) return;
 
@@ -379,29 +410,6 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         stop();
         driveMode = DriveMode.STOP;
         useScalePower = true;
-    }
-
-    /**
-     * turning while driving
-     *
-     * @param power         must be in range [0,1]
-     * @param turningFactor int range [-1,+1] (+1 for turning right, -1 for turning left)
-     */
-    public void carDrive(double power, double turningFactor) {
-        if (turningFactor > 0) {
-            turningFactor = 1 - turningFactor;
-            motorFL.setPower(power);
-            motorFR.setPower(turningFactor * power);
-            motorBL.setPower(power);
-            motorBR.setPower(turningFactor * power);
-        } else {
-            turningFactor = 1 + turningFactor;
-            motorFL.setPower(turningFactor * power);
-            motorFR.setPower(power);
-            motorBL.setPower(turningFactor * power);
-            motorBR.setPower(power);
-        }
-
     }
 
     public void setRunMode(DcMotor.RunMode rm) {

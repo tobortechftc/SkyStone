@@ -164,8 +164,8 @@ public class Y20TeleEx extends Y20CommonEx {
          power_lf = Range.clip(power_lf, -ENCODER_MAX_DRIVE_POWER, ENCODER_MAX_DRIVE_POWER);
 
          /// LB is same as LF, RB is same as RF
-         power_lb = power_rf;
-         power_rb = power_lf;
+         power_lb = power_lf;
+         power_rb = power_rf;
 
 //         boolean workaround_v53_carmode = true;
 //         if(  Math.abs(lsx)<JOYSTICK_DEAD_ZONE ) {
@@ -215,15 +215,15 @@ public class Y20TeleEx extends Y20CommonEx {
          if (USE_MECANUM_FOR_SIDEWALK_ONLY) lsy = 0;
          drive_sidewalk = true;
 
-         power_lf =  lsx;
-         power_lb =  lsx;
-         power_rf = -lsx;
-         power_rb = -lsx;
+         power_lf = lsy+lsx;
+         power_lb = lsy-lsx;
+         power_rf = lsy-lsx;
+         power_rb = lsy+lsx;
 
-//         power_lf = Range.clip(power_lf, -ENCODER_MAX_DRIVE_POWER, ENCODER_MAX_DRIVE_POWER);
-//         power_lb = Range.clip(power_lb, -ENCODER_MAX_DRIVE_POWER, ENCODER_MAX_DRIVE_POWER);
-//         power_rf = Range.clip(power_rf, -ENCODER_MAX_DRIVE_POWER, ENCODER_MAX_DRIVE_POWER);
-//         power_rb = Range.clip(power_rb, -ENCODER_MAX_DRIVE_POWER, ENCODER_MAX_DRIVE_POWER);
+         power_lf = Range.clip(power_lf, -1, 1);
+         power_lb = Range.clip(power_lb, -1, 1);
+         power_rf = Range.clip(power_rf, -1, 1);
+         power_rb = Range.clip(power_rb, -1, 1);
 
          if (USE_LOW_SEN_DRIVE && low_sen_drive_) {
             if(lsy<0.1) { // sidewalk

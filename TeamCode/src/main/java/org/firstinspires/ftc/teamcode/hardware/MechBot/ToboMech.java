@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.hardware.MechBot;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.components.MechChassis;
@@ -58,24 +59,11 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         em.onStick(new Events.Listener() {
             @Override
             public void stickMoved(EventManager source, Events.Side side, float currentX, float changeX, float currentY, float changeY) throws InterruptedException {
-                double power = Math.max(Math.abs(currentX), Math.abs(currentY));
-                double heading = toDegrees(currentX, currentY);
-                debug("testStraight(): x: %+.2f, y: %+.2f, pow: %+.3f, head: %+.1f",
-                        currentX, currentY, power, heading);
-
-                if (source.isPressed(Button.LEFT_BUMPER) || source.isPressed(Button.RIGHT_BUMPER)) {
-                    // constrain to 45 degree diagonals
-                    heading = Math.signum(heading) * (Math.abs(heading) < 90 ? 45 : 135);
-                } else {
-                    // constrain to 90 degrees
-                    heading = Math.round(heading / 90) * 90;
-                }
-
-                // adjust heading / power for driving backwards
-                if (currentX > 0.2) {
-                    chassis.xMove(1, Math.abs(currentX * currentX) * chassis.powerScale());
-                } else if (currentX < -0.2) {
-                    chassis.xMove(-1, Math.abs(currentX * currentX) * chassis.powerScale());
+                // Left joystick for forward/backward and turn
+                if (Math.abs(currentY)>0.2) { // car mode
+                    chassis.carDrive(currentY, currentX);
+                }else if (Math.abs(currentX) > 0.2) {
+                    chassis.turn((currentX > 0 ? 1 : -1), Math.abs(currentX * currentX) * chassis.powerScale());
                 } else if (Math.abs(currentY)>0.2) {
                     chassis.yMove((currentY>0?1:-1), Math.abs(currentY * currentY) * chassis.powerScale());
                 } else {
@@ -86,22 +74,29 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         em.onStick(new Events.Listener() {
             @Override
             public void stickMoved(EventManager source, Events.Side side, float currentX, float changeX, float currentY, float changeY) throws InterruptedException {
-                double power = Math.max(Math.abs(currentX), Math.abs(currentY));
-                double heading = toDegrees(currentX, currentY);
-                debug("testStraight(): x: %+.2f, y: %+.2f, pow: %+.3f, head: %+.1f",
-                        currentX, currentY, power, heading);
+                if (Math.abs(source.getStick(Events.Side.LEFT, Events.Axis.BOTH))>0.2 )
+                    return; // avoid conflicting drives
 
-                if (source.isPressed(Button.LEFT_BUMPER) || source.isPressed(Button.RIGHT_BUMPER)) {
-                    // constrain to 45 degree diagonals
-                    heading = Math.signum(heading) * (Math.abs(heading) < 90 ? 45 : 135);
-                } else {
-                    // constrain to 90 degrees
-                    heading = Math.round(heading / 90) * 90;
-                }
+                // right joystick for free crabbing
 
-                // left joystick just control rotation
-                if (Math.abs(currentX)>0.2) {
-                    chassis.turn((currentX > 0 ? 1 : -1), Math.abs(currentX * currentX) * chassis.powerScale());
+                if (Math.abs(currentX)+Math.abs(currentY)>0.2) {
+                    double lsx = currentX;
+                    double lsy = currentY;
+                    double power_lf = lsy+lsx;
+                    double power_lb = lsy-lsx;
+                    double power_rf = lsy-lsx;
+                    double power_rb = lsy+lsx;
+
+                    power_lf = Range.clip(power_lf, -1, 1);
+                    power_lb = Range.clip(power_lb, -1, 1);
+                    power_rf = Range.clip(power_rf, -1, 1);
+                    power_rb = Range.clip(power_rb, -1, 1);
+
+                    power_lf *= Math.abs(power_lf)* chassis.powerScale();
+                    power_lb *= Math.abs(power_lb)* chassis.powerScale();
+                    power_rf *= Math.abs(power_rf)* chassis.powerScale();
+                    power_rb *= Math.abs(power_rb)* chassis.powerScale();
+                    chassis.freeStyle(power_lf, power_rf, power_lb, power_rb);
                 } else {
                     chassis.stop();
                 }
