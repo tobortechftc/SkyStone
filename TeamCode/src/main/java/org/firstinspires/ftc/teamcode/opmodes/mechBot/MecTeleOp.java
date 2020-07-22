@@ -22,8 +22,6 @@ public class MecTeleOp extends LinearOpMode {
 
     private EventManager eventManager1;
     private EventManager eventManager2;
-    final double COUNTS_PER_INCH = 307.699557;
-    OdometryGlobalCoordinatePosition globalPositionUpdate;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -34,7 +32,6 @@ public class MecTeleOp extends LinearOpMode {
         ToboMech robot = new ToboMech();
         robot.configureLogging(robot.getName(),LOG_LEVEL);
         configuration = new Configuration(hardwareMap, robot.getName()).configureLogging("Config", LOG_LEVEL);
-
 
         log.info("RoboRuck TeleOp finished configuration (CPU_time = %.2f sec)", getRuntime());
 
@@ -58,10 +55,13 @@ public class MecTeleOp extends LinearOpMode {
         log.info("RoboRuck TeleOp finished initialization (CPU_time = %.2f sec)", getRuntime());
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
-//        if (robot.chassis!=null) {
-//            globalPositionUpdate = new OdometryGlobalCoordinatePosition(robot.chassis.verticalLeftEncoder(), robot.chassis.verticalRightEncoder(), robot.chassis.horizontalEncoder(), COUNTS_PER_INCH, 75);
-//        }
-        Thread positionThread = (globalPositionUpdate==null? null: new Thread(globalPositionUpdate));
+        if (robot.chassis!=null) {
+            robot.chassis.configeOdometry();
+            robot.chassis.setupTelemetry(telemetry);
+        }
+
+
+        Thread positionThread = (robot.chassis.globalPositionUpdate()==null? null: new Thread(robot.chassis.globalPositionUpdate()));
         if (positionThread!=null)
            positionThread.start();
 
@@ -77,8 +77,8 @@ public class MecTeleOp extends LinearOpMode {
                 Thread.sleep(5000);
             }
         }
-        if (globalPositionUpdate!=null)
-            globalPositionUpdate.stop();
+        if (robot.chassis.globalPositionUpdate()!=null)
+            robot.chassis.globalPositionUpdate().stop();
     }
 
     protected void handleException(Throwable T) {

@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.robotcore.external.Func;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.components.odometry.OdometryGlobalCoordinatePosition;
 import org.firstinspires.ftc.teamcode.support.CoreSystem;
 import org.firstinspires.ftc.teamcode.support.Logger;
 import org.firstinspires.ftc.teamcode.support.hardware.Adjustable;
@@ -75,6 +76,8 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     DcMotorEx verticalLeftEncoder;
     DcMotorEx verticalRightEncoder;
     DcMotorEx horizontalEncoder;
+    OdometryGlobalCoordinatePosition globalPositionUpdate;
+    final double ODO_COUNTS_PER_INCH = 307.699557;
 
 
     String rfName = "motorFR" , lfName = "motorFL";
@@ -86,9 +89,33 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
     final double TICKS_PER_CM = 16.86;//number of encoder ticks per cm of driving
 
+    public void setGlobalPosUpdate(OdometryGlobalCoordinatePosition val) { globalPositionUpdate=val;}
+    public OdometryGlobalCoordinatePosition globalPositionUpdate() { return globalPositionUpdate; }
+    public double odo_count_per_inch() {return ODO_COUNTS_PER_INCH;}
     public DcMotorEx verticalLeftEncoder(){ return verticalLeftEncoder; }
     public DcMotorEx verticalRightEncoder(){ return verticalRightEncoder; }
     public DcMotorEx horizontalEncoder(){ return horizontalEncoder; }
+
+    public void configeOdometry() {
+        globalPositionUpdate = new OdometryGlobalCoordinatePosition(verticalLeftEncoder(), verticalRightEncoder(), horizontalEncoder(), odo_count_per_inch(), 75);
+        globalPositionUpdate.reverseRightEncoder();
+        globalPositionUpdate.reverseLeftEncoder();
+    }
+
+    public double odo_x_pos() {
+        if (globalPositionUpdate==null) return 0;
+        return globalPositionUpdate.returnXCoordinate()/odo_count_per_inch();
+    }
+
+    public double odo_y_pos() {
+        if (globalPositionUpdate==null) return 0;
+        return globalPositionUpdate.returnYCoordinate()/odo_count_per_inch();
+    }
+
+    public double odo_heading() {
+        if (globalPositionUpdate==null) return 0;
+        return globalPositionUpdate.returnOrientation();
+    }
 
     public void enableRangeSensorTelemetry() { // must be call before reset() or setupTelemetry()
         setRangeSensorTelemetry = true;
@@ -492,6 +519,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
                 return String.format("%.2f / %.1f", motorFL.getPower(), getDefaultScale());
             }
         });
+        /*
         if (motorFL != null) {
             line.addData("FL", "%d", new Func<Integer>() {
                 @Override
@@ -524,8 +552,9 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
                 }
             });
         }
+        */
         if (verticalLeftEncoder != null) {
-            line.addData("verticalLeftEncoder=", "%d", new Func<Integer>() {
+            line.addData("row Y-Left", "%d", new Func<Integer>() {
                 @Override
                 public Integer value() {
                     return verticalLeftEncoder.getCurrentPosition();
@@ -533,7 +562,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             });
         }
         if (verticalRightEncoder != null) {
-            line.addData("verticalRightEncoder=", "%d", new Func<Integer>() {
+            line.addData("row Y-Right", "%d", new Func<Integer>() {
                 @Override
                 public Integer value() {
                     return verticalRightEncoder.getCurrentPosition();
@@ -541,15 +570,28 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             });
         }
         if (horizontalEncoder != null) {
-            line.addData("horizontalEncoder=", "%d", new Func<Integer>() {
+            line.addData("row X", "%d", new Func<Integer>() {
                 @Override
                 public Integer value() {
                     return horizontalEncoder.getCurrentPosition();
                 }
             });
         }
-
-
+        if (globalPositionUpdate!=null) {
+            line.addData("Odo (xl,xr,y)", new Func<String>() {
+                @Override
+                public String value() {
+                    return String.format("(%5.0f,%5.0f,%5.0f)\n", globalPositionUpdate.leftYEncoder(),
+                            globalPositionUpdate.rightYEncoder(), globalPositionUpdate.XEncoder());
+                }
+            });
+            line.addData("Odo-pos (x,y,angle)", new Func<String>() {
+                @Override
+                public String value() {
+                    return String.format("(%4.2f, %4.2f, %4.2f)\n", odo_x_pos(), odo_y_pos(), odo_heading());
+                }
+            });
+        }
         //set up imu telemetry
         if (orientationSensor != null && setImuTelemetry) {
             line.addData("imuC", "%.1f", new Func<Double>() {

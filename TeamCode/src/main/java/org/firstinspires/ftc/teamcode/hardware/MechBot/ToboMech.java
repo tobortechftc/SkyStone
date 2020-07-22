@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.hardware.MechBot;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.Func;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.components.MechChassis;
 import org.firstinspires.ftc.teamcode.components.Robot2;
@@ -55,6 +56,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         telemetry.addLine().addData("(LS)", "Drive").setRetained(true)
                 .addData("Hold [LB]/[RB]", "45 degree").setRetained(true);
         chassis.setupTelemetry(telemetry);
+        setupTelemetry(telemetry);
         em.updateTelemetry(telemetry, 1000);
         em.onStick(new Events.Listener() { // Left-Joystick
             @Override
@@ -109,6 +111,35 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
             }
         }, Events.Axis.BOTH, Events.Side.RIGHT);
     }
+
+    public void setupTelemetry(Telemetry telemetry) {
+        if (Thread.currentThread().isInterrupted()) return;
+        Telemetry.Line line = telemetry.addLine();
+        if (chassis==null) return;
+        /*
+        line.addData(" | Odometry (vl,vr,h) =", new Func<String>() {
+            @Override
+            public String value() {
+                return String.format("(%5d,%5d,%5d)\n", chassis.verticalLeftEncoder().getCurrentPosition(),
+                        chassis.verticalRightEncoder().getCurrentPosition(),chassis.horizontalEncoder().getCurrentPosition());
+            }
+        });
+        line.addData("Odo (x, y, angle) =", new Func<String>() {
+            @Override
+            public String value() {
+                return String.format("(%4.0f, %4.0f, %4.0f)\n", chassis.odo_x_pos(),chassis.odo_y_pos(),chassis.odo_heading());
+            }
+        });
+
+        line.addData("Offensive", new Func<String>() {
+            @Override
+            public String value() {
+                return String.format("%s\n",  (autoPara.isOffensive() ? "Yes" : "No"));
+            }
+        });
+        */
+    }
+
     private double toDegrees(double x, double y) {
         if (x == 0) return y >= 0 ? 0 : 180;
         return Math.atan2(x, y) / Math.PI * 180;

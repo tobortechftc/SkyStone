@@ -105,6 +105,10 @@ public class OdometryGlobalCoordinatePosition implements Runnable{
      */
     public double returnOrientation(){ return Math.toDegrees(robotOrientationRadians) % 360; }
 
+    public double leftYEncoder() { return verticalLeftEncoderWheelPosition; }
+    public double rightYEncoder() { return verticalRightEncoderWheelPosition; }
+    public double XEncoder() { return normalEncoderWheelPosition; }
+
     /**
      * Stops the position update thread
      */
