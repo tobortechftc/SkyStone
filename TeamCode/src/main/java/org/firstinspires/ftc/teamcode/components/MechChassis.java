@@ -96,7 +96,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     public DcMotorEx verticalRightEncoder(){ return verticalRightEncoder; }
     public DcMotorEx horizontalEncoder(){ return horizontalEncoder; }
 
-    public void configeOdometry() {
+    public void configureOdometry() {
         globalPositionUpdate = new OdometryGlobalCoordinatePosition(verticalLeftEncoder(), verticalRightEncoder(), horizontalEncoder(), odo_count_per_inch(), 75);
         globalPositionUpdate.reverseRightEncoder();
         globalPositionUpdate.reverseLeftEncoder();

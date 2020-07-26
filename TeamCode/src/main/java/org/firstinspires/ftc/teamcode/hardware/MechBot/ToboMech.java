@@ -61,7 +61,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         em.onStick(new Events.Listener() { // Left-Joystick
             @Override
             public void stickMoved(EventManager source, Events.Side side, float currentX, float changeX, float currentY, float changeY) throws InterruptedException {
-                if (Math.abs(source.getStick(Events.Side.RIGHT, Events.Axis.Y_ONLY))>0.2 )
+                if (Math.abs(source.getStick(Events.Side.RIGHT, Events.Axis.Y_ONLY))> 0.2 )
                     return; // avoid conflicting drives
 
                 // Left joystick for forward/backward and turn

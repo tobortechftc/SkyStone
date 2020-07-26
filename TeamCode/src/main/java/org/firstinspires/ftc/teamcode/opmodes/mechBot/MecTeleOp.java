@@ -2,11 +2,9 @@ package org.firstinspires.ftc.teamcode.opmodes.mechBot;
 
 import android.util.Log;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.components.odometry.OdometryGlobalCoordinatePosition;
 import org.firstinspires.ftc.teamcode.hardware.MechBot.ToboMech;
 import org.firstinspires.ftc.teamcode.hardware.Sigma.ToboSigma;
 import org.firstinspires.ftc.teamcode.support.Logger;
@@ -56,7 +54,7 @@ public class MecTeleOp extends LinearOpMode {
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         if (robot.chassis!=null) {
-            robot.chassis.configeOdometry();
+            robot.chassis.configureOdometry();
             robot.chassis.setupTelemetry(telemetry);
         }
 
