@@ -66,9 +66,9 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
 
     @MenuEntry(label = "TeleOp", group = "Test Chassis")
     public void mainTeleOp(EventManager em) {
-        telemetry.addLine().addData("(LS)", "Drive").setRetained(true)
-                .addData("Hold [LB]/[RB]", "45 degree").setRetained(true);
-        chassis.setupTelemetry(telemetry);
+        //telemetry.addLine().addData("(LS)", "Drive").setRetained(true)
+        //        .addData("Hold [LB]/[RB]", "45 degree").setRetained(true);
+        // chassis.setupTelemetry(telemetry);
         setupTelemetry(telemetry);
         em.updateTelemetry(telemetry, 1000);
         em.onStick(new Events.Listener() { // Left-Joystick
@@ -123,6 +123,40 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
                 }
             }
         }, Events.Axis.BOTH, Events.Side.RIGHT);
+
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (chassis!=null) {
+                    chassis.forward(0.3, 30, 3);
+                }
+            }
+        }, new Button[]{Button.DPAD_UP});
+
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (chassis!=null) {
+                    chassis.forward(0.3, -30, 3);
+                }
+            }
+        }, new Button[]{Button.DPAD_DOWN});
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (chassis!=null) {
+                    chassis.crab(0.3, 30, 3);
+                }
+            }
+        }, new Button[]{Button.DPAD_RIGHT});
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (chassis!=null) {
+                    chassis.crab(0.3, -30, 3);
+                }
+            }
+        }, new Button[]{Button.DPAD_LEFT});
     }
 
     public void setupTelemetry(Telemetry telemetry) {

@@ -36,6 +36,7 @@ public class MecTeleOp extends LinearOpMode {
         try {
             // configure robot and reset all hardware
             robot.configure(configuration, telemetry, ToboSigma.AutoTeamColor.NOT_AUTO);
+            robot.chassis.enableImuTelemetry(configuration);
             configuration.apply();
             robot.reset(false);
 

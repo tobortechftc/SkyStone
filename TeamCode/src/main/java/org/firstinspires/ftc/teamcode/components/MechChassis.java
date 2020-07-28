@@ -43,6 +43,11 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         //  the driver; opposite servos are in central position
     }
 
+    private double left_ratio = 1.0; // slow down ratio for left wheels to go straight
+    private double right_ratio = 0.9; // slow down ratio for right wheels to go straight
+    private double front_ratio = 0.95; // slow down ratio for front wheels to go 90 degree
+    private double back_ratio = 1.0; // slow down ratio for front wheels to go 90 degree
+
     // distance between the centers of left and right wheels, inches
     private double track = 11.5;
     // distance between the centers of front and back wheels, inches
@@ -74,7 +79,11 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     private boolean useScalePower = true;//
     private boolean setImuTelemetry = false;//unless debugging, don't set telemetry for imu
     private boolean setRangeSensorTelemetry = false;//unless debugging, don't set telemetry for range sensor
-    public double powerScale() { return powerScale; }
+
+    private void configure_IMUs(Configuration configuration) {
+        orientationSensor = new CombinedOrientationSensor().configureLogging(logTag + "-sensor", logLevel);
+        orientationSensor.configure(configuration.getHardwareMap(), "imu", "imu2");
+    }
 
 
     //odometry motors
@@ -89,8 +98,6 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     String rbName = "motorBR";
     String lbName = "motorBL";
     String verticalLeftEncoderName = rbName, verticalRightEncoderName = lfName, horizontalEncoderName = rfName;
-
-
 
     final double TICKS_PER_CM = 16.86;//number of encoder ticks per cm of driving
 
@@ -125,12 +132,22 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         return globalPositionUpdate.returnOrientation();
     }
 
+    public double getLeft_ratio() { return left_ratio; }
+    public double getRight_ratio() { return left_ratio; }
+    public double getFront_ratio() { return front_ratio; }
+    public double getBack_ratio() { return back_ratio; }
+
+    public double powerScale() { return powerScale; }
+
     public void enableRangeSensorTelemetry() { // must be call before reset() or setupTelemetry()
         setRangeSensorTelemetry = true;
     }
 
-    public void enableImuTelemetry() {
+    public void enableImuTelemetry(Configuration configuration) {
         setImuTelemetry = true;
+        if (orientationSensor==null) {
+            configure_IMUs(configuration);
+        }
     }
 
     public double getDefaultScale() {
@@ -250,8 +267,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         motorBL.setDirection(DcMotorSimple.Direction.REVERSE);
 
         if (auto || setImuTelemetry) {
-            orientationSensor = new CombinedOrientationSensor().configureLogging(logTag + "-sensor", logLevel);
-            orientationSensor.configure(configuration.getHardwareMap(), "imu", "imu2");
+            configure_IMUs(configuration);
         }
 
         // register chassis as configurable component
@@ -290,10 +306,10 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
      * @param power must be in range [0,1]
      */
     public void yMove(int sgn, double power) {
-        motorFL.setPower(sgn * power);
-        motorFR.setPower(sgn * power);
-        motorBL.setPower(sgn * power);
-        motorBR.setPower(sgn * power);
+        motorFL.setPower(sgn * power * left_ratio);
+        motorFR.setPower(sgn * power * right_ratio);
+        motorBL.setPower(sgn * power * left_ratio);
+        motorBR.setPower(sgn * power * right_ratio);
     }
 
     /**
@@ -303,10 +319,10 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
      * @param power must be in range [0,1]
      */
     public void xMove(int sgn, double power) {
-        motorFL.setPower(sgn * power);
-        motorFR.setPower(-sgn * power);
-        motorBL.setPower(-sgn * power);
-        motorBR.setPower(sgn * power);
+        motorFL.setPower(sgn * power * front_ratio);
+        motorFR.setPower(-sgn * power * front_ratio);
+        motorBL.setPower(-sgn * power * back_ratio);
+        motorBR.setPower(sgn * power * back_ratio);
     }
     public void angleMove(double directionAngle, double power){
         double[] motorPowers  = new double[4];
@@ -325,6 +341,55 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         motorFR.setPower(fr);
         motorBL.setPower(bl);
         motorBR.setPower(br);
+    }
+
+    public void forward(double power, double inches, long timeout_sec) {
+        // power should always be positive
+        // inches > 0 forward
+        //        < 0 backward
+
+        power = Math.abs(power);
+        boolean count_up = (Math.signum(inches)>0);
+        double error_inches = 0.1;
+        double target_y = inches+odo_y_pos();
+        long iniTime = System.currentTimeMillis();
+        double cur_y = odo_y_pos(), prev_y=cur_y;
+        while ((Math.abs(cur_y-target_y) > error_inches) && (System.currentTimeMillis()-iniTime<timeout_sec*1000)) {
+            yMove((int) Math.signum(inches), power);
+            if (count_up) {
+                if (cur_y>=target_y-error_inches) break;
+            } else {
+                if (cur_y<=target_y+error_inches) break;
+            }
+                prev_y=cur_y;
+            cur_y = odo_y_pos();
+        }
+        stop();
+    }
+
+    public void crab(double power, double inches, long timeout_sec) {
+        // power should always be positive
+        // inches > 0, crab right 90 degree
+        //        < 0, crab left 90 degree
+        power = Math.abs(power);
+
+        boolean count_up = (Math.signum(inches)>0);
+
+        double error_inches = 0.1;
+        double target_x = inches+odo_x_pos();
+        long iniTime = System.currentTimeMillis();
+        double cur_x = odo_x_pos(), prev_x=cur_x;
+        while ((Math.abs(cur_x-target_x) > error_inches) && (System.currentTimeMillis()-iniTime<timeout_sec*1000)) {
+            xMove((int) Math.signum(inches), power);
+            if (count_up) {
+                if (cur_x>=target_x-error_inches) break;
+            } else {
+                if (cur_x<=target_x+error_inches) break;
+            }
+            prev_x=cur_x;
+            cur_x = odo_x_pos();
+        }
+        stop();
     }
 
     /**
@@ -509,7 +574,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         line.addData("Pwr/Scale", new Func<String>() {
             @Override
             public String value() {
-                return String.format("%.2f / %.1f", motorFL.getPower(), getDefaultScale());
+                return String.format("%.2f / %.1f\n", motorFL.getPower(), getDefaultScale());
             }
         });
         /*
@@ -546,6 +611,14 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             });
         }
         */
+        if (horizontalEncoder != null) {
+            line.addData("row X", "%d", new Func<Integer>() {
+                @Override
+                public Integer value() {
+                    return horizontalEncoder.getCurrentPosition();
+                }
+            });
+        }
         if (verticalLeftEncoder != null) {
             line.addData("row Y-Left", "%d", new Func<Integer>() {
                 @Override
@@ -555,27 +628,21 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             });
         }
         if (verticalRightEncoder != null) {
-            line.addData("row Y-Right", "%d", new Func<Integer>() {
+            line.addData("row Y-Right", "%d\n", new Func<Integer>() {
                 @Override
                 public Integer value() {
                     return verticalRightEncoder.getCurrentPosition();
                 }
             });
         }
-        if (horizontalEncoder != null) {
-            line.addData("row X", "%d", new Func<Integer>() {
-                @Override
-                public Integer value() {
-                    return horizontalEncoder.getCurrentPosition();
-                }
-            });
-        }
+
         if (globalPositionUpdate!=null) {
-            line.addData("Odo (xl,xr,y)", new Func<String>() {
+            line.addData("Odo (x,ly,ry)", new Func<String>() {
                 @Override
                 public String value() {
-                    return String.format("(%5.0f,%5.0f,%5.0f)\n", globalPositionUpdate.leftYEncoder(),
-                            globalPositionUpdate.rightYEncoder(), globalPositionUpdate.XEncoder());
+                    return String.format("(%5.0f,%5.0f,%5.0f)\n", globalPositionUpdate.XEncoder(),
+                            globalPositionUpdate.leftYEncoder(),
+                            globalPositionUpdate.rightYEncoder());
                 }
             });
             line.addData("Odo-pos (x,y,angle)", new Func<String>() {
