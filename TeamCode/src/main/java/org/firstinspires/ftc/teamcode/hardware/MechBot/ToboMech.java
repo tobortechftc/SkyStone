@@ -16,12 +16,25 @@ import org.firstinspires.ftc.teamcode.support.events.EventManager;
 import org.firstinspires.ftc.teamcode.support.events.Events;
 import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
 
+import static java.lang.Thread.sleep;
+
 public class ToboMech extends Logger<ToboMech> implements Robot2 {
     private Telemetry telemetry;
     public MechChassis chassis;
     public CoreSystem core;
     public ElapsedTime runtime = new ElapsedTime();
     public double rotateRatio = 0.7; // slow down ratio for rotation
+
+
+    public double auto_chassis_power = .7;
+    public double auto_chassis_dist = 150;
+    public double auto_chassis_heading = -90;
+    public double auto_chassis_power_slow = .4;
+    public double auto_chassis_align_power = .22;
+
+    public double auto_rotate_degree = 90;
+
+
 
     @Override
     public String getName() {
@@ -140,8 +153,116 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         */
     }
 
+
     private double toDegrees(double x, double y) {
         if (x == 0) return y >= 0 ? 0 : 180;
         return Math.atan2(x, y) / Math.PI * 180;
     }
+
+
+    //@MenuEntry(label = "Drive Straight", group = "Test Chassis")
+    public void testStraight(EventManager em) {
+        if (Thread.interrupted()) return;
+        telemetry.addLine().addData("(LS)", "Drive").setRetained(true)
+                .addData("Hold [LB]/[RB]", "45 degree").setRetained(true);
+        chassis.setupTelemetry(telemetry);
+        em.updateTelemetry(telemetry, 1000);
+        em.onStick(new Events.Listener() {
+            @Override
+            public void stickMoved(EventManager source, Events.Side side, float currentX, float changeX, float currentY, float changeY) throws InterruptedException {
+                double power = Math.max(Math.abs(currentX), Math.abs(currentY));
+                double heading = toDegrees(currentX, currentY);
+                debug("testStraight(): x: %+.2f, y: %+.2f, pow: %+.3f, head: %+.1f",
+                        currentX, currentY, power, heading);
+
+                if (source.isPressed(Button.LEFT_BUMPER) || source.isPressed(Button.RIGHT_BUMPER)) {
+                    // constrain to 45 degree diagonals
+                    heading = Math.signum(heading) * (Math.abs(heading) < 90 ? 45 : 135);
+                } else {
+                    // constrain to 90 degrees
+                    heading = Math.round(heading / 90) * 90;
+                }
+
+                // adjust heading / power for driving backwards
+                if (heading > 90) {
+                    chassis.driveStraight( power, -30, heading - 180, 3);
+                } else if (heading < -90) {
+                    chassis.driveStraight( power, -30, heading + 180, 3);
+                } else {
+                    chassis.driveStraight(power, 30,  heading, 3);
+                }
+            }
+        }, Events.Axis.BOTH, Events.Side.LEFT);
+    }
+
+    @MenuEntry(label = "Auto Rotation", group = "Test Chassis")
+    public void testRotationSkyStone(EventManager em) {
+        if (Thread.interrupted()) return;
+        telemetry.addLine().addData("(BACK) Y/A", "+/- Power(%.2f)", auto_chassis_power).setRetained(true);
+        telemetry.addLine().addData("(BACK) X/B", "+/- degree(%.2f)", auto_rotate_degree).setRetained(true);
+        chassis.setupTelemetry(telemetry);
+        chassis.enableImuTelemetry();
+        em.updateTelemetry(telemetry, 100);
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.BACK)) {
+                    auto_chassis_power += 0.1;
+                    if (auto_chassis_power > 1) auto_chassis_power = 1;
+                } else {
+                    chassis.rotateToOld(auto_chassis_power, auto_rotate_degree, 5000);
+                }
+            }
+        }, new Button[]{Button.Y});
+
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.BACK)) {
+                    auto_chassis_power -= 0.1;
+                    if (auto_chassis_power < 0.1) auto_chassis_power = 0.1;
+                }
+            }
+        }, new Button[]{Button.A});
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.BACK)) {
+                    auto_rotate_degree += 10;
+                    if (auto_rotate_degree > 150) auto_rotate_degree = 150;
+                }
+            }
+        }, new Button[]{Button.X});
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.BACK)) {
+                    auto_rotate_degree -= 10;
+                    if (auto_rotate_degree < -150) auto_rotate_degree = -150;
+                }
+            }
+        }, new Button[]{Button.B});
+
+    }
+
+     @MenuEntry(label = "New Auto Straight", group = "Test Chassis")
+    public void testStraightNewSkyStone(EventManager em) {
+        if (Thread.interrupted()) return;
+
+        try {
+
+            chassis.driveStraight(.6, 50, -90, 10000);
+            sleep(500);
+            chassis.driveStraight(.6, 50, 90, 10000);
+            sleep(500);
+            chassis.driveStraight(.6, 50, 0, 10000);
+            sleep(500);
+            chassis.driveStraight(.6, -50, 0, 10000);
+        } catch (InterruptedException e) {
+
+        }
+
+    }
+
+
 }

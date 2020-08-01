@@ -13,6 +13,11 @@ import org.firstinspires.ftc.teamcode.support.hardware.Adjustable;
 import org.firstinspires.ftc.teamcode.support.hardware.Configurable;
 import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
 
+import static java.lang.Math.PI;
+import static java.lang.Math.abs;
+import static java.lang.Math.cos;
+import static java.lang.Math.min;
+import static java.lang.Math.sin;
 import static java.lang.Thread.sleep;
 
 /**
@@ -88,6 +93,9 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
 
     final double TICKS_PER_CM = 16.86;//number of encoder ticks per cm of driving
+
+    private double chassisAligmentPower = 0.25;
+
 
     public void setGlobalPosUpdate(OdometryGlobalCoordinatePosition val) { globalPositionUpdate=val;}
     public OdometryGlobalCoordinatePosition globalPositionUpdate() { return globalPositionUpdate; }
@@ -250,6 +258,31 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         configuration.register(this);
     }
 
+    public void driveStraight(double power, double inches, double heading, long timeout_sec){
+        if (inches < 0){
+            inches = - inches;
+            power = - power;
+        }
+        boolean count_up = Math.signum(inches) > 0;
+
+        double error_inches = 0.1;
+        double target_x = inches + odo_x_pos();
+        long iniTime = System.currentTimeMillis();
+        double cur_x = odo_x_pos(), prev_x = cur_x;
+        while(Math.abs(cur_x-target_x) > error_inches &&
+                System.currentTimeMillis() - iniTime < timeout_sec * 1000){
+                angleMove(heading, power);
+                if(count_up){
+                    if (cur_x >= target_x - error_inches) break;
+                } else{
+                    if (cur_x <= target_x + error_inches) break;
+                }
+                prev_x = cur_x;
+                cur_x = odo_x_pos();
+        }
+        stop();
+    }
+
     /**
      * move in the vertical direction
      *
@@ -275,7 +308,18 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         motorBL.setPower(-sgn * power);
         motorBR.setPower(sgn * power);
     }
-
+    public void angleMove(double directionAngle, double power){
+        double[] motorPowers  = new double[4];
+        motorPowers[0] = (Math.sin(Math.toRadians(directionAngle))+ Math.cos(Math.toRadians(directionAngle)));
+        motorPowers[1] = (Math.cos(Math.toRadians(directionAngle))- Math.sin(Math.toRadians(directionAngle)));
+        motorPowers[2] = motorPowers[1];
+        motorPowers[3] = motorPowers[0];
+        double max = Math.max(Math.abs(motorPowers[0]), Math.abs(motorPowers[1]));
+        motorFL.setPower(motorPowers[0] * power);
+        motorFR.setPower(motorPowers[1] * power);
+        motorBL.setPower(motorPowers[2] * power);
+        motorBR.setPower(motorPowers[3] * power);
+    }
     public void freeStyle(double fl, double fr, double bl, double br) {
         motorFL.setPower(fl);
         motorFR.setPower(fr);
@@ -401,58 +445,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         driveMode = DriveMode.STOP;
     }
 
-    public void rotateTo(double power, double finalHeading) throws InterruptedException {
-        rawRotateTo(power, finalHeading, true);//!!! A very bold move
-        sleep(200);
-        rawRotateTo(0.25, finalHeading, false);
-    }
 
-    private void rawRotateTo(double power, double finalHeading, boolean stopEarly) throws InterruptedException {
-        double iniHeading = orientationSensor.getHeading();
-        double deltaD = finalHeading - iniHeading;
-        //do not turn if the heading is close enough the target
-        if (Math.abs(deltaD) < 0.5)
-            return;
-        //resolve the issue with +-180 mark
-        if (Math.abs(deltaD) > 180) {
-            finalHeading = finalHeading + (deltaD > 0 ? -360 : +360);
-            deltaD = 360 - Math.abs(deltaD);
-            deltaD = -deltaD;
-        }
-        //break on reaching the target
-        setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        //ensure the condition before calling rotate()
-        driveMode = DriveMode.STOP;
-        useScalePower = false;
-        //***** routine to start the wheels ******//
-        turn((int) Math.signum(deltaD), power);
-        //record heading for checking in while loop
-        double lastReading = orientationSensor.getHeading();
-        long iniTime = System.currentTimeMillis();
-        while (true) {
-            double currentHeading = orientationSensor.getHeading();
-            //we cross the +-180 mark if and only if the product below is a very negative number
-            if ((currentHeading * lastReading < -100.0) || (Math.abs(currentHeading - lastReading) > 180.0)) {
-                //deltaD>0 => cross the mark clockwise; deltaD<0 => cross the mark anticlockwise
-                finalHeading = finalHeading + (deltaD > 0 ? -360.0 : +360.0);
-            }
-            //if within acceptable range, terminate
-            if (Math.abs(finalHeading - currentHeading) < (stopEarly ? 10.0 : 0.5)) break;
-            //if overshoot, terminate
-            if (deltaD > 0 && currentHeading - finalHeading > 0) break;
-            if (deltaD < 0 && currentHeading - finalHeading < 0) break;
-            //timeout, break. default timeout: 3s
-            if (System.currentTimeMillis() - iniTime > 3000) break;
-            //stop pressed, break
-            if (Thread.currentThread().isInterrupted()) break;
-            lastReading = currentHeading;
-            // yield handler
-            this.core.yield();
-        }
-        stop();
-        driveMode = DriveMode.STOP;
-        useScalePower = true;
-    }
 
     public void setRunMode(DcMotor.RunMode rm) {
         motorFL.setMode(rm);
@@ -630,4 +623,94 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     public boolean hasRollStabalized(int inputIndex, double minDiff) {
         return orientationSensor.hasRollStabalized(inputIndex, minDiff);
     }
+
+    public void rawRotateTo(double power, double finalHeading, boolean stopEarly, int timeout) throws InterruptedException {
+        if (Thread.interrupted()) return;
+        debug("rotateT0(pwr: %.3f, finalHeading: %.1f)", power, finalHeading);
+        double iniHeading = orientationSensor.getHeading();
+        double deltaD = finalHeading - iniHeading;
+        debug("iniHeading: %.1f, deltaD: %.1f)", iniHeading, deltaD);
+        //do not turn if the heading is close enough the target
+        if (Math.abs(deltaD) < 0.5)
+            return;
+        //resolve the issue with +-180 mark
+        if (Math.abs(deltaD) > 180) {
+            finalHeading = finalHeading + (deltaD > 0 ? -360 : +360);
+            deltaD = 360 - Math.abs(deltaD);
+            deltaD = -deltaD;
+            debug("Adjusted finalHeading: %.1f, deltaD: %.1f)", finalHeading, deltaD);
+        }
+        //break on reaching the target
+        if (Thread.interrupted()) return;
+        //for (WheelAssembly wheel : wheels)
+          //  wheel.motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        //ensure the condition before calling rotate()
+        //driveMode = DriveMode.STOP;
+        useScalePower = false;
+        //***** routine to start the wheels ******//
+        turn((int)Math.signum(deltaD), power);
+        //***** End routine to start the wheels ******//
+        //record heading for checking in while loop
+        double lastReading = orientationSensor.getHeading();
+        long iniTime = System.currentTimeMillis();
+        while (true) {
+            if (Thread.interrupted()) return;
+            double currentHeading = orientationSensor.getHeading();
+            //we cross the +-180 mark if and only if the product below is a very negative number
+            if ((currentHeading * lastReading < -100.0) || (Math.abs(currentHeading - lastReading) > 180.0)) {
+                //deltaD>0 => cross the mark clockwise; deltaD<0 => cross the mark anticlockwise
+                finalHeading = finalHeading + (deltaD > 0 ? -360.0 : +360.0);
+                debug("Crossing180, finalHeading: %.1f, deltaD:%.1f)", finalHeading, deltaD);
+            }
+            debug("currentHeading: %.1f, finalHeading: %.1f)", currentHeading, finalHeading);
+            //if within acceptable range, terminate
+            if (Math.abs(finalHeading - currentHeading) < (stopEarly ? power * 10.0 : 0.5)) break;
+            //if overshoot, terminate
+            if (deltaD > 0 && currentHeading - finalHeading > 0) break;
+            if (deltaD < 0 && currentHeading - finalHeading < 0) break;
+            //timeout, break. default timeout: 3s
+            if (System.currentTimeMillis() - iniTime > timeout) break;
+            //stop pressed, break
+            if (Thread.interrupted()) return;
+            lastReading = currentHeading;
+//            sleep(0);
+            // yield handler
+            //TaskManager.processTasks();
+            this.core.yield();
+        }
+        if (Thread.interrupted()) return;
+        //stop
+        stop();
+
+        useScalePower = true;
+    }
+    public void rotateToOld(double power, double finalHeading, int timeout) throws InterruptedException {
+        if (Thread.interrupted()) return;
+        if (power < 0.3) {//when power is small, use a flat power output
+            rawRotateTo(power, finalHeading, true, timeout);
+            return;
+        }
+        //when power is big, use a piecewise power output
+        double iniHeading = orientationSensor.getHeading();
+        double iniHeading_P = -iniHeading;
+        double finalHeading_P = -finalHeading;
+        double absDiff = min(abs(finalHeading - iniHeading_P), 180 - abs(finalHeading - iniHeading_P));
+        double firstTarget;
+        if (cos(iniHeading_P * degreeToRad) * sin(finalHeading_P * degreeToRad) - cos(finalHeading_P * degreeToRad) * sin(iniHeading_P * degreeToRad) >= 0) {//rotating ccw
+            firstTarget = iniHeading - 0.8 * absDiff;
+        } else {
+            firstTarget = iniHeading + 0.8 * absDiff;
+        }
+        //make sure first target stay in [-180,+180] range
+        if (firstTarget > 180) firstTarget -= 360;
+        if (firstTarget < -180) firstTarget += 360;
+
+        rawRotateTo(power, firstTarget, true, timeout);
+        //sleep(100);
+        if (Thread.interrupted()) return;
+        rawRotateTo(chassisAligmentPower, finalHeading, false, 1000);
+    }
+
+    static final double degreeToRad = PI / 180;
+    static final double radToDegree = 180 / PI;
 }
