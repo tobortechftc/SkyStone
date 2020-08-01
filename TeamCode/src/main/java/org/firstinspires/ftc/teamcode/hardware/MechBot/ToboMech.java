@@ -209,40 +209,53 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
     }
 
 
-    //@MenuEntry(label = "Drive Straight", group = "Test Chassis")
+    @MenuEntry(label = "Drive Straight", group = "Test Chassis")
     public void testStraight(EventManager em) {
+
         if (Thread.interrupted()) return;
-        telemetry.addLine().addData("(LS)", "Drive").setRetained(true)
-                .addData("Hold [LB]/[RB]", "45 degree").setRetained(true);
+        telemetry.addLine().addData("(BACK) Y/A", "+/- Power(%.2f)", auto_chassis_power).setRetained(true);
+        telemetry.addLine().addData("(BACK) X/B", "+/- heading(%.2f)", auto_rotate_degree).setRetained(true);
         chassis.setupTelemetry(telemetry);
         setupTelemetryDiagnostics(telemetry);
-        em.updateTelemetry(telemetry, 1000);
-        em.onStick(new Events.Listener() {
+        // chassis.enableImuTelemetry();
+        em.updateTelemetry(telemetry, 100);
+        em.onButtonDown(new Events.Listener() {
             @Override
-            public void stickMoved(EventManager source, Events.Side side, float currentX, float changeX, float currentY, float changeY) throws InterruptedException {
-                double power = Math.max(Math.abs(currentX), Math.abs(currentY));
-                double heading = toDegrees(currentX, currentY);
-                debug("testStraight(): x: %+.2f, y: %+.2f, pow: %+.3f, head: %+.1f",
-                        currentX, currentY, power, heading);
-
-                if (source.isPressed(Button.LEFT_BUMPER) || source.isPressed(Button.RIGHT_BUMPER)) {
-                    // constrain to 45 degree diagonals
-                    heading = Math.signum(heading) * (Math.abs(heading) < 90 ? 45 : 135);
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.BACK)) {
+                    auto_chassis_power += 0.1;
+                    if (auto_chassis_power > 1) auto_chassis_power = 1;
                 } else {
-                    // constrain to 90 degrees
-                    heading = Math.round(heading / 90) * 90;
-                }
-
-                // adjust heading / power for driving backwards
-                if (heading > 90) {
-                    chassis.driveStraight( power, -30, heading - 180, 3);
-                } else if (heading < -90) {
-                    chassis.driveStraight( power, -30, heading + 180, 3);
-                } else {
-                    chassis.driveStraight(power, 30,  heading, 3);
+                    chassis.driveStraight(auto_chassis_power, 30,  auto_rotate_degree, 5000);
                 }
             }
-        }, Events.Axis.BOTH, Events.Side.LEFT);
+        }, new Button[]{Button.Y});
+
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.BACK)) {
+                    auto_chassis_power -= 0.1;
+                    if (auto_chassis_power < 0.1) auto_chassis_power = 0.1;
+                }
+            }
+        }, new Button[]{Button.A});
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.BACK)) {
+                    auto_rotate_degree += 5;
+                }
+            }
+        }, new Button[]{Button.X});
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.BACK)) {
+                    auto_rotate_degree += 5;
+                }
+            }
+        }, new Button[]{Button.B});
     }
 
     @MenuEntry(label = "Auto Rotation", group = "Test Chassis")
