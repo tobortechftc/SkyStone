@@ -26,10 +26,10 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
     public double rotateRatio = 0.7; // slow down ratio for rotation
 
 
-    public double auto_chassis_power = .7;
+    public double auto_chassis_power = .4;
     public double auto_chassis_dist = 150;
     public double auto_chassis_heading = -90;
-    public double auto_chassis_power_slow = .4;
+    public double auto_chassis_power_slow = .2;
     public double auto_chassis_align_power = .22;
 
     public double auto_rotate_degree = 90;
@@ -50,6 +50,10 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         this.core = new CoreSystem();
         info("RoboRuck configure() after new CoreSystem()(run time = %.2f sec)", (runtime.seconds() - ini_time));
         chassis = new MechChassis(core).configureLogging("Mecanum", logLevel); // Log.DEBUG
+        if (autoColor== ToboSigma.AutoTeamColor.DIAGNOSIS) {
+            // enable imu for diagnosis
+            chassis.enableImuTelemetry(configuration);
+        }
         chassis.configure(configuration, (autoColor!= ToboSigma.AutoTeamColor.NOT_AUTO));
         info("RoboRuck configure() after init Chassis (run time = %.2f sec)", (runtime.seconds() - ini_time));
     }
@@ -159,6 +163,17 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         }, new Button[]{Button.DPAD_LEFT});
     }
 
+    public void setupTelemetryDiagnostics(Telemetry telemetry) {
+        Telemetry.Line line = telemetry.addLine();
+        line.addData("Test ", new Func<String>() {
+            @Override
+            public String value() {
+                return String.format("Power=%.2f, dist=%.1f, rotate_degree=%.1f\n",
+                        auto_chassis_power, auto_chassis_dist, auto_rotate_degree);
+            }
+        });
+    }
+
     public void setupTelemetry(Telemetry telemetry) {
         if (Thread.currentThread().isInterrupted()) return;
         Telemetry.Line line = telemetry.addLine();
@@ -200,6 +215,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         telemetry.addLine().addData("(LS)", "Drive").setRetained(true)
                 .addData("Hold [LB]/[RB]", "45 degree").setRetained(true);
         chassis.setupTelemetry(telemetry);
+        setupTelemetryDiagnostics(telemetry);
         em.updateTelemetry(telemetry, 1000);
         em.onStick(new Events.Listener() {
             @Override
@@ -235,7 +251,8 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         telemetry.addLine().addData("(BACK) Y/A", "+/- Power(%.2f)", auto_chassis_power).setRetained(true);
         telemetry.addLine().addData("(BACK) X/B", "+/- degree(%.2f)", auto_rotate_degree).setRetained(true);
         chassis.setupTelemetry(telemetry);
-        chassis.enableImuTelemetry();
+        setupTelemetryDiagnostics(telemetry);
+        // chassis.enableImuTelemetry();
         em.updateTelemetry(telemetry, 100);
         em.onButtonDown(new Events.Listener() {
             @Override
