@@ -73,6 +73,14 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         //telemetry.addLine().addData("(LS)", "Drive").setRetained(true)
         //        .addData("Hold [LB]/[RB]", "45 degree").setRetained(true);
         // chassis.setupTelemetry(telemetry);
+        Thread positionThread;
+        if (chassis!=null && chassis.globalPositionUpdate()==null) {
+            chassis.configureOdometry();
+            chassis.setupTelemetry(telemetry);
+            positionThread = (chassis.globalPositionUpdate()==null? null: new Thread(chassis.globalPositionUpdate()));
+            if (positionThread!=null)
+                positionThread.start();
+        }
         setupTelemetry(telemetry);
         em.updateTelemetry(telemetry, 1000);
         em.onStick(new Events.Listener() { // Left-Joystick
@@ -211,11 +219,18 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
 
     @MenuEntry(label = "Drive Straight", group = "Test Chassis")
     public void testStraight(EventManager em) {
-
+        Thread positionThread;
+        if (chassis!=null && chassis.globalPositionUpdate()==null) {
+            chassis.configureOdometry();
+            chassis.setupTelemetry(telemetry);
+            positionThread = (chassis.globalPositionUpdate()==null? null: new Thread(chassis.globalPositionUpdate()));
+            if (positionThread!=null)
+                positionThread.start();
+        }
         if (Thread.interrupted()) return;
         telemetry.addLine().addData("(BACK) Y/A", "+/- Power(%.2f)", auto_chassis_power).setRetained(true);
         telemetry.addLine().addData("(BACK) X/B", "+/- heading(%.2f)", auto_rotate_degree).setRetained(true);
-        chassis.setupTelemetry(telemetry);
+        // chassis.setupTelemetry(telemetry);
         setupTelemetryDiagnostics(telemetry);
         // chassis.enableImuTelemetry();
         em.updateTelemetry(telemetry, 100);
@@ -226,7 +241,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
                     auto_chassis_power += 0.1;
                     if (auto_chassis_power > 1) auto_chassis_power = 1;
                 } else {
-                    chassis.driveStraight(auto_chassis_power, 30,  auto_rotate_degree, 5000);
+                    chassis.driveStraight(auto_chassis_power, 30,  auto_rotate_degree, 5);
                 }
             }
         }, new Button[]{Button.Y});
@@ -244,7 +259,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (source.isPressed(Button.BACK)) {
-                    auto_rotate_degree += 5;
+                    auto_rotate_degree -= 5;
                 }
             }
         }, new Button[]{Button.X});
@@ -260,6 +275,14 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
 
     @MenuEntry(label = "Auto Rotation", group = "Test Chassis")
     public void testRotationSkyStone(EventManager em) {
+        Thread positionThread;
+        if (chassis!=null && chassis.globalPositionUpdate()==null) {
+            chassis.configureOdometry();
+            chassis.setupTelemetry(telemetry);
+            positionThread = (chassis.globalPositionUpdate()==null? null: new Thread(chassis.globalPositionUpdate()));
+            if (positionThread!=null)
+                positionThread.start();
+        }
         if (Thread.interrupted()) return;
         telemetry.addLine().addData("(BACK) Y/A", "+/- Power(%.2f)", auto_chassis_power).setRetained(true);
         telemetry.addLine().addData("(BACK) X/B", "+/- degree(%.2f)", auto_rotate_degree).setRetained(true);
@@ -292,7 +315,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (source.isPressed(Button.BACK)) {
-                    auto_rotate_degree += 10;
+                    auto_rotate_degree -= 10;
                     if (auto_rotate_degree > 150) auto_rotate_degree = 150;
                 }
             }
@@ -301,7 +324,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (source.isPressed(Button.BACK)) {
-                    auto_rotate_degree -= 10;
+                    auto_rotate_degree += 10;
                     if (auto_rotate_degree < -150) auto_rotate_degree = -150;
                 }
             }
@@ -312,16 +335,23 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
      @MenuEntry(label = "New Auto Straight", group = "Test Chassis")
     public void testStraightNewSkyStone(EventManager em) {
         if (Thread.interrupted()) return;
-
+         Thread positionThread;
+         if (chassis!=null && chassis.globalPositionUpdate()==null) {
+             chassis.configureOdometry();
+             chassis.setupTelemetry(telemetry);
+             positionThread = (chassis.globalPositionUpdate()==null? null: new Thread(chassis.globalPositionUpdate()));
+             if (positionThread!=null)
+                 positionThread.start();
+         }
         try {
 
-            chassis.driveStraight(.6, 50, -90, 10000);
+            chassis.driveStraight(.6, 50, -90, 5);
             sleep(500);
-            chassis.driveStraight(.6, 50, 90, 10000);
+            chassis.driveStraight(.6, 50, 90, 5);
             sleep(500);
-            chassis.driveStraight(.6, 50, 0, 10000);
+            chassis.driveStraight(.6, 50, 0, 5);
             sleep(500);
-            chassis.driveStraight(.6, -50, 0, 10000);
+            chassis.driveStraight(.6, -50, 0, 5);
         } catch (InterruptedException e) {
 
         }

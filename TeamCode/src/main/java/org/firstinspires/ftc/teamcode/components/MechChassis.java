@@ -282,19 +282,19 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         boolean count_up = Math.signum(inches) > 0;
 
         double error_inches = 0.1;
-        double target_x = inches + odo_x_pos();
+        double target_y = inches + odo_y_pos();
         long iniTime = System.currentTimeMillis();
-        double cur_x = odo_x_pos(), prev_x = cur_x;
-        while(Math.abs(cur_x-target_x) > error_inches &&
+        double cur_y = odo_y_pos(), prev_y = cur_y;
+        while(Math.abs(cur_y-target_y) > error_inches &&
                 System.currentTimeMillis() - iniTime < timeout_sec * 1000){
                 angleMove(heading, power);
                 if(count_up){
-                    if (cur_x >= target_x - error_inches) break;
+                    if (cur_y >= target_y - error_inches) break;
                 } else{
-                    if (cur_x <= target_x + error_inches) break;
+                    if (cur_y <= target_y + error_inches) break;
                 }
-                prev_x = cur_x;
-                cur_x = odo_x_pos();
+                prev_y = cur_y;
+                cur_y = odo_y_pos();
         }
         stop();
     }
