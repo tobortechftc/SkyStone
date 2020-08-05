@@ -43,10 +43,18 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         //  the driver; opposite servos are in central position
     }
 
+    // the following 4 ratio values are used to normalize 4 wheel motors to the same speed
+    // whenever changing a wheel motor, it must be calibrated again
+    private double ratioFL = 1.0;
+    private double ratioFR = 0.8847;
+    private double ratioBL = 0.9348;
+    private double ratioBR = 0.9315;
+
     private double left_ratio = 1.0; // slow down ratio for left wheels to go straight
-    private double right_ratio = 0.9; // slow down ratio for right wheels to go straight
+    private double right_ratio = 1.0; // slow down ratio for right wheels to go straight
     private double front_ratio = 0.95; // slow down ratio for front wheels to go 90 degree
     private double back_ratio = 1.0; // slow down ratio for front wheels to go 90 degree
+
 
     // distance between the centers of left and right wheels, inches
     private double track = 11.5;
@@ -306,10 +314,10 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
      * @param power must be in range [0,1]
      */
     public void yMove(int sgn, double power) {
-        motorFL.setPower(sgn * power * left_ratio);
-        motorFR.setPower(sgn * power * right_ratio);
-        motorBL.setPower(sgn * power * left_ratio);
-        motorBR.setPower(sgn * power * right_ratio);
+        motorFL.setPower(sgn * power * left_ratio * ratioFL);
+        motorFR.setPower(sgn * power * right_ratio * ratioFR);
+        motorBL.setPower(sgn * power * left_ratio * ratioBL);
+        motorBR.setPower(sgn * power * right_ratio * ratioBR);
     }
 
     /**
@@ -319,10 +327,10 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
      * @param power must be in range [0,1]
      */
     public void xMove(int sgn, double power) {
-        motorFL.setPower(sgn * power * front_ratio);
-        motorFR.setPower(-sgn * power * front_ratio);
-        motorBL.setPower(-sgn * power * back_ratio);
-        motorBR.setPower(sgn * power * back_ratio);
+        motorFL.setPower(sgn * power * front_ratio * ratioFL);
+        motorFR.setPower(-sgn * power * front_ratio * ratioFR);
+        motorBL.setPower(-sgn * power * back_ratio * ratioBL);
+        motorBR.setPower(sgn * power * back_ratio * ratioBR);
     }
     public void angleMove(double directionAngle, double power){
         double[] motorPowers  = new double[4];
@@ -331,16 +339,16 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         motorPowers[2] = motorPowers[1];
         motorPowers[3] = motorPowers[0];
         double max = Math.max(Math.abs(motorPowers[0]), Math.abs(motorPowers[1]));
-        motorFL.setPower(motorPowers[0] * power);
-        motorFR.setPower(motorPowers[1] * power);
-        motorBL.setPower(motorPowers[2] * power);
-        motorBR.setPower(motorPowers[3] * power);
+        motorFL.setPower(motorPowers[0] * power * ratioFL);
+        motorFR.setPower(motorPowers[1] * power * ratioFR);
+        motorBL.setPower(motorPowers[2] * power * ratioBL);
+        motorBR.setPower(motorPowers[3] * power * ratioBR);
     }
     public void freeStyle(double fl, double fr, double bl, double br) {
-        motorFL.setPower(fl);
-        motorFR.setPower(fr);
-        motorBL.setPower(bl);
-        motorBR.setPower(br);
+        motorFL.setPower(fl* ratioFL);
+        motorFR.setPower(fr* ratioFR);
+        motorBL.setPower(bl* ratioBL);
+        motorBR.setPower(br* ratioBR);
     }
 
     public void forward(double power, double inches, long timeout_sec) {
