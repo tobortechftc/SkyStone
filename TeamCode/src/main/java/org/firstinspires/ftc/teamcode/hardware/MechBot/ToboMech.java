@@ -242,7 +242,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
                     auto_chassis_power += 0.1;
                     if (auto_chassis_power > 1) auto_chassis_power = 1;
                 } else {
-                    chassis.driveStraight(auto_chassis_power, 30,  auto_rotate_degree, 5);
+                    chassis.driveStraight(auto_chassis_power, 120,  auto_rotate_degree, 5);
                 }
             }
         }, new Button[]{Button.Y});
@@ -253,6 +253,8 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
                 if (source.isPressed(Button.BACK)) {
                     auto_chassis_power -= 0.1;
                     if (auto_chassis_power < 0.1) auto_chassis_power = 0.1;
+                } else {
+                    chassis.driveStraightNew(auto_chassis_power, 120,  auto_rotate_degree, 0.8, 5);
                 }
             }
         }, new Button[]{Button.A});

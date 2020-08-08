@@ -299,6 +299,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             power = - power;
         }
         boolean count_up = Math.signum(cm) > 0;
+        double fixed_heading = orientationSensor.getHeading();
 
         double error_cm = 0.1 / 2.54;
         double target_y = cm + odo_y_pos_cm();
@@ -306,7 +307,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         double cur_y = odo_y_pos_cm(), prev_y = cur_y;
         while(Math.abs(cur_y-target_y) > error_cm &&
                 System.currentTimeMillis() - iniTime < timeout_sec * 1000){
-                angleMove(degrees, power);
+                angleMove(degrees, power, false, fixed_heading);
                 if(count_up){
                     if (cur_y >= target_y - error_cm) break;
                 } else{
@@ -317,6 +318,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         }
         stop();
     }
+
     public void driveStraightNew(double power, double cm, double degree, double slowDownPercent, long timeout_sec){
         if (cm < 0){
             cm = - cm;
@@ -328,7 +330,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         double error_cm = 0.1 / 2.54;
         double target_x = Math.cos(degree) * cm + odo_x_pos_cm();
         double target_y = Math.sin(degree) * cm + odo_y_pos_cm();
-
+        double fixed_heading = orientationSensor.getHeading();
 
         long iniTime = System.currentTimeMillis();
         double cur_x = odo_x_pos_cm(), prev_x = cur_x;
@@ -353,8 +355,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             double desiredDegree = Math.atan2(target_x - cur_x, target_y - cur_y);
 
             //move
-            angleMove(desiredDegree, powerUsed);
-
+            angleMove(desiredDegree, powerUsed, true, fixed_heading);
 
             if(count_up){
                 if (cur_y >= target_y - error_cm) break;
@@ -394,18 +395,33 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         motorBL.setPower(-sgn * power * back_ratio * ratioBL);
         motorBR.setPower(sgn * power * back_ratio * ratioBR);
     }
-    public void angleMove(double directionAngle, double power){
+    public void angleMove(double directionAngle, double power, boolean headingCorrection, double fixed_heading){
+        double cur_heading = orientationSensor.getHeading();
+        double degree_diff = Math.abs(cur_heading-fixed_heading);
+        double cur_left_to_right_ratio = 1.0;
+        if (headingCorrection && (degree_diff>1.0)) { // curve to right
+            if (cur_heading-fixed_heading>0)
+                cur_left_to_right_ratio = (1.0-degree_diff*0.05);
+            else
+                cur_left_to_right_ratio = (1.0+degree_diff*0.05);
+        }
         double[] motorPowers  = new double[4];
         motorPowers[0] = (Math.sin(Math.toRadians(directionAngle))+ Math.cos(Math.toRadians(directionAngle)));
         motorPowers[1] = (Math.cos(Math.toRadians(directionAngle))- Math.sin(Math.toRadians(directionAngle)));
+        if (cur_left_to_right_ratio<1.0) {
+            motorPowers[0] *= cur_left_to_right_ratio;
+        } else {
+            motorPowers[1] /= cur_left_to_right_ratio;
+        }
         motorPowers[2] = motorPowers[1];
         motorPowers[3] = motorPowers[0];
         double max = Math.max(Math.abs(motorPowers[0]), Math.abs(motorPowers[1]));
-        motorFL.setPower(motorPowers[0] * power * ratioFL);
-        motorFR.setPower(motorPowers[1] * power * ratioFR);
-        motorBL.setPower(motorPowers[2] * power * ratioBL);
-        motorBR.setPower(motorPowers[3] * power * ratioBR);
+        motorFL.setPower(motorPowers[0] * power * ratioFL / max);
+        motorFR.setPower(motorPowers[1] * power * ratioFR / max);
+        motorBL.setPower(motorPowers[2] * power * ratioBL / max);
+        motorBR.setPower(motorPowers[3] * power * ratioBR / max);
     }
+
     public void freeStyle(double fl, double fr, double bl, double br) {
         motorFL.setPower(fl* ratioFL);
         motorFR.setPower(fr* ratioFR);
@@ -718,7 +734,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             line.addData("Odo-pos (x,y,angle)", new Func<String>() {
                 @Override
                 public String value() {
-                    return String.format("(%4.2f, %4.2f, %4.2f)\n", odo_x_pos_inches(), odo_y_pos_inches(), odo_heading());
+                    return String.format("(%4.2f, %4.2f, %4.2f)\n", odo_x_pos_cm(), odo_y_pos_cm(), odo_heading());
                 }
             });
         }
