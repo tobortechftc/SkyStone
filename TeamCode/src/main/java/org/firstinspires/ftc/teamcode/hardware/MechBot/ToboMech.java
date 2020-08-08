@@ -88,14 +88,14 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
             public void stickMoved(EventManager source, Events.Side side, float currentX, float changeX, float currentY, float changeY) throws InterruptedException {
                 if (Math.abs(source.getStick(Events.Side.RIGHT, Events.Axis.Y_ONLY))> 0.2 )
                     return; // avoid conflicting drives
-
+                double normalizeRatio = 0.43;
                 // Left joystick for forward/backward and turn
                 if (Math.abs(currentY)>0.2) { // car mode
-                    chassis.carDrive(currentY*Math.abs(currentY), currentX);
+                    chassis.carDrive(currentY*Math.abs(currentY) * normalizeRatio, currentX);
                 }else if (Math.abs(currentX) > 0.2) {
                     chassis.turn((currentX > 0 ? 1 : -1), Math.abs(currentX * currentX) * chassis.powerScale());
                 } else if (Math.abs(currentY)>0.2) {
-                    chassis.yMove((currentY>0?1:-1), Math.abs(currentY * currentY) * chassis.powerScale());
+                    chassis.yMove((currentY>0?1:-1), Math.abs(currentY * currentY) * chassis.powerScale() * normalizeRatio);
                 } else {
                     chassis.stop();
                 }
@@ -105,20 +105,28 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         em.onStick(new Events.Listener() { // Right-Joystick
             @Override
             public void stickMoved(EventManager source, Events.Side side, float currentX, float changeX, float currentY, float changeY) throws InterruptedException {
+                double movingAngle = 0;
+                double normalizeRatio = 0.43; // minimum 0.43 when moving forward, and maximum 1.0 when crabbing 90 degree
                 if (Math.abs(source.getStick(Events.Side.LEFT, Events.Axis.Y_ONLY))>0.2 )
                     return; // avoid conflicting drives
                 double left_x = source.getStick(Events.Side.LEFT, Events.Axis.X_ONLY);
                 // right joystick for free crabbing
                 if (Math.abs(left_x)>0.1 && Math.abs(currentY)>0.1) {
                     // car drive
-                    chassis.carDrive(currentY*Math.abs(currentY), left_x);
+                    chassis.carDrive(currentY*Math.abs(currentY)*normalizeRatio, left_x);
                 } else if (Math.abs(currentX)+Math.abs(currentY)>0.2) {
+                    movingAngle = Math.toDegrees(Math.atan2(currentX, currentY));
+                    if (movingAngle>=-90 && movingAngle<=90) {
+                        normalizeRatio = 0.43 + 0.57 * (Math.abs(movingAngle)/90.0);
+                    } else { // movingAngle is < -90 or > 90
+                        normalizeRatio = 0.43 + 0.57 * ((180-Math.abs(movingAngle))/90.0);
+                    }
                     double lsx = currentX;
                     double lsy = currentY;
-                    double power_lf = lsy+lsx;
-                    double power_lb = lsy-lsx;
-                    double power_rf = lsy-lsx;
-                    double power_rb = lsy+lsx;
+                    double power_lf = (lsy+lsx) * normalizeRatio;
+                    double power_lb = (lsy-lsx) * normalizeRatio;
+                    double power_rf = (lsy-lsx) * normalizeRatio;
+                    double power_rb = (lsy+lsx) * normalizeRatio;
 
                     power_lf = Range.clip(power_lf, -1, 1);
                     power_lb = Range.clip(power_lb, -1, 1);
