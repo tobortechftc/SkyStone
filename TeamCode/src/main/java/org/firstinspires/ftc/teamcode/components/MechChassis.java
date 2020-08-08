@@ -100,6 +100,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     DcMotorEx horizontalEncoder;
     OdometryGlobalCoordinatePosition globalPositionUpdate;
     final double ODO_COUNTS_PER_INCH = 307.699557;
+    final double ODO_COUNTS_PER_CM = ODO_COUNTS_PER_INCH / 2.54;
 
 
     String rfName = "motorFR" , lfName = "motorFL";
@@ -115,6 +116,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     public void setGlobalPosUpdate(OdometryGlobalCoordinatePosition val) { globalPositionUpdate=val;}
     public OdometryGlobalCoordinatePosition globalPositionUpdate() { return globalPositionUpdate; }
     public double odo_count_per_inch() {return ODO_COUNTS_PER_INCH;}
+    public double odo_count_per_cm() {return ODO_COUNTS_PER_CM;}
     public DcMotorEx verticalLeftEncoder(){ return verticalLeftEncoder; }
     public DcMotorEx verticalRightEncoder(){ return verticalRightEncoder; }
     public DcMotorEx horizontalEncoder(){ return horizontalEncoder; }
@@ -125,14 +127,23 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         globalPositionUpdate.reverseLeftEncoder();
     }
 
-    public double odo_x_pos() {
+    public double odo_x_pos_inches() {
         if (globalPositionUpdate==null) return 0;
         return globalPositionUpdate.returnXCoordinate()/odo_count_per_inch();
     }
+    public double odo_x_pos_cm() {
+        if (globalPositionUpdate==null) return 0;
+        return globalPositionUpdate.returnXCoordinate()/odo_count_per_cm();
+    }
 
-    public double odo_y_pos() {
+
+    public double odo_y_pos_inches() {
         if (globalPositionUpdate==null) return 0;
         return globalPositionUpdate.returnYCoordinate()/odo_count_per_inch();
+    }
+    public double odo_y_pos_cm() {
+        if (globalPositionUpdate==null) return 0;
+        return globalPositionUpdate.returnYCoordinate()/odo_count_per_cm();
     }
 
     public double odo_heading() {
@@ -282,27 +293,78 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         configuration.register(this);
     }
 
-    public void driveStraight(double power, double inches, double heading, long timeout_sec){
-        if (inches < 0){
-            inches = - inches;
+    public void driveStraight(double power, double cm, double degrees, long timeout_sec){
+        if (cm < 0){
+            cm = - cm;
             power = - power;
         }
-        boolean count_up = Math.signum(inches) > 0;
+        boolean count_up = Math.signum(cm) > 0;
 
-        double error_inches = 0.1;
-        double target_y = inches + odo_y_pos();
+        double error_cm = 0.1 / 2.54;
+        double target_y = cm + odo_y_pos_cm();
         long iniTime = System.currentTimeMillis();
-        double cur_y = odo_y_pos(), prev_y = cur_y;
-        while(Math.abs(cur_y-target_y) > error_inches &&
+        double cur_y = odo_y_pos_cm(), prev_y = cur_y;
+        while(Math.abs(cur_y-target_y) > error_cm &&
                 System.currentTimeMillis() - iniTime < timeout_sec * 1000){
-                angleMove(heading, power);
+                angleMove(degrees, power);
                 if(count_up){
-                    if (cur_y >= target_y - error_inches) break;
+                    if (cur_y >= target_y - error_cm) break;
                 } else{
-                    if (cur_y <= target_y + error_inches) break;
+                    if (cur_y <= target_y + error_cm) break;
                 }
                 prev_y = cur_y;
-                cur_y = odo_y_pos();
+                cur_y = odo_y_pos_cm();
+        }
+        stop();
+    }
+    public void driveStraightNew(double power, double cm, double degree, double slowDownPercent, long timeout_sec){
+        if (cm < 0){
+            cm = - cm;
+            power = - power;
+        }
+        double powerUsed = power;
+        boolean count_up = Math.signum(cm) > 0;
+
+        double error_cm = 0.1 / 2.54;
+        double target_x = Math.cos(degree) * cm + odo_x_pos_cm();
+        double target_y = Math.sin(degree) * cm + odo_y_pos_cm();
+
+
+        long iniTime = System.currentTimeMillis();
+        double cur_x = odo_x_pos_cm(), prev_x = cur_x;
+        double cur_y = odo_y_pos_cm(), prev_y = cur_y;
+        while(Math.abs(cur_y-target_y) > cm &&
+                System.currentTimeMillis() - iniTime < timeout_sec * 1000){
+            double traveledPercent = Math.abs(cur_y-target_y) / Math.abs(cm);
+            if (traveledPercent > slowDownPercent) {
+                double apower = Math.abs(power);
+
+                double pow = .25 * minPower + .75 * apower;
+                if (traveledPercent < .25 + .75 * slowDownPercent)
+                    pow = .5 * minPower + .5 * apower;
+                else if (traveledPercent < .5 + .5 * slowDownPercent)
+                    pow = .75 * minPower + .25 * apower;
+                else if (traveledPercent < .75 + .25 * slowDownPercent) pow = minPower;
+
+                if (pow < minPower) pow = minPower;
+
+                powerUsed = pow * Math.signum(power);
+            }
+            double desiredDegree = Math.atan2(target_x - cur_x, target_y - cur_y);
+
+            //move
+            angleMove(desiredDegree, powerUsed);
+
+
+            if(count_up){
+                if (cur_y >= target_y - error_cm) break;
+            } else{
+                if (cur_y <= target_y + error_cm) break;
+            }
+            prev_x = cur_x;
+            cur_x = odo_x_pos_cm();
+            prev_y = cur_y;
+            cur_y = odo_y_pos_cm();
         }
         stop();
     }
@@ -359,9 +421,9 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         power = Math.abs(power);
         boolean count_up = (Math.signum(inches)>0);
         double error_inches = 0.1;
-        double target_y = inches+odo_y_pos();
+        double target_y = inches+odo_y_pos_inches();
         long iniTime = System.currentTimeMillis();
-        double cur_y = odo_y_pos(), prev_y=cur_y;
+        double cur_y = odo_y_pos_inches(), prev_y=cur_y;
         while ((Math.abs(cur_y-target_y) > error_inches) && (System.currentTimeMillis()-iniTime<timeout_sec*1000)) {
             yMove((int) Math.signum(inches), power);
             if (count_up) {
@@ -370,7 +432,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
                 if (cur_y<=target_y+error_inches) break;
             }
                 prev_y=cur_y;
-            cur_y = odo_y_pos();
+            cur_y = odo_y_pos_inches();
         }
         stop();
     }
@@ -384,9 +446,9 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         boolean count_up = (Math.signum(inches)>0);
 
         double error_inches = 0.1;
-        double target_x = inches+odo_x_pos();
+        double target_x = inches+odo_x_pos_inches();
         long iniTime = System.currentTimeMillis();
-        double cur_x = odo_x_pos(), prev_x=cur_x;
+        double cur_x = odo_x_pos_inches(), prev_x=cur_x;
         while ((Math.abs(cur_x-target_x) > error_inches) && (System.currentTimeMillis()-iniTime<timeout_sec*1000)) {
             xMove((int) Math.signum(inches), power);
             if (count_up) {
@@ -395,7 +457,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
                 if (cur_x<=target_x+error_inches) break;
             }
             prev_x=cur_x;
-            cur_x = odo_x_pos();
+            cur_x = odo_x_pos_inches();
         }
         stop();
     }
@@ -656,7 +718,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             line.addData("Odo-pos (x,y,angle)", new Func<String>() {
                 @Override
                 public String value() {
-                    return String.format("(%4.2f, %4.2f, %4.2f)\n", odo_x_pos(), odo_y_pos(), odo_heading());
+                    return String.format("(%4.2f, %4.2f, %4.2f)\n", odo_x_pos_inches(), odo_y_pos_inches(), odo_heading());
                 }
             });
         }
