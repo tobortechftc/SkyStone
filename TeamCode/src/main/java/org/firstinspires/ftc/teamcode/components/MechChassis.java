@@ -12,6 +12,8 @@ import org.firstinspires.ftc.teamcode.support.Logger;
 import org.firstinspires.ftc.teamcode.support.hardware.Adjustable;
 import org.firstinspires.ftc.teamcode.support.hardware.Configurable;
 import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
+import org.firstinspires.ftc.teamcode.support.tasks.TaskManager;
+
 
 import static java.lang.Math.PI;
 import static java.lang.Math.abs;
@@ -908,4 +910,105 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
     static final double degreeToRad = PI / 180;
     static final double radToDegree = 180 / PI;
+
+    public void rotateTo(double power, double finalHeading) throws InterruptedException {
+        rotateTo(power, finalHeading, 4000);
+    }
+
+    public void rotateTo(double power, double finalHeading, int timeout) throws InterruptedException {
+        rotateTo(power, finalHeading, timeout, true,true);
+    }
+
+    public void rotateTo(double power, double finalHeading, int timeout, boolean changePower, boolean finalCorrection) throws InterruptedException {
+        if (Thread.interrupted()) return;
+        if (power <= chassisAligmentPower) {//was 0.3
+            rawRotateTo(power, finalHeading, false, timeout);//was power
+            if (Thread.interrupted()) return;
+            if (power > chassisAligmentPower)
+                rawRotateTo(chassisAligmentPower, finalHeading, false, timeout);
+            return;
+        }
+        double iniHeading = orientationSensor.getHeading();
+        double iniAbsDiff = abs(finalHeading - iniHeading) > 180 ? 360 - abs(finalHeading - iniHeading) : abs(finalHeading - iniHeading);
+        if (iniAbsDiff < 0.5)//if within 0.5 degree of target, don't rotate
+            return;
+
+        int direction;
+        if (cross(-iniHeading, -finalHeading) >= 0) {//revert sign and take cross product
+            direction = -1;//rotating ccw
+        } else {
+            direction = +1;//rotating cw
+        }
+        if (Thread.interrupted()) return;
+        double lowPowerDegree = 8 + (power - 0.3) * 70;
+
+        //ensure the condition before calling rotate()
+        useScalePower = false;
+        //power the wheels
+        if (Thread.interrupted()) return;
+        turn(1, direction * power);
+        double currentHeading;
+        double crossProduct;
+        double currentAbsDiff;
+        boolean lowerPowerApplied = false;
+        long iniTime = System.currentTimeMillis();
+        int loop = 0;
+        while (true) {
+            if (Thread.interrupted()) return;
+            currentHeading = orientationSensor.getHeading();
+//            info("RotateTo-%.1f, heading =%.3f, pw=%.2f(%s)", finalHeading,currentHeading,power,(lowerPowerApplied?"low":"hi"));
+            crossProduct = cross(-currentHeading, -finalHeading);
+            //break if target reached or exceeded
+            if (direction == -1) {//rotating ccw
+                if (crossProduct <= 0) break;
+            } else {//rotating cw
+                if (crossProduct >= 0) break;
+            }
+            currentAbsDiff = abs(finalHeading - currentHeading) > 180 ? 360 - abs(finalHeading - currentHeading) : abs(finalHeading - currentHeading);
+            if (changePower && !lowerPowerApplied && currentAbsDiff <= lowPowerDegree) {//damp power to 0.22 if in last 40%, (currentAbsDiff / iniAbsDiff < 0.40)
+                if (Thread.interrupted()) return;
+                turn(1, 0.0);
+                sleep(100);
+                if (Thread.interrupted()) return;
+                turn(1, direction * chassisAligmentPower);
+                lowerPowerApplied = true;
+            }
+            if (currentAbsDiff / iniAbsDiff < 0.20 && abs(crossProduct) * radToDegree < 1.0)//assume sinx=x, stop 1 degree early
+                break;//stop if really close to target
+            if (Thread.interrupted()) break;
+            if (System.currentTimeMillis() - iniTime > timeout) break;
+            TaskManager.processTasks();
+            loop++;
+        }
+        if (Thread.interrupted()) return;
+            stop();
+        if (!finalCorrection) {
+            driveMode = DriveMode.STOP;
+            useScalePower = true;
+            return;
+        }
+        if (Thread.interrupted()) return;
+        sleep(100);
+        //**************Check for overshoot and correction**************
+        currentHeading = orientationSensor.getHeading();
+        currentAbsDiff = abs(finalHeading - currentHeading) > 180 ? 360 - abs(finalHeading - currentHeading) : abs(finalHeading - currentHeading);
+        if ((currentAbsDiff > 2.0) && !Thread.interrupted()) {
+            rawRotateTo(0.22, finalHeading, false, 500);
+        }
+        if (Thread.interrupted()) return;
+        //**************End correction**************
+        driveMode = DriveMode.STOP;
+        useScalePower = true;
+//        tl.addData("iteration",loop);
+//        tl.update();
+//        sleep(3000);
+    }
+
+    //final heading needs to be with in range(-180,180]
+
+
+    //cross two unit vectors whose argument angle is given in degree
+    public static double cross(double theta, double phi) {
+        return cos(theta * degreeToRad) * sin(phi * degreeToRad) - sin(theta * degreeToRad) * cos(phi * degreeToRad);
+    }
 }
