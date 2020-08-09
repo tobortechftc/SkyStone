@@ -27,12 +27,13 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
 
 
     public double auto_chassis_power = .4;
-    public double auto_chassis_dist = 150;
+    public double auto_chassis_dist = 120;
     public double auto_chassis_heading = -90;
     public double auto_chassis_power_slow = .2;
     public double auto_chassis_align_power = .22;
 
-    public double auto_rotate_degree = 90;
+
+    public double auto_rotate_degree = 0;
 
 
 
@@ -186,8 +187,8 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         line.addData("Test ", new Func<String>() {
             @Override
             public String value() {
-                return String.format("Power=%.2f, dist=%.1f, rotate_degree=%.1f\n",
-                        auto_chassis_power, auto_chassis_dist, auto_rotate_degree);
+                return String.format("Power/auto=%.2f/%.2f, dist=%.0f, rotate_degree=%.1f, tar-x=%.0f,tar-y=%.0f\n",
+                        auto_chassis_power,chassis.auto_power, auto_chassis_dist, auto_rotate_degree,chassis.auto_target_x,chassis.auto_target_y);
             }
         });
     }
@@ -240,6 +241,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         if (Thread.interrupted()) return;
         telemetry.addLine().addData("(BACK) Y/A", "+/- Power(%.2f)", auto_chassis_power).setRetained(true);
         telemetry.addLine().addData("(BACK) X/B", "+/- heading(%.2f)", auto_rotate_degree).setRetained(true);
+        telemetry.addLine().addData("DPAD-UP/DOWN", "+/- distance(%.2f)", auto_chassis_dist).setRetained(true);
         // chassis.setupTelemetry(telemetry);
         setupTelemetryDiagnostics(telemetry);
         // chassis.enableImuTelemetry();
@@ -251,7 +253,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
                     auto_chassis_power += 0.1;
                     if (auto_chassis_power > 1) auto_chassis_power = 1;
                 } else {
-                    chassis.driveStraight(auto_chassis_power, 120,  auto_rotate_degree, 5);
+                    chassis.driveStraight(auto_chassis_power, auto_chassis_dist,  auto_rotate_degree, 5);
                 }
             }
         }, new Button[]{Button.Y});
@@ -262,8 +264,8 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
                 if (source.isPressed(Button.BACK)) {
                     auto_chassis_power -= 0.1;
                     if (auto_chassis_power < 0.1) auto_chassis_power = 0.1;
-                } else {
-                    chassis.driveStraightNew(auto_chassis_power, 120,  auto_rotate_degree, 0.8, 5);
+                } else if (!source.isPressed(Button.START)) {
+                    chassis.driveStraightNew(auto_chassis_power, auto_chassis_dist,  auto_rotate_degree, 0.8, 5);
                 }
             }
         }, new Button[]{Button.A});
@@ -283,6 +285,18 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
                 }
             }
         }, new Button[]{Button.B});
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                auto_chassis_dist += 10;
+            }
+        }, new Button[]{Button.DPAD_UP});
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                auto_chassis_dist -= 10;
+            }
+        }, new Button[]{Button.DPAD_DOWN});
     }
 
     @MenuEntry(label = "Auto Rotation", group = "Test Chassis")

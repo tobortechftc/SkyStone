@@ -63,7 +63,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     // wheel radius, inches
     private double wheelRadius = 2.0;
     // minimum power that should be applied to the wheel motors for robot to start moving
-    private double minPower = 0.15;
+    private double minPower = 0.05;
     // maximum power that should be applied to the wheel motors
     private double maxPower = 0.99;
     private double maxRange = 127; // max range sensor detectable
@@ -78,6 +78,9 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     // array contains the same wheel assemblies as above variables
     //  and is convenient to use when actions have to be performed on all 4
     public CombinedOrientationSensor orientationSensor;
+    public double auto_target_x = 0;
+    public double auto_target_y = 0;
+    public double auto_power = 0;
 
     private DriveMode driveMode = DriveMode.STOP;      // current drive mode
     private double targetHeading;     // intended heading for DriveMode.STRAIGHT as reported by orientation sensor
@@ -296,50 +299,72 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     }
 
     public void driveStraight(double power, double cm, double degrees, long timeout_sec){
-        if (cm < 0){
-            cm = - cm;
-            power = - power;
-        }
-        boolean count_up = Math.signum(cm) > 0;
         double fixed_heading = orientationSensor.getHeading();
+        double error_cm = 0.5;
+        double x_dist = cm * Math.sin(Math.toRadians(degrees)) * Math.signum(power);
+        double y_dist = cm * Math.cos(Math.toRadians(degrees)) * Math.signum(power);
+        double target_y = y_dist + odo_y_pos_cm();
+        double target_x = x_dist + odo_x_pos_cm();
+        auto_target_x = target_x;
+        auto_target_y = target_y;
 
-        double error_cm = 0.1 / 2.54;
-        double target_y = cm + odo_y_pos_cm();
+        power = power * Math.signum(cm);
+
         long iniTime = System.currentTimeMillis();
         double cur_y = odo_y_pos_cm(), prev_y = cur_y;
-        while(Math.abs(cur_y-target_y) > error_cm &&
-                System.currentTimeMillis() - iniTime < timeout_sec * 1000){
-                angleMove(degrees, power, false, fixed_heading);
-                if(count_up){
-                    if (cur_y >= target_y - error_cm) break;
-                } else{
-                    if (cur_y <= target_y + error_cm) break;
-                }
-                prev_y = cur_y;
-                cur_y = odo_y_pos_cm();
+        double cur_x = odo_y_pos_cm(), prev_x = cur_x;
+        boolean x_reached = false;
+        boolean y_reached = false;
+        while ((!x_reached || !y_reached) && (System.currentTimeMillis() - iniTime < timeout_sec * 1000)){
+            double desiredDegree = Math.toDegrees(Math.atan2(target_x - cur_x, target_y - cur_y));
+            angleMove(desiredDegree, power, false, fixed_heading);
+            if (Math.abs(cur_y-target_y)<=error_cm) y_reached=true;
+            else if(y_dist>0){
+                if (cur_y >= target_y - error_cm) y_reached=true;
+            } else{
+                if (cur_y <= target_y + error_cm) y_reached=true;
+            }
+            if (Math.abs(cur_x-target_x)<=error_cm) x_reached=true;
+            else if(x_dist>0){
+                if (cur_x >= target_x - error_cm) x_reached=true;
+            } else{
+                if (cur_x <= target_x + error_cm) x_reached=true;
+            }
+            prev_y = cur_y;
+            cur_y = odo_y_pos_cm();
+            prev_x = cur_x;
+            cur_x = odo_x_pos_cm();
         }
         stop();
     }
 
     public void driveStraightNew(double power, double cm, double degree, double slowDownPercent, long timeout_sec){
-        if (cm < 0){
-            cm = - cm;
-            power = - power;
-        }
-        double powerUsed = power;
-        boolean count_up = Math.signum(cm) > 0;
-
-        double error_cm = 0.1 / 2.54;
-        double target_x = Math.cos(degree) * cm + odo_x_pos_cm();
-        double target_y = Math.sin(degree) * cm + odo_y_pos_cm();
+        double error_cm = 0.5;
+        double x_dist = cm * Math.sin(Math.toRadians(degree)) * Math.signum(power);
+        double y_dist = cm * Math.cos(Math.toRadians(degree)) * Math.signum(power);
+        double target_x = x_dist + odo_x_pos_cm();
+        double target_y = y_dist + odo_y_pos_cm();
+        auto_target_x = target_x;
+        auto_target_y = target_y;
         double fixed_heading = orientationSensor.getHeading();
 
+        power = power * Math.signum(cm);
+
+        double powerUsed = power;
         long iniTime = System.currentTimeMillis();
-        double cur_x = odo_x_pos_cm(), prev_x = cur_x;
-        double cur_y = odo_y_pos_cm(), prev_y = cur_y;
-        while(Math.abs(cur_y-target_y) > cm &&
-                System.currentTimeMillis() - iniTime < timeout_sec * 1000){
-            double traveledPercent = Math.abs(cur_y-target_y) / Math.abs(cm);
+        double cur_x = odo_x_pos_cm(), prev_x = cur_x, init_x=cur_x;
+        double cur_y = odo_y_pos_cm(), prev_y = cur_y, init_y=cur_y;
+        boolean x_reached = false;
+        boolean y_reached = false;
+        double traveledPercent = 0;
+        while((!x_reached || !y_reached) && (System.currentTimeMillis() - iniTime < timeout_sec * 1000)) {
+            if (y_dist > 0 && x_dist > 0) {
+                traveledPercent = Math.max(Math.abs(cur_y - init_y) / Math.abs(y_dist), Math.abs(cur_x - init_x) / Math.abs(x_dist));
+            } else if (y_dist>0) {
+                traveledPercent = Math.abs(cur_y - init_y) / Math.abs(y_dist);
+            } else if (x_dist>0) {
+                traveledPercent = Math.abs(cur_x - init_x) / Math.abs(x_dist);
+            }
             if (traveledPercent > slowDownPercent) {
                 double apower = Math.abs(power);
 
@@ -354,15 +379,26 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
                 powerUsed = pow * Math.signum(power);
             }
-            double desiredDegree = Math.atan2(target_x - cur_x, target_y - cur_y);
-
+            double desiredDegree = Math.toDegrees(Math.atan2(target_x - cur_x, target_y - cur_y));
             //move
             angleMove(desiredDegree, powerUsed, true, fixed_heading);
-
-            if(count_up){
-                if (cur_y >= target_y - error_cm) break;
+            if (Math.abs(cur_y-target_y)<=error_cm)
+                y_reached=true;
+            else if (y_dist>0){
+                if (cur_y >= target_y - error_cm)
+                    y_reached=true;
             } else{
-                if (cur_y <= target_y + error_cm) break;
+                if (cur_y <= target_y + error_cm)
+                    y_reached=true;
+            }
+            if (Math.abs(cur_x-target_x)<=error_cm)
+                x_reached=true;
+            else if (x_dist>0){
+                if (cur_x >= target_x - error_cm)
+                    x_reached=true;
+            } else{
+                if (cur_x <= target_x + error_cm)
+                    x_reached=true;
             }
             prev_x = cur_x;
             cur_x = odo_x_pos_cm();
@@ -400,17 +436,21 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     public void angleMove(double directionAngle, double power, boolean headingCorrection, double fixed_heading){
         double cur_heading = orientationSensor.getHeading();
         double degree_diff = Math.abs(cur_heading-fixed_heading);
+        // to-do: need to handle gap from 179 to -179
         double cur_left_to_right_ratio = 1.0;
         if (headingCorrection && (degree_diff>1.0)) { // curve to right
-            if (cur_heading-fixed_heading>0)
-                cur_left_to_right_ratio = (1.0-degree_diff*0.05);
-            else
-                cur_left_to_right_ratio = (1.0+degree_diff*0.05);
+            if (cur_heading-fixed_heading>0) {
+                cur_left_to_right_ratio = (1.0 - degree_diff * 0.05);
+                if (cur_left_to_right_ratio<0.9) cur_left_to_right_ratio=0.9;
+            } else {
+                cur_left_to_right_ratio = (1.0 + degree_diff * 0.05);
+                if (cur_left_to_right_ratio<0.9) cur_left_to_right_ratio=1.1;
+            }
         }
         double[] motorPowers  = new double[4];
         motorPowers[0] = (Math.sin(Math.toRadians(directionAngle))+ Math.cos(Math.toRadians(directionAngle)));
         motorPowers[1] = (Math.cos(Math.toRadians(directionAngle))- Math.sin(Math.toRadians(directionAngle)));
-        if (cur_left_to_right_ratio<1.0) {
+        if (cur_left_to_right_ratio<=1.0) {
             motorPowers[0] *= cur_left_to_right_ratio;
         } else {
             motorPowers[1] /= cur_left_to_right_ratio;
@@ -418,10 +458,10 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         motorPowers[2] = motorPowers[1];
         motorPowers[3] = motorPowers[0];
         double max = Math.max(Math.abs(motorPowers[0]), Math.abs(motorPowers[1]));
-        motorFL.setPower(motorPowers[0] * power * ratioFL / max);
-        motorFR.setPower(motorPowers[1] * power * ratioFR / max);
-        motorBL.setPower(motorPowers[2] * power * ratioBL / max);
-        motorBR.setPower(motorPowers[3] * power * ratioBR / max);
+        motorFL.setPower(motorPowers[0] * Math.abs(power) * ratioFL / max);
+        motorFR.setPower(motorPowers[1] * Math.abs(power) * ratioFR / max);
+        motorBL.setPower(motorPowers[2] * Math.abs(power) * ratioBL / max);
+        motorBR.setPower(motorPowers[3] * Math.abs(power) * ratioBR / max);
     }
 
     public void freeStyle(double fl, double fr, double bl, double br) {
@@ -736,7 +776,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             line.addData("Odo-pos (x,y,angle)", new Func<String>() {
                 @Override
                 public String value() {
-                    return String.format("(%4.2f, %4.2f, %4.2f)\n", odo_x_pos_cm(), odo_y_pos_cm(), odo_heading());
+                    return String.format("(%2.0f, %2.0f, %2.2f)\n", odo_x_pos_cm(), odo_y_pos_cm(), odo_heading());
                 }
             });
         }
