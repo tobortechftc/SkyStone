@@ -67,7 +67,8 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     // maximum power that should be applied to the wheel motors
     private double maxPower = 0.99;
     private double maxRange = 127; // max range sensor detectable
-    private double powerScale = 0.5;
+    private double defaultScale = 1.0;
+    private double mecanumForwardRatio = 0.5;
 
     private DcMotorEx motorFL;
     private DcMotorEx motorFR;
@@ -82,7 +83,6 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     private double targetHeading;     // intended heading for DriveMode.STRAIGHT as reported by orientation sensor
     private double headingDeviation;  // current heading deviation for DriveMode.STRAIGHT as reported by orientation sensor
     private double servoCorrection;   // latest correction applied to leading wheels' servos to correct heading deviation
-    private double defaultScale = 0.8;
     private double curHeading = 0;
     private boolean useScalePower = true;//
     private boolean setImuTelemetry = false;//unless debugging, don't set telemetry for imu
@@ -121,6 +121,10 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     public DcMotorEx verticalRightEncoder(){ return verticalRightEncoder; }
     public DcMotorEx horizontalEncoder(){ return horizontalEncoder; }
 
+    public double getMecanumForwardRatio() {
+        return mecanumForwardRatio;
+    }
+
     public void configureOdometry() {
         globalPositionUpdate = new OdometryGlobalCoordinatePosition(verticalLeftEncoder(), verticalRightEncoder(), horizontalEncoder(), odo_count_per_inch(), 75);
         globalPositionUpdate.reverseRightEncoder();
@@ -156,7 +160,13 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     public double getFront_ratio() { return front_ratio; }
     public double getBack_ratio() { return back_ratio; }
 
-    public double powerScale() { return powerScale; }
+    public double powerScale() { return defaultScale; }
+    public double getDefaultScale() {
+        return defaultScale;
+    }
+    public void setDefaultScale(double val) {
+        defaultScale = val;
+    }
 
     public void enableRangeSensorTelemetry() { // must be call before reset() or setupTelemetry()
         setRangeSensorTelemetry = true;
@@ -167,14 +177,6 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         if (orientationSensor==null) {
             configure_IMUs(configuration);
         }
-    }
-
-    public double getDefaultScale() {
-        return defaultScale;
-    }
-
-    public void setDefaultScale(double val) {
-        defaultScale = val;
     }
 
     @Adjustable(min = 8.0, max = 18.0, step = 0.02)
