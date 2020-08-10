@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.hardware.MechBot;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -27,7 +28,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
 
 
     public double auto_chassis_power = .4;
-    public double auto_chassis_dist = 120;
+    public double auto_chassis_dist = 100;
     public double auto_chassis_heading = -90;
     public double auto_chassis_power_slow = .2;
     public double auto_chassis_align_power = .22;
@@ -83,7 +84,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
 //                positionThread.start();
 //        }
         setupTelemetry(telemetry);
-        em.updateTelemetry(telemetry, 100);
+        em.updateTelemetry(telemetry, 1000);
         em.onStick(new Events.Listener() { // Left-Joystick
             @Override
             public void stickMoved(EventManager source, Events.Side side, float currentX, float changeX, float currentY, float changeY) throws InterruptedException {
@@ -229,7 +230,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
     }
 
 
-    @MenuEntry(label = "Drive Straight", group = "Test Chassis")
+    @MenuEntry(label = "driveStraight/rotateTo", group = "Test Chassis")
     public void testStraight(EventManager em) {
         Thread positionThread;
         if (chassis!=null && chassis.globalPositionUpdate()==null) {
@@ -240,9 +241,9 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
                 positionThread.start();
         }
         if (Thread.interrupted()) return;
-        telemetry.addLine().addData("(BACK) Y/A", "+/- Power(%.2f)", auto_chassis_power).setRetained(true);
-        telemetry.addLine().addData("(BACK) X/B", "+/- heading(%.2f)", auto_rotate_degree).setRetained(true);
+        telemetry.addLine().addData("(BACK) Y/A X/B", "+/- Power(%.2f) Degree(%.0f)", auto_chassis_power,auto_rotate_degree).setRetained(true);
         telemetry.addLine().addData("DPAD-UP/DOWN", "+/- distance(%.2f)", auto_chassis_dist).setRetained(true);
+        telemetry.addLine().addData("A - driveStraight()", "B - rotateTo()").setRetained(true);
         // chassis.setupTelemetry(telemetry);
         setupTelemetryDiagnostics(telemetry);
         // chassis.enableImuTelemetry();
@@ -283,6 +284,8 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (source.isPressed(Button.BACK)) {
                     auto_rotate_degree += 5;
+                } else if (!source.isPressed(Button.START)) {
+                    chassis.rotateTo(auto_chassis_power, auto_rotate_degree, 5000);
                 }
             }
         }, new Button[]{Button.B});

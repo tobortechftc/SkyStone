@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.components;
 
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -14,6 +15,8 @@ import org.firstinspires.ftc.teamcode.support.hardware.Configurable;
 import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
 import org.firstinspires.ftc.teamcode.support.tasks.TaskManager;
 
+
+import java.util.List;
 
 import static java.lang.Math.PI;
 import static java.lang.Math.abs;
@@ -100,6 +103,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         orientationSensor.configure(configuration.getHardwareMap(), "imu", "imu2");
     }
 
+    List<LynxModule> allHubs;
 
     //odometry motors
     DcMotorEx verticalLeftEncoder;
@@ -294,6 +298,12 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         motorFL.setDirection(DcMotorSimple.Direction.REVERSE);
         motorBL.setDirection(DcMotorSimple.Direction.REVERSE);
 
+        // Enable bulk read mode to speed up the encoder reads
+        allHubs = configuration.getHardwareMap().getAll(LynxModule.class);
+        for (LynxModule module : allHubs) {
+            module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
+        }
+
         if (auto || setImuTelemetry) {
             configure_IMUs(configuration);
         }
@@ -451,34 +461,61 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         motorBR.setPower(sgn * power * back_ratio * ratioBR);
     }
     public void angleMove(double directionAngle, double power, boolean headingCorrection, double fixed_heading){
+
+        auto_travel_p = directionAngle;
+
         double cur_heading = orientationSensor.getHeading();
         double degree_diff = Math.abs(cur_heading-fixed_heading);
         // to-do: need to handle gap from 179 to -179
         double cur_left_to_right_ratio = 1.0;
-        if (headingCorrection && (degree_diff>1.0)) { // curve to right
-            if (cur_heading-fixed_heading>0) {
+        boolean slow_down_left=false, slow_down_right=false;
+        if (headingCorrection && (degree_diff>1.0)) { // for Y axle correction
+            slow_down_left = ((cur_heading-fixed_heading>0) && directionAngle>-45 && directionAngle<45) ||
+                    (((cur_heading-fixed_heading<0) && directionAngle>135 && directionAngle<-135));
+            slow_down_right = ((cur_heading-fixed_heading<0) && directionAngle>-45 && directionAngle<45) ||
+                    (((cur_heading-fixed_heading>0) && directionAngle>135 && directionAngle<-135));
+            if (slow_down_left||slow_down_right) {
                 cur_left_to_right_ratio = (1.0 - degree_diff * 0.05);
                 if (cur_left_to_right_ratio<0.9) cur_left_to_right_ratio=0.9;
-            } else {
-                cur_left_to_right_ratio = (1.0 + degree_diff * 0.05);
-                if (cur_left_to_right_ratio<0.9) cur_left_to_right_ratio=1.1;
             }
         }
+        double cur_front_to_back_ratio = 1.0;
+        boolean slow_down_front=false, slow_down_back=false;
+        if (headingCorrection && (degree_diff>1.0)) { // for Y axle correction
+            slow_down_front = ((cur_heading-fixed_heading>0) && directionAngle>=45 && directionAngle<=135) ||
+                    (((cur_heading-fixed_heading<0) && directionAngle>=-135 && directionAngle<=-45));
+            slow_down_back = ((cur_heading-fixed_heading<0) && directionAngle>=45 && directionAngle<=135) ||
+                    (((cur_heading-fixed_heading>0) && directionAngle>=-135 && directionAngle<=-45));
+            if (slow_down_front||slow_down_back) {
+                cur_front_to_back_ratio = (1.0 - degree_diff * 0.05);
+                if (cur_front_to_back_ratio<0.9) cur_front_to_back_ratio=0.9;
+            }
+        }
+
         double[] motorPowers  = new double[4];
         motorPowers[0] = (Math.sin(Math.toRadians(directionAngle))+ Math.cos(Math.toRadians(directionAngle)));
         motorPowers[1] = (Math.cos(Math.toRadians(directionAngle))- Math.sin(Math.toRadians(directionAngle)));
-        if (cur_left_to_right_ratio<=1.0) {
-            motorPowers[0] *= cur_left_to_right_ratio;
-        } else {
-            motorPowers[1] /= cur_left_to_right_ratio;
-        }
         motorPowers[2] = motorPowers[1];
         motorPowers[3] = motorPowers[0];
         double max = Math.max(Math.abs(motorPowers[0]), Math.abs(motorPowers[1]));
-        motorFL.setPower(motorPowers[0] * Math.abs(power) * ratioFL / max);
-        motorFR.setPower(motorPowers[1] * Math.abs(power) * ratioFR / max);
-        motorBL.setPower(motorPowers[2] * Math.abs(power) * ratioBL / max);
-        motorBR.setPower(motorPowers[3] * Math.abs(power) * ratioBR / max);
+        if (slow_down_left) { // slow-down left
+            motorPowers[0] *= cur_left_to_right_ratio;
+            motorPowers[2] *= cur_left_to_right_ratio;
+        } else if (slow_down_right) { // slow down right
+            motorPowers[1] *= cur_left_to_right_ratio;
+            motorPowers[3] *= cur_left_to_right_ratio;
+        }
+        if (slow_down_front) { // make front motors slower
+            motorFL.setPower(motorPowers[0] * Math.abs(power) * ratioFL * cur_front_to_back_ratio / max);
+            motorFR.setPower(motorPowers[1] * Math.abs(power) * ratioFR * cur_front_to_back_ratio / max);
+            motorBL.setPower(motorPowers[2] * Math.abs(power) * ratioBL / max);
+            motorBR.setPower(motorPowers[3] * Math.abs(power) * ratioBR / max);
+        } else { // slow down back (or keep same)
+            motorFL.setPower(motorPowers[0] * Math.abs(power) * ratioFL / max);
+            motorFR.setPower(motorPowers[1] * Math.abs(power) * ratioFR / max);
+            motorBL.setPower(motorPowers[2] * Math.abs(power) * ratioBL * cur_front_to_back_ratio / max);
+            motorBR.setPower(motorPowers[3] * Math.abs(power) * ratioBR * cur_front_to_back_ratio / max);
+        }
     }
 
     public void freeStyle(double fl, double fr, double bl, double br) {
@@ -755,7 +792,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
                 }
             });
         }
-        */
+
         if (horizontalEncoder != null) {
             line.addData("row X", "%d", new Func<Integer>() {
                 @Override
@@ -780,6 +817,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
                 }
             });
         }
+        */
 
         if (globalPositionUpdate!=null) {
             line.addData("Odo (x,ly,ry)", new Func<String>() {

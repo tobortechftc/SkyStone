@@ -2,8 +2,7 @@ package org.firstinspires.ftc.teamcode.components.odometry;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 //import org.firstinspires.ftc.teamcode.Robot.Drivetrain.Odometry.OdometryGlobalCoordinatePosition;
 
@@ -13,9 +12,9 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 @TeleOp(name = "My Odometry OpMode")
 public class MyOdometryOpmode extends LinearOpMode {
     //Drive motors
-    DcMotor right_front, right_back, left_front, left_back;
+    DcMotorEx right_front, right_back, left_front, left_back;
     //Odometry Wheels
-    DcMotor verticalLeft, verticalRight, horizontal;
+    DcMotorEx verticalLeft, verticalRight, horizontal;
 
     final double COUNTS_PER_INCH = 307.699557;
 
@@ -64,42 +63,42 @@ public class MyOdometryOpmode extends LinearOpMode {
     }
 
     private void initDriveHardwareMap(String rfName, String rbName, String lfName, String lbName, String vlEncoderName, String vrEncoderName, String hEncoderName){
-        right_front = hardwareMap.dcMotor.get(rfName);
-        right_back = hardwareMap.dcMotor.get(rbName);
-        left_front = hardwareMap.dcMotor.get(lfName);
-        left_back = hardwareMap.dcMotor.get(lbName);
+        right_front = hardwareMap.tryGet(DcMotorEx.class,rfName);
+        right_back = hardwareMap.tryGet(DcMotorEx.class,rbName);
+        left_front = hardwareMap.tryGet(DcMotorEx.class,lfName);
+        left_back = hardwareMap.tryGet(DcMotorEx.class,lbName);
 
-        verticalLeft = hardwareMap.dcMotor.get(vlEncoderName);
-        verticalRight = hardwareMap.dcMotor.get(vrEncoderName);
-        horizontal = hardwareMap.dcMotor.get(hEncoderName);
+        verticalLeft = hardwareMap.tryGet(DcMotorEx.class,vlEncoderName);
+        verticalRight = hardwareMap.tryGet(DcMotorEx.class,vrEncoderName);
+        horizontal = hardwareMap.tryGet(DcMotorEx.class,hEncoderName);
 
-        right_front.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        right_back.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        left_front.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        left_back.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        right_front.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        right_back.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        left_front.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        left_back.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
 
-        right_front.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        right_back.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        left_front.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        left_back.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        right_front.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        right_back.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        left_front.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        left_back.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
 
-        verticalLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        verticalRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        horizontal.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        verticalLeft.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        verticalRight.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        horizontal.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
 
-        verticalLeft.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        verticalRight.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        horizontal.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        verticalLeft.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        verticalRight.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
+        horizontal.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
 
 
-        right_front.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        right_back.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        left_front.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        left_back.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        right_front.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        right_back.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        left_front.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
+        left_back.setZeroPowerBehavior(DcMotorEx.ZeroPowerBehavior.BRAKE);
 
-        left_front.setDirection(DcMotorSimple.Direction.REVERSE);
-        right_front.setDirection(DcMotorSimple.Direction.REVERSE);
-        right_back.setDirection(DcMotorSimple.Direction.REVERSE);
+        left_front.setDirection(DcMotorEx.Direction.REVERSE);
+        right_front.setDirection(DcMotorEx.Direction.REVERSE);
+        right_back.setDirection(DcMotorEx.Direction.REVERSE);
 
         telemetry.addData("Status", "Hardware Map Init Complete");
         telemetry.update();
