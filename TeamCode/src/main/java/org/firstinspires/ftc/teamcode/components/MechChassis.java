@@ -20,6 +20,7 @@ import static java.lang.Math.abs;
 import static java.lang.Math.cos;
 import static java.lang.Math.min;
 import static java.lang.Math.sin;
+import static java.lang.System.currentTimeMillis;
 import static java.lang.Thread.sleep;
 
 /**
@@ -313,12 +314,12 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
         power = power * Math.signum(cm);
 
-        long iniTime = System.currentTimeMillis();
+        long iniTime = currentTimeMillis();
         double cur_y = odo_y_pos_cm(), prev_y = cur_y;
         double cur_x = odo_y_pos_cm(), prev_x = cur_x;
         boolean x_reached = false;
         boolean y_reached = false;
-        while ((!x_reached || !y_reached) && (System.currentTimeMillis() - iniTime < timeout_sec * 1000)){
+        while ((!x_reached || !y_reached) && (currentTimeMillis() - iniTime < timeout_sec * 1000)){
             double desiredDegree = Math.toDegrees(Math.atan2(target_x - cur_x, target_y - cur_y));
             angleMove(desiredDegree, power, false, fixed_heading);
             if (Math.abs(cur_y-target_y)<=error_cm) y_reached=true;
@@ -354,16 +355,16 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         power = power * Math.signum(cm);
 
         double powerUsed = power;
-        long iniTime = System.currentTimeMillis();
+        long iniTime = currentTimeMillis();
         double cur_x = odo_x_pos_cm(), prev_x = cur_x, init_x=cur_x;
         double cur_y = odo_y_pos_cm(), prev_y = cur_y, init_y=cur_y;
         boolean x_reached = false;
         boolean y_reached = false;
         double traveledPercent = 0;
         double desiredDegree = Math.toDegrees(Math.atan2(target_x - cur_x, target_y - cur_y));
-        double init_loop_time = System.currentTimeMillis();
+        double init_loop_time = currentTimeMillis();
         int loop_count = 0;
-        while((!x_reached || !y_reached) && (System.currentTimeMillis() - iniTime < timeout_sec * 1000)) {
+        while((!x_reached || !y_reached) && (currentTimeMillis() - iniTime < timeout_sec * 1000)) {
             if (Math.abs(y_dist) > 0 && Math.abs(x_dist) > 0) {
                 traveledPercent = Math.max(Math.abs(cur_y - init_y) / Math.abs(y_dist), Math.abs(cur_x - init_x) / Math.abs(x_dist));
             } else if (Math.abs(y_dist)>0) {
@@ -413,8 +414,13 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             cur_x = odo_x_pos_cm();
             prev_y = cur_y;
             cur_y = odo_y_pos_cm();
+            loop_count++;
         }
-        double end_loop_time = System.currentTimeMillis();
+        double end_loop_time = currentTimeMillis();
+        if (loop_count>0)
+            auto_loop_time = (end_loop_time - init_loop_time)/(loop_count);
+
+
         // update auto_loop_time here: To-To Jared
 
         stop();
@@ -492,9 +498,9 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         boolean count_up = (Math.signum(inches)>0);
         double error_inches = 0.1;
         double target_y = inches+odo_y_pos_inches();
-        long iniTime = System.currentTimeMillis();
+        long iniTime = currentTimeMillis();
         double cur_y = odo_y_pos_inches(), prev_y=cur_y;
-        while ((Math.abs(cur_y-target_y) > error_inches) && (System.currentTimeMillis()-iniTime<timeout_sec*1000)) {
+        while ((Math.abs(cur_y-target_y) > error_inches) && (currentTimeMillis()-iniTime<timeout_sec*1000)) {
             yMove((int) Math.signum(inches), power);
             if (count_up) {
                 if (cur_y>=target_y-error_inches) break;
@@ -517,9 +523,9 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
         double error_inches = 0.1;
         double target_x = inches+odo_x_pos_inches();
-        long iniTime = System.currentTimeMillis();
+        long iniTime = currentTimeMillis();
         double cur_x = odo_x_pos_inches(), prev_x=cur_x;
-        while ((Math.abs(cur_x-target_x) > error_inches) && (System.currentTimeMillis()-iniTime<timeout_sec*1000)) {
+        while ((Math.abs(cur_x-target_x) > error_inches) && (currentTimeMillis()-iniTime<timeout_sec*1000)) {
             xMove((int) Math.signum(inches), power);
             if (count_up) {
                 if (cur_x>=target_x-error_inches) break;
@@ -623,7 +629,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         //start powering wheels
         yMove(cm > 0 ? +1 : -1, power);
         //record time
-        long iniTime = System.currentTimeMillis();
+        long iniTime = currentTimeMillis();
 
         //waiting loop
         while (true) {
@@ -639,7 +645,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             if (distance - maxTraveled < 10)
                 break;
             //determine if time limit is reached
-            if (System.currentTimeMillis() - iniTime > timeout)
+            if (currentTimeMillis() - iniTime > timeout)
                 break;
             if (Thread.currentThread().isInterrupted())
                 break;
@@ -859,7 +865,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         //***** End routine to start the wheels ******//
         //record heading for checking in while loop
         double lastReading = orientationSensor.getHeading();
-        long iniTime = System.currentTimeMillis();
+        long iniTime = currentTimeMillis();
         while (true) {
             if (Thread.interrupted()) return;
             double currentHeading = orientationSensor.getHeading();
@@ -876,7 +882,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             if (deltaD > 0 && currentHeading - finalHeading > 0) break;
             if (deltaD < 0 && currentHeading - finalHeading < 0) break;
             //timeout, break. default timeout: 3s
-            if (System.currentTimeMillis() - iniTime > timeout) break;
+            if (currentTimeMillis() - iniTime > timeout) break;
             //stop pressed, break
             if (Thread.interrupted()) return;
             lastReading = currentHeading;
@@ -961,7 +967,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         double crossProduct;
         double currentAbsDiff;
         boolean lowerPowerApplied = false;
-        long iniTime = System.currentTimeMillis();
+        long iniTime = currentTimeMillis();
         int loop = 0;
         while (true) {
             if (Thread.interrupted()) return;
@@ -986,7 +992,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             if (currentAbsDiff / iniAbsDiff < 0.20 && abs(crossProduct) * radToDegree < 1.0)//assume sinx=x, stop 1 degree early
                 break;//stop if really close to target
             if (Thread.interrupted()) break;
-            if (System.currentTimeMillis() - iniTime > timeout) break;
+            if (currentTimeMillis() - iniTime > timeout) break;
             TaskManager.processTasks();
             loop++;
         }
