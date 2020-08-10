@@ -84,6 +84,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     public double auto_target_y = 0;
     public double auto_power = 0;
     public double auto_loop_time = 0;
+    public  double auto_travel_p = 0;
 
     private DriveMode driveMode = DriveMode.STOP;      // current drive mode
     private double targetHeading;     // intended heading for DriveMode.STRAIGHT as reported by orientation sensor
@@ -343,13 +344,14 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
     public void driveStraightNew(double power, double cm, double degree, double slowDownPercent, long timeout_sec) throws InterruptedException {
         double error_cm = 0.5;
+        double fixed_heading = orientationSensor.getHeading();
+        // to-do: Shasha to compute x_dist/y_dist based on current heading
         double x_dist = cm * Math.sin(Math.toRadians(degree)) * Math.signum(power);
         double y_dist = cm * Math.cos(Math.toRadians(degree)) * Math.signum(power);
         double target_x = x_dist + odo_x_pos_cm();
         double target_y = y_dist + odo_y_pos_cm();
         auto_target_x = target_x;
         auto_target_y = target_y;
-        double fixed_heading = orientationSensor.getHeading();
 
         power = power * Math.signum(cm);
 
@@ -364,13 +366,14 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         double init_loop_time = System.currentTimeMillis();
         int loop_count = 0;
         while((!x_reached || !y_reached) && (System.currentTimeMillis() - iniTime < timeout_sec * 1000)) {
-            if (Math.abs(y_dist) > 0 && Math.abs(x_dist) > 0) {
+            if (Math.abs(y_dist) > 0.01 && Math.abs(x_dist) > 0.01) {
                 traveledPercent = Math.max(Math.abs(cur_y - init_y) / Math.abs(y_dist), Math.abs(cur_x - init_x) / Math.abs(x_dist));
-            } else if (Math.abs(y_dist)>0) {
+            } else if (Math.abs(y_dist)>0.01) {
                 traveledPercent = Math.abs(cur_y - init_y) / Math.abs(y_dist);
-            } else if (Math.abs(x_dist)>0) {
+            } else if (Math.abs(x_dist)>0.01) {
                 traveledPercent = Math.abs(cur_x - init_x) / Math.abs(x_dist);
             }
+            auto_travel_p = traveledPercent;
             if (traveledPercent > slowDownPercent) {
                 double apower = Math.abs(power);
                 double pow;
@@ -380,8 +383,9 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
                     pow = .5 * minPower + .5 * apower;
                 else if (traveledPercent < .75 + .25 * slowDownPercent) {
                     pow = .75 * minPower + .25 * apower;
-                } else
+                } else {
                     pow = minPower;
+                }
                 if (pow < minPower) pow = minPower;
 
                 powerUsed = pow * Math.signum(power);
@@ -413,10 +417,11 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             cur_x = odo_x_pos_cm();
             prev_y = cur_y;
             cur_y = odo_y_pos_cm();
+            loop_count ++;
         }
         double end_loop_time = System.currentTimeMillis();
-        // update auto_loop_time here: To-To Jared
-
+        if (loop_count>0)
+            auto_loop_time = (end_loop_time-init_loop_time)/(double)loop_count;
         stop();
     }
 

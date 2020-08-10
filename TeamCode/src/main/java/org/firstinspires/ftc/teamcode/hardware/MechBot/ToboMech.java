@@ -187,8 +187,9 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         line.addData("Test ", new Func<String>() {
             @Override
             public String value() {
-                return String.format("Power/auto=%.2f/%.2f, dist=%.0f, rotate_degree=%.1f, tar-x=%.0f,tar-y=%.0f\n",
-                        auto_chassis_power,chassis.auto_power, auto_chassis_dist, auto_rotate_degree,chassis.auto_target_x,chassis.auto_target_y);
+                return String.format("Power/auto=%.2f/%.2f, dist=%.0f, rotate_degree=%.1f, tar-x=%.0f,tar-y=%.0f, loop_time=%2.1f, travel_p=%.2f\n",
+                        auto_chassis_power,chassis.auto_power, auto_chassis_dist, auto_rotate_degree,
+                        chassis.auto_target_x,chassis.auto_target_y, chassis.auto_loop_time, chassis.auto_travel_p);
             }
         });
     }
