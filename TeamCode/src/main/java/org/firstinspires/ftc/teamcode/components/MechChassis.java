@@ -493,8 +493,8 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         }
 
         double[] motorPowers  = new double[4];
-        motorPowers[0] = (Math.sin(Math.toRadians(directionAngle))+ Math.cos(Math.toRadians(directionAngle)));
-        motorPowers[1] = (Math.cos(Math.toRadians(directionAngle))- Math.sin(Math.toRadians(directionAngle)));
+        motorPowers[0] = (Math.sin(Math.toRadians(directionAngle - fixed_heading))+ Math.cos(Math.toRadians(directionAngle- fixed_heading)));
+        motorPowers[1] = (Math.cos(Math.toRadians(directionAngle- fixed_heading))- Math.sin(Math.toRadians(directionAngle - fixed_heading)));
         motorPowers[2] = motorPowers[1];
         motorPowers[3] = motorPowers[0];
         double max = Math.max(Math.abs(motorPowers[0]), Math.abs(motorPowers[1]));
