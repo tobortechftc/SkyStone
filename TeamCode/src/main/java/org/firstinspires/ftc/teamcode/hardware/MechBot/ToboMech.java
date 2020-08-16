@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Func;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.components.MechChassis;
 import org.firstinspires.ftc.teamcode.components.Robot2;
 import org.firstinspires.ftc.teamcode.hardware.Sigma.ToboSigma;
@@ -25,6 +26,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
     public CoreSystem core;
     public ElapsedTime runtime = new ElapsedTime();
     public double rotateRatio = 0.7; // slow down ratio for rotation
+    public CameraStoneDetector cameraStoneDetector;
 
 
     public double auto_chassis_power = .4;
@@ -37,6 +39,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
     public double auto_rotate_degree = 0;
 
 
+    public boolean tensorTest = true;
 
     @Override
     public String getName() {
@@ -55,6 +58,11 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         if (autoColor== ToboSigma.AutoTeamColor.DIAGNOSIS) {
             // enable imu for diagnosis
             chassis.enableImuTelemetry(configuration);
+        }
+        if(tensorTest)
+        {
+            cameraStoneDetector = new CameraStoneDetector();
+            cameraStoneDetector.configure(configuration);
         }
         chassis.configure(configuration, (autoColor!= ToboSigma.AutoTeamColor.NOT_AUTO));
         info("RoboRuck configure() after init Chassis (run time = %.2f sec)", (runtime.seconds() - ini_time));
@@ -409,6 +417,13 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         }
 
     }
+
+    @MenuEntry(label = "Tensorflow Test", group = "Test Chassis")
+    public void testSkystoneDetection()//loc = 1 left, 2 center, 3 right
+    {
+        ToboSigma.SkystoneLocation location = cameraStoneDetector.getSkystonePositionTF(true);
+    }
+
 
 
 }
