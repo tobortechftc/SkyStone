@@ -92,6 +92,10 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
                     return; // avoid conflicting drives
                 double right_x = source.getStick(Events.Side.RIGHT, Events.Axis.X_ONLY);
                 double normalizeRatio = chassis.getMecanumForwardRatio();
+
+                if(!chassis.getNormalizeMode())
+                    normalizeRatio = 1;
+
                 // Left joystick for forward/backward and turn
                 if (Math.abs(currentY)>0.2) { // car mode
                     chassis.carDrive(currentY*Math.abs(currentY) * normalizeRatio, right_x);
@@ -110,6 +114,10 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
             public void stickMoved(EventManager source, Events.Side side, float currentX, float changeX, float currentY, float changeY) throws InterruptedException {
                 double movingAngle = 0;
                 double normalizeRatio = chassis.getMecanumForwardRatio(); // minimum 0.5 when moving forward, and maximum 1.0 when crabbing 90 degree
+
+                if(!chassis.getNormalizeMode())
+                    normalizeRatio = 1;
+
                 if (Math.abs(source.getStick(Events.Side.LEFT, Events.Axis.Y_ONLY))>0.2 )
                     return; // avoid conflicting drives
                 double left_x = source.getStick(Events.Side.LEFT, Events.Axis.X_ONLY);
@@ -119,7 +127,10 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
                     chassis.carDrive(currentY*Math.abs(currentY)*normalizeRatio, left_x);
                 } else if (Math.abs(currentX)+Math.abs(currentY)>0.2) {
                     movingAngle = Math.toDegrees(Math.atan2(currentX, currentY));
-                    if (movingAngle>=-90 && movingAngle<=90) {
+
+                    if(!chassis.getNormalizeMode()) {
+                        normalizeRatio = 1;
+                    } else if (movingAngle>=-90 && movingAngle<=90) {
                         normalizeRatio = chassis.getMecanumForwardRatio() + (1-chassis.getMecanumForwardRatio()) * (Math.abs(movingAngle)/90.0);
                     } else { // movingAngle is < -90 or > 90
                         normalizeRatio = chassis.getMecanumForwardRatio() + (1-chassis.getMecanumForwardRatio()) * ((180-Math.abs(movingAngle))/90.0);
@@ -181,6 +192,15 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
                 }
             }
         }, new Button[]{Button.DPAD_LEFT});
+
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.BACK)) {
+                    chassis.toggleNormalizeMode();
+                }
+            }
+        }, new Button[]{Button.A});
     }
 
     public void setupTelemetryDiagnostics(Telemetry telemetry) {

@@ -98,6 +98,16 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     private boolean setImuTelemetry = false;//unless debugging, don't set telemetry for imu
     private boolean setRangeSensorTelemetry = false;//unless debugging, don't set telemetry for range sensor
 
+    private boolean normalizeMode = true;
+
+    public void toggleNormalizeMode(){
+        normalizeMode = !normalizeMode;
+    }
+
+    public boolean getNormalizeMode(){
+        return normalizeMode;
+    }
+
     private void configure_IMUs(Configuration configuration) {
         orientationSensor = new CombinedOrientationSensor().configureLogging(logTag + "-sensor", logLevel);
         orientationSensor.configure(configuration.getHardwareMap(), "imu", "imu2");
@@ -756,7 +766,8 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         line.addData("Pwr/Scale", new Func<String>() {
             @Override
             public String value() {
-                return String.format("%.2f / %.1f\n", motorFL.getPower(), getDefaultScale());
+                return String.format("%.2f / %.1f / %s\n", motorFL.getPower(), getDefaultScale(),
+                        (getNormalizeMode()?"Normalized":"Speedy"));
             }
         });
         /*
