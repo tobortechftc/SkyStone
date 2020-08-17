@@ -131,7 +131,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
     final double TICKS_PER_CM = 16.86;//number of encoder ticks per cm of driving
 
-    private double chassisAligmentPower = 0.15;
+    private double chassisAligmentPower = 0.11;
 
 
     public void setGlobalPosUpdate(OdometryGlobalCoordinatePosition val) { globalPositionUpdate=val;}
@@ -322,46 +322,6 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         configuration.register(this);
     }
 
-    public void driveStraight(double power, double cm, double degrees, long timeout_sec){
-        double fixed_heading = orientationSensor.getHeading();
-        double error_cm = 0.5;
-        double x_dist = cm * Math.sin(Math.toRadians(degrees)) * Math.signum(power);
-        double y_dist = cm * Math.cos(Math.toRadians(degrees)) * Math.signum(power);
-        double target_y = y_dist + odo_y_pos_cm();
-        double target_x = x_dist + odo_x_pos_cm();
-        auto_target_x = target_x;
-        auto_target_y = target_y;
-
-        power = power * Math.signum(cm);
-
-        long iniTime = System.currentTimeMillis();
-        double cur_y = odo_y_pos_cm(), prev_y = cur_y;
-        double cur_x = odo_y_pos_cm(), prev_x = cur_x;
-        boolean x_reached = false;
-        boolean y_reached = false;
-        while ((!x_reached || !y_reached) && (System.currentTimeMillis() - iniTime < timeout_sec * 1000)){
-            double desiredDegree = Math.toDegrees(Math.atan2(target_x - cur_x, target_y - cur_y));
-            angleMove(desiredDegree, power, false, fixed_heading);
-            if (Math.abs(cur_y-target_y)<=error_cm) y_reached=true;
-            else if(y_dist>0){
-                if (cur_y >= target_y - error_cm) y_reached=true;
-            } else{
-                if (cur_y <= target_y + error_cm) y_reached=true;
-            }
-            if (Math.abs(cur_x-target_x)<=error_cm) x_reached=true;
-            else if(x_dist>0){
-                if (cur_x >= target_x - error_cm) x_reached=true;
-            } else{
-                if (cur_x <= target_x + error_cm) x_reached=true;
-            }
-            prev_y = cur_y;
-            cur_y = odo_y_pos_cm();
-            prev_x = cur_x;
-            cur_x = odo_x_pos_cm();
-        }
-        stop();
-    }
-
     public void driveStraightNew(double power, double cm, double degree, double slowDownPercent, long timeout_sec) throws InterruptedException {
         double error_cm = 0.5;
         double fixed_heading = orientationSensor.getHeading();
@@ -410,7 +370,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
                 powerUsed = pow * Math.signum(power);
             }
-            if (traveledPercent<0.95) {
+            if (traveledPercent<0.9) {
                 desiredDegree = Math.toDegrees(Math.atan2(target_x - cur_x, target_y - cur_y));
             }
             //move
@@ -926,7 +886,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             }
             debug("currentHeading: %.1f, finalHeading: %.1f)", currentHeading, finalHeading);
             //if within acceptable range, terminate
-            if (Math.abs(finalHeading - currentHeading) < (stopEarly ? power * 10.0 : 0.5)) break;
+            if (Math.abs(finalHeading - currentHeading) < (stopEarly ? power * 10.0 : 0.6)) break;
             //if overshoot, terminate
             if (deltaD > 0 && currentHeading - finalHeading > 0) break;
             if (deltaD < 0 && currentHeading - finalHeading < 0) break;
@@ -946,32 +906,6 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
         useScalePower = true;
     }
-    public void rotateToOld(double power, double finalHeading, int timeout) throws InterruptedException {
-        if (Thread.interrupted()) return;
-        if (power < 0.3) {//when power is small, use a flat power output
-            rawRotateTo(power, finalHeading, true, timeout);
-            return;
-        }
-        //when power is big, use a piecewise power output
-        double iniHeading = orientationSensor.getHeading();
-        double iniHeading_P = -iniHeading;
-        double finalHeading_P = -finalHeading;
-        double absDiff = min(abs(finalHeading - iniHeading_P), 180 - abs(finalHeading - iniHeading_P));
-        double firstTarget;
-        if (cos(iniHeading_P * degreeToRad) * sin(finalHeading_P * degreeToRad) - cos(finalHeading_P * degreeToRad) * sin(iniHeading_P * degreeToRad) >= 0) {//rotating ccw
-            firstTarget = iniHeading - 0.8 * absDiff;
-        } else {
-            firstTarget = iniHeading + 0.8 * absDiff;
-        }
-        //make sure first target stay in [-180,+180] range
-        if (firstTarget > 180) firstTarget -= 360;
-        if (firstTarget < -180) firstTarget += 360;
-
-        rawRotateTo(power, firstTarget, true, timeout);
-        //sleep(100);
-        if (Thread.interrupted()) return;
-        rawRotateTo(chassisAligmentPower, finalHeading, false, 1000);
-    }
 
     static final double degreeToRad = PI / 180;
     static final double radToDegree = 180 / PI;
@@ -986,14 +920,14 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
     public void rotateTo(double power, double finalHeading, int timeout, boolean changePower, boolean finalCorrection) throws InterruptedException {
         if (Thread.interrupted()) return;
-        if (power <= chassisAligmentPower) {//was 0.3
+        double iniHeading = orientationSensor.getHeading();
+        if (power <= chassisAligmentPower || Math.abs(iniHeading-finalHeading)<1.0) {//was 0.3
             rawRotateTo(power, finalHeading, false, timeout);//was power
             if (Thread.interrupted()) return;
             if (power > chassisAligmentPower)
                 rawRotateTo(chassisAligmentPower, finalHeading, false, timeout);
             return;
         }
-        double iniHeading = orientationSensor.getHeading();
         double iniAbsDiff = abs(finalHeading - iniHeading) > 180 ? 360 - abs(finalHeading - iniHeading) : abs(finalHeading - iniHeading);
         if (iniAbsDiff < 0.5)//if within 0.5 degree of target, don't rotate
             return;
@@ -1005,7 +939,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             direction = +1;//rotating cw
         }
         if (Thread.interrupted()) return;
-        double lowPowerDegree = 8 + (power - 0.3) * 70;
+        double lowPowerDegree = 8 + (power - chassisAligmentPower) * 60;
 
         //ensure the condition before calling rotate()
         useScalePower = false;
@@ -1030,10 +964,10 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
                 if (crossProduct >= 0) break;
             }
             currentAbsDiff = abs(finalHeading - currentHeading) > 180 ? 360 - abs(finalHeading - currentHeading) : abs(finalHeading - currentHeading);
-            if (changePower && !lowerPowerApplied && currentAbsDiff <= lowPowerDegree) {//damp power to 0.22 if in last 40%, (currentAbsDiff / iniAbsDiff < 0.40)
+            if (changePower && !lowerPowerApplied && currentAbsDiff <= lowPowerDegree) {//damp power to alignment power if in last 40%, (currentAbsDiff / iniAbsDiff < 0.40)
                 if (Thread.interrupted()) return;
                 turn(1, 0.0);
-                sleep(100);
+                sleep(10);
                 if (Thread.interrupted()) return;
                 turn(1, direction * chassisAligmentPower);
                 lowerPowerApplied = true;
@@ -1046,7 +980,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             loop++;
         }
         if (Thread.interrupted()) return;
-            stop();
+        stop();
         if (!finalCorrection) {
             driveMode = DriveMode.STOP;
             useScalePower = true;
@@ -1057,7 +991,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         //**************Check for overshoot and correction**************
         currentHeading = orientationSensor.getHeading();
         currentAbsDiff = abs(finalHeading - currentHeading) > 180 ? 360 - abs(finalHeading - currentHeading) : abs(finalHeading - currentHeading);
-        if ((currentAbsDiff > 2.0) && !Thread.interrupted()) {
+        if ((currentAbsDiff > 1.2) && !Thread.interrupted()) {
             rawRotateTo(chassisAligmentPower, finalHeading, false, 500);
         }
         if (Thread.interrupted()) return;

@@ -282,8 +282,6 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
                 if (source.isPressed(Button.BACK)) {
                     auto_chassis_power += 0.1;
                     if (auto_chassis_power > 1) auto_chassis_power = 1;
-                } else {
-                    chassis.driveStraight(auto_chassis_power, auto_chassis_dist,  auto_rotate_degree, 5);
                 }
             }
         }, new Button[]{Button.Y});
@@ -313,7 +311,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
                 if (source.isPressed(Button.BACK)) {
                     auto_rotate_degree += 5;
                 } else if (!source.isPressed(Button.START)) {
-                    chassis.rotateTo(auto_chassis_power, auto_rotate_degree, 5000);
+                    chassis.rotateTo(auto_chassis_power, auto_rotate_degree, 10000);
                 }
             }
         }, new Button[]{Button.B});
@@ -355,7 +353,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
                     auto_chassis_power += 0.1;
                     if (auto_chassis_power > 1) auto_chassis_power = 1;
                 } else {
-                    chassis.rotateToOld(auto_chassis_power, auto_rotate_degree, 5000);
+                    chassis.rotateTo(auto_chassis_power, auto_rotate_degree, 5000);
                 }
             }
         }, new Button[]{Button.Y});
@@ -389,32 +387,6 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
                 }
             }
         }, new Button[]{Button.B});
-
-    }
-
-     @MenuEntry(label = "New Auto Straight", group = "Test Chassis")
-    public void testStraightNewSkyStone(EventManager em) {
-        if (Thread.interrupted()) return;
-         Thread positionThread;
-         if (chassis!=null && chassis.globalPositionUpdate()==null) {
-             chassis.configureOdometry();
-             chassis.setupTelemetry(telemetry);
-             positionThread = (chassis.globalPositionUpdate()==null? null: new Thread(chassis.globalPositionUpdate()));
-             if (positionThread!=null)
-                 positionThread.start();
-         }
-        try {
-
-            chassis.driveStraight(.6, 50, -90, 5);
-            sleep(500);
-            chassis.driveStraight(.6, 50, 90, 5);
-            sleep(500);
-            chassis.driveStraight(.6, 50, 0, 5);
-            sleep(500);
-            chassis.driveStraight(.6, -50, 0, 5);
-        } catch (InterruptedException e) {
-
-        }
 
     }
 
