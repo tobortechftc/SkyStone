@@ -374,8 +374,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
                 desiredDegree = Math.toDegrees(Math.atan2(target_x - cur_x, target_y - cur_y));
             }
             //move
-            int moveDegree = desiredDegree - fixed_heading;
-            angleMove(moveDegree, powerUsed, true, fixed_heading);
+            angleMove(desiredDegree, powerUsed, true, fixed_heading);
             if (Math.abs(cur_y-target_y)<=error_cm)
                 y_reached=true;
             else if (y_dist>0){
