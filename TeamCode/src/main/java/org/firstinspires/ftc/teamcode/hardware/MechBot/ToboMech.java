@@ -157,11 +157,11 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (chassis!=null && source.isPressed(Button.BACK) && source.isPressed(Button.START)) {
-                    // calculation mode
-                    chassis.setupEncoders(telemetry);
-                    chassis.freeStyle(1.0, 1.0, 1.0, 1.0, false);
-                    sleep(100000);
-                    chassis.stop();
+//                    // calibration mode. Only uncomment when testing new motors with chassis wheels suspended
+//                    chassis.setupEncoders(telemetry);
+//                    chassis.freeStyle(1.0, 1.0, 1.0, 1.0, true);
+//                    sleep(10000);
+//                    chassis.stop();
                 } else {
                     chassis.forward(0.3, 30, 3);
                 }
