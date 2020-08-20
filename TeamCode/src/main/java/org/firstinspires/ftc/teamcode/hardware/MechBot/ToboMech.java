@@ -1,12 +1,10 @@
 package org.firstinspires.ftc.teamcode.hardware.MechBot;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Func;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.teamcode.components.MechChassis;
 import org.firstinspires.ftc.teamcode.components.Robot2;
 import org.firstinspires.ftc.teamcode.hardware.Sigma.ToboSigma;
@@ -269,9 +267,10 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
                 positionThread.start();
         }
         if (Thread.interrupted()) return;
-        telemetry.addLine().addData("(BACK) Y/A X/B", "+/- Power(%.2f) Degree(%.0f)", auto_chassis_power,auto_rotate_degree).setRetained(true);
+        telemetry.addLine().addData("(BACK) Y/A B/X", "+/- Power(%.2f) Degree(%.0f)", auto_chassis_power,auto_rotate_degree).setRetained(true);
+        telemetry.addLine().addData("(L-Tr) Y/A B/X", "+/- Y(%.2f) X(%.0f)", chassis.auto_target_y,chassis.auto_target_x).setRetained(true);
         telemetry.addLine().addData("DPAD-UP/DOWN", "+/- distance(%.2f)", auto_chassis_dist).setRetained(true);
-        telemetry.addLine().addData("A - driveStraight()", "B - rotateTo()").setRetained(true);
+        telemetry.addLine().addData("A:Straight", "B:rotate Y:driveTo").setRetained(true);
         // chassis.setupTelemetry(telemetry);
         setupTelemetryDiagnostics(telemetry);
         // chassis.enableImuTelemetry();
@@ -282,6 +281,10 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
                 if (source.isPressed(Button.BACK)) {
                     auto_chassis_power += 0.1;
                     if (auto_chassis_power > 1) auto_chassis_power = 1;
+                } else if (source.getTrigger(Events.Side.LEFT)>0.5) {
+                    chassis.auto_target_y += 10;
+                } else if (!source.isPressed(Button.START)) {
+                    chassis.driveTo(auto_chassis_power, chassis.auto_target_x,  chassis.auto_target_y, auto_rotate_degree, 5);
                 }
             }
         }, new Button[]{Button.Y});
@@ -292,8 +295,10 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
                 if (source.isPressed(Button.BACK)) {
                     auto_chassis_power -= 0.1;
                     if (auto_chassis_power < 0.1) auto_chassis_power = 0.1;
+                } else if (source.getTrigger(Events.Side.LEFT)>0.5) {
+                    chassis.auto_target_y -= 10;
                 } else if (!source.isPressed(Button.START)) {
-                    chassis.driveStraightNew(auto_chassis_power, auto_chassis_dist,  auto_rotate_degree, 0.8, 5);
+                    chassis.driveStraight(auto_chassis_power, auto_chassis_dist,  auto_rotate_degree, 5);
                 }
             }
         }, new Button[]{Button.A});
@@ -302,6 +307,8 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (source.isPressed(Button.BACK)) {
                     auto_rotate_degree -= 5;
+                } else if (source.getTrigger(Events.Side.LEFT)>0.5) {
+                    chassis.auto_target_x -= 10;
                 }
             }
         }, new Button[]{Button.X});
@@ -309,9 +316,11 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (source.isPressed(Button.BACK)) {
-                    auto_rotate_degree += 5;
+                    auto_rotate_degree += 10;
                 } else if (!source.isPressed(Button.START)) {
-                    chassis.rotateTo(auto_chassis_power, auto_rotate_degree, 10000);
+                    chassis.rotateTo(auto_chassis_power, auto_rotate_degree, 10);
+                } else if (source.getTrigger(Events.Side.LEFT)>0.5) {
+                    chassis.auto_target_x += 5;
                 }
             }
         }, new Button[]{Button.B});
@@ -353,7 +362,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
                     auto_chassis_power += 0.1;
                     if (auto_chassis_power > 1) auto_chassis_power = 1;
                 } else {
-                    chassis.rotateTo(auto_chassis_power, auto_rotate_degree, 5000);
+                    chassis.rotateTo(auto_chassis_power, auto_rotate_degree, 5);
                 }
             }
         }, new Button[]{Button.Y});
@@ -365,7 +374,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
                     auto_chassis_power -= 0.1;
                     if (auto_chassis_power < 0.1) auto_chassis_power = 0.1;
                 }else {
-                    chassis.rotateTo(auto_chassis_power, auto_rotate_degree, 5000);
+                    chassis.rotateTo(auto_chassis_power, auto_rotate_degree, 5);
                 }
             }
         }, new Button[]{Button.A});

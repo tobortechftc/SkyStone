@@ -73,7 +73,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     private double maxPower = 0.99;
     private double maxRange = 127; // max range sensor detectable
     private double defaultScale = 1.0;
-    private double mecanumForwardRatio = 0.5;
+    private double mecanumForwardRatio = 0.8;
 
     private DcMotorEx motorFL;
     private DcMotorEx motorFR;
@@ -322,8 +322,12 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         configuration.register(this);
     }
 
-    public void driveStraightNew(double power, double cm, double degree, double slowDownPercent, long timeout_sec) throws InterruptedException {
-        double error_cm = 0.5;
+
+    public void driveStraight(double power, double cm, double degree, long timeout_sec) throws InterruptedException {
+        driveStraight(power, cm, degree, 0.8, timeout_sec);
+    }
+
+    public void driveStraight(double power, double cm, double degree, double slowDownPercent, long timeout_sec) throws InterruptedException {
         double fixed_heading = orientationSensor.getHeading();
         // to-do: Shasha to compute x_dist/y_dist based on current heading
         double x_dist = cm * Math.sin(Math.toRadians(degree)) * Math.signum(power);
@@ -335,10 +339,25 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
         power = power * Math.signum(cm);
 
+        driveTo(power, target_x, target_y, fixed_heading, slowDownPercent,timeout_sec);
+    }
+
+    public void driveTo(double power, double target_x, double target_y, double target_heading, long timeout_sec) throws InterruptedException {
+        driveTo(power, target_x, target_y, target_heading, .8, timeout_sec);
+    }
+
+    public void driveTo(double power, double target_x, double target_y, double target_heading, double slowDownPercent, long timeout_sec) throws InterruptedException {
+
+        // To-do: if the difference of target_heading and current heading is too big (e.g. > 25%), will need to rotate first
+        // rotateTo(); // Jared to take this task
+
+        double error_cm = 0.5;  // to-do: error_cm should depend on degree
         double powerUsed = power;
         long iniTime = System.currentTimeMillis();
         double cur_x = odo_x_pos_cm(), prev_x = cur_x, init_x=cur_x;
         double cur_y = odo_y_pos_cm(), prev_y = cur_y, init_y=cur_y;
+        double x_dist = target_x - cur_x;
+        double y_dist = target_y - cur_y;
         boolean x_reached = false;
         boolean y_reached = false;
         double traveledPercent = 0;
@@ -374,7 +393,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
                 desiredDegree = Math.toDegrees(Math.atan2(target_x - cur_x, target_y - cur_y));
             }
             //move
-            angleMove(desiredDegree, powerUsed, true, fixed_heading);
+            angleMove(desiredDegree, powerUsed, true, target_heading);
             if (Math.abs(cur_y-target_y)<=error_cm)
                 y_reached=true;
             else if (y_dist>0){
@@ -845,7 +864,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         return orientationSensor.hasRollStabalized(inputIndex, minDiff);
     }
 
-    public void rawRotateTo(double power, double finalHeading, boolean stopEarly, int timeout) throws InterruptedException {
+    public void rawRotateTo(double power, double finalHeading, boolean stopEarly, int timeout_sec) throws InterruptedException {
         if (Thread.interrupted()) return;
         debug("rotateT0(pwr: %.3f, finalHeading: %.1f)", power, finalHeading);
         double iniHeading = orientationSensor.getHeading();
@@ -889,8 +908,8 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             //if overshoot, terminate
             if (deltaD > 0 && currentHeading - finalHeading > 0) break;
             if (deltaD < 0 && currentHeading - finalHeading < 0) break;
-            //timeout, break. default timeout: 3s
-            if (System.currentTimeMillis() - iniTime > timeout) break;
+
+            if (System.currentTimeMillis() - iniTime > timeout_sec*1000) break;
             //stop pressed, break
             if (Thread.interrupted()) return;
             lastReading = currentHeading;
@@ -913,18 +932,18 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         rotateTo(power, finalHeading, 4000);
     }
 
-    public void rotateTo(double power, double finalHeading, int timeout) throws InterruptedException {
-        rotateTo(power, finalHeading, timeout, true,true);
+    public void rotateTo(double power, double finalHeading, int timeout_sec) throws InterruptedException {
+        rotateTo(power, finalHeading, timeout_sec, true,true);
     }
 
-    public void rotateTo(double power, double finalHeading, int timeout, boolean changePower, boolean finalCorrection) throws InterruptedException {
+    public void rotateTo(double power, double finalHeading, int timeout_sec, boolean changePower, boolean finalCorrection) throws InterruptedException {
         if (Thread.interrupted()) return;
         double iniHeading = orientationSensor.getHeading();
         if (power <= chassisAligmentPower || Math.abs(iniHeading-finalHeading)<1.0) {//was 0.3
-            rawRotateTo(power, finalHeading, false, timeout);//was power
+            rawRotateTo(power, finalHeading, false, timeout_sec);//was power
             if (Thread.interrupted()) return;
             if (power > chassisAligmentPower)
-                rawRotateTo(chassisAligmentPower, finalHeading, false, timeout);
+                rawRotateTo(chassisAligmentPower, finalHeading, false, timeout_sec);
             return;
         }
         double iniAbsDiff = abs(finalHeading - iniHeading) > 180 ? 360 - abs(finalHeading - iniHeading) : abs(finalHeading - iniHeading);
@@ -974,7 +993,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             if (currentAbsDiff / iniAbsDiff < 0.20 && abs(crossProduct) * radToDegree < 1.0)//assume sinx=x, stop 1 degree early
                 break;//stop if really close to target
             if (Thread.interrupted()) break;
-            if (System.currentTimeMillis() - iniTime > timeout) break;
+            if (System.currentTimeMillis() - iniTime > timeout_sec*1000) break;
             TaskManager.processTasks();
             loop++;
         }
