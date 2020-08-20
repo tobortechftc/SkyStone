@@ -78,17 +78,6 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
 
     @MenuEntry(label = "TeleOp", group = "Test Chassis")
     public void mainTeleOp(EventManager em) {
-        //telemetry.addLine().addData("(LS)", "Drive").setRetained(true)
-        //        .addData("Hold [LB]/[RB]", "45 degree").setRetained(true);
-        // chassis.setupTelemetry(telemetry);
-        Thread positionThread;
-//        if (chassis!=null && chassis.globalPositionUpdate()==null) {
-//            chassis.configureOdometry();
-//            chassis.setupTelemetry(telemetry);
-//            positionThread = (chassis.globalPositionUpdate()==null? null: new Thread(chassis.globalPositionUpdate()));
-//            if (positionThread!=null)
-//                positionThread.start();
-//        }
         setupTelemetry(telemetry);
         em.updateTelemetry(telemetry, 1000);
         em.onStick(new Events.Listener() { // Left-Joystick
@@ -157,7 +146,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
                     power_lb *= Math.abs(power_lb)* chassis.powerScale() * normalizeRatio;
                     power_rf *= Math.abs(power_rf)* chassis.powerScale() * normalizeRatio;
                     power_rb *= Math.abs(power_rb)* chassis.powerScale() * normalizeRatio;
-                    chassis.freeStyle(power_lf, power_rf, power_lb, power_rb);
+                    chassis.freeStyle(power_lf, power_rf, power_lb, power_rb, true);
                 } else {
                     chassis.stop();
                 }
@@ -167,9 +156,14 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         em.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
-                if (chassis!=null) {
+                if (chassis!=null && source.isPressed(Button.BACK) && source.isPressed(Button.START)) {
+                    // calculation mode
+                    chassis.setupEncoders(telemetry);
+                    chassis.freeStyle(1.0, 1.0, 1.0, 1.0, false);
+                    sleep(100000);
+                    chassis.stop();
+                } else {
                     chassis.forward(0.3, 30, 3);
-                    // chassis.forward(1.0, 10, 3);
                 }
             }
         }, new Button[]{Button.DPAD_UP});

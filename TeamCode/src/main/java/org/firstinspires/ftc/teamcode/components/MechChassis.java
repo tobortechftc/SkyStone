@@ -50,10 +50,17 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
     // the following 4 ratio values are used to normalize 4 wheel motors to the same speed
     // whenever changing a wheel motor, it must be calibrated again
+    /* for GoBilda 435 motor set:
     private double ratioFL = 1.0;
     private double ratioFR = 0.8847;
     private double ratioBL = 0.9348;
     private double ratioBR = 0.9315;
+    */
+    /* for GoBilda 1125 motor set: */
+    private double ratioFL = 1.0;
+    private double ratioFR = 1.0;
+    private double ratioBL = 1.0;
+    private double ratioBR = 1.0;
 
     private double left_ratio = 1.0; // slow down ratio for left wheels to go straight
     private double right_ratio = 1.0; // slow down ratio for right wheels to go straight
@@ -507,11 +514,18 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         }
     }
 
-    public void freeStyle(double fl, double fr, double bl, double br) {
-        motorFL.setPower(fl* ratioFL);
-        motorFR.setPower(fr* ratioFR);
-        motorBL.setPower(bl* ratioBL);
-        motorBR.setPower(br* ratioBR);
+    public void freeStyle(double fl, double fr, double bl, double br, boolean normalized) {
+        if (normalized) {
+            motorFL.setPower(fl * ratioFL);
+            motorFR.setPower(fr * ratioFR);
+            motorBL.setPower(bl * ratioBL);
+            motorBR.setPower(br * ratioBR);
+        } else {
+            motorFL.setPower(fl);
+            motorFR.setPower(fr);
+            motorBL.setPower(bl);
+            motorBR.setPower(br);
+        }
     }
 
     public void forward(double power, double inches, long timeout_sec) {
@@ -855,7 +869,41 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             }
         });
     }
-
+    public void setupEncoders(Telemetry telemetry) {
+        Telemetry.Line line = telemetry.addLine();
+        if (motorFL != null) {
+            line.addData("FL", "%d", new Func<Integer>() {
+                @Override
+                public Integer value() {
+                    return motorFL.getCurrentPosition();
+                }
+            });
+        }
+        if (motorFR != null) {
+            line.addData("FR", "%d", new Func<Integer>() {
+                @Override
+                public Integer value() {
+                    return motorFR.getCurrentPosition();
+                }
+            });
+        }
+        if (motorBL != null) {
+            line.addData("BL", "%d", new Func<Integer>() {
+                @Override
+                public Integer value() {
+                    return motorBL.getCurrentPosition();
+                }
+            });
+        }
+        if (motorBR != null) {
+            line.addData("BR", "%d", new Func<Integer>() {
+                @Override
+                public Integer value() {
+                    return motorBR.getCurrentPosition();
+                }
+            });
+        }
+    }
     public void resetOrientation() {
         orientationSensor.reset();
     }
