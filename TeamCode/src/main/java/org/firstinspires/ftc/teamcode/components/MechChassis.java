@@ -371,6 +371,12 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         double desiredDegree = Math.toDegrees(Math.atan2(target_x - cur_x, target_y - cur_y));
         double init_loop_time = System.currentTimeMillis();
         int loop_count = 0;
+
+        // slow down stuff
+        double[] s = getSlowDownParameters(target_heading, getCurHeading(), power);
+        slowDownPercent = s[0];
+        double decreasePercent = s[1];
+
         while((!x_reached || !y_reached) && (System.currentTimeMillis() - iniTime < timeout_sec * 1000)) {
             if (Math.abs(y_dist) > 0.01 && Math.abs(x_dist) > 0.01) {
                 traveledPercent = Math.max(Math.abs(cur_y - init_y) / Math.abs(y_dist), Math.abs(cur_x - init_x) / Math.abs(x_dist));
@@ -381,7 +387,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             }
             auto_travel_p = traveledPercent;
             if (traveledPercent > slowDownPercent) {
-                double apower = Math.abs(power);
+               /* double apower = Math.abs(power);
                 double pow;
                 if (traveledPercent < .25 + .75 * slowDownPercent)
                     pow = .25 * minPower + .75 * apower;
@@ -394,7 +400,8 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
                 }
                 if (pow < minPower) pow = minPower;
 
-                powerUsed = pow * Math.signum(power);
+                powerUsed = pow * Math.signum(power);*/
+               powerUsed = getSlowDownPower(traveledPercent, slowDownPercent, decreasePercent, power);
             }
             if (traveledPercent<0.9) {
                 desiredDegree = Math.toDegrees(Math.atan2(target_x - cur_x, target_y - cur_y));
@@ -430,7 +437,41 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             auto_loop_time = (end_loop_time-init_loop_time)/(double)loop_count;
         stop();
     }
+    public double getSlowDownPower(double traveledPercent, double slowDownPercent, double decreaseP, double power){
+        double apower = Math.abs(power);
+        double pow;
+        double percentPow;
+        if (traveledPercent < .25 + .75 * slowDownPercent)
+            //pow = .25 * minPower + .75 * apower;
+            percentPow = decreaseP;
+        else if (traveledPercent < .5 + .5 * slowDownPercent)
+            //pow = .5 * minPower + .5 * apower;
+            percentPow = decreaseP * .6;
+        else if (traveledPercent < .75 + .25 * slowDownPercent) {
+            //pow = .75 * minPower + .25 * apower;
+            percentPow = decreaseP * .3;
+        } else {
+            //pow = minPower;
+            percentPow = 0;
+        }
+        pow = percentPow * apower + (1-percentPow) * minPower;
+        if (pow < minPower) pow = minPower;
+        return  pow * Math.signum(power);
+    }
 
+    public double[] getSlowDownParameters(double directionAngle, double heading, double power){
+        double movementAngle = Math.abs(directionAngle - heading);
+        movementAngle = Math.min(180-movementAngle, movementAngle);// movementaAngle but from 0 to 90
+        movementAngle = 1 - movementAngle / 90.;// movemebt angle from 0 (horizontal, slowest) to 1(vertical, fastest)
+        double powWeight = 2, movementAngleWeight = 1;// these numebrs need to be tested and maybe changed
+        double fast = (powWeight * power + movementAngleWeight * movementAngle) / (powWeight + movementAngleWeight);  // how fast the robot is going to go from 0 to 1
+        double fastSlowDownP = .7, slowSlowDownP = .85;
+        double fastDecreaseP = .75, slowDecreaseP = .4;
+        double slowDownP = fastSlowDownP + fast * (slowSlowDownP - fastSlowDownP);// slow down percent - slow down sooner when going faster
+        double decreaseP = fastDecreaseP + fast * (slowDecreaseP - fastDecreaseP); // how much we decrease power in the first step - slower has steeper decrease
+
+        return new double[] {slowDownP, decreaseP};
+    }
     /**
      * move in the vertical direction
      *
