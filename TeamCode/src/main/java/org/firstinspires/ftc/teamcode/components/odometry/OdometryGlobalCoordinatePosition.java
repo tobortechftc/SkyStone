@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.components.odometry;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ReadWriteFile;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 
 import java.io.File;
@@ -20,6 +21,7 @@ public class OdometryGlobalCoordinatePosition implements Runnable{
     //Position variables used for storage and calculations
     double verticalRightEncoderWheelPosition = 0, verticalLeftEncoderWheelPosition = 0, normalEncoderWheelPosition = 0,  changeInRobotOrientation = 0;
     private double robotGlobalXCoordinatePosition = 0, robotGlobalYCoordinatePosition = 0, robotOrientationRadians = 0;
+    private double xSpeedDegree = 0, ySpeedDegree = 0;
     private double previousVerticalRightEncoderWheelPosition = 0, previousVerticalLeftEncoderWheelPosition = 0, prevNormalEncoderWheelPosition = 0;
 
     //Algorithm constants
@@ -85,6 +87,8 @@ public class OdometryGlobalCoordinatePosition implements Runnable{
         previousVerticalLeftEncoderWheelPosition = verticalLeftEncoderWheelPosition;
         previousVerticalRightEncoderWheelPosition = verticalRightEncoderWheelPosition;
         prevNormalEncoderWheelPosition = normalEncoderWheelPosition;
+        ySpeedDegree = (verticalEncoderLeft.getVelocity(AngleUnit.DEGREES) + verticalEncoderLeft.getVelocity(AngleUnit.DEGREES)) / 2;
+        xSpeedDegree = horizontalEncoder.getVelocity();
     }
 
     /**
@@ -108,6 +112,10 @@ public class OdometryGlobalCoordinatePosition implements Runnable{
     public double leftYEncoder() { return verticalLeftEncoderWheelPosition; }
     public double rightYEncoder() { return verticalRightEncoderWheelPosition; }
     public double XEncoder() { return normalEncoderWheelPosition; }
+
+    public double getXSpeedDegree() { return xSpeedDegree; }
+    public double getYSpeedDegree() { return ySpeedDegree; }
+
 
     /**
      * Stops the position update thread
