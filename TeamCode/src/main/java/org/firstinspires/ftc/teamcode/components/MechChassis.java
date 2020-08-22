@@ -57,10 +57,10 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     private double ratioBR = 0.9315;
     */
     /* for GoBilda 1125 motor set: */
-    private double ratioFL = 1.0;
-    private double ratioFR = 1.0;
+    private double ratioFL = 0.9890;
+    private double ratioFR = 0.9890;
     private double ratioBL = 1.0;
-    private double ratioBR = 1.0;
+    private double ratioBR = 0.9941;
 
     private double left_ratio = 1.0; // slow down ratio for left wheels to go straight
     private double right_ratio = 1.0; // slow down ratio for right wheels to go straight
