@@ -137,7 +137,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     String verticalLeftEncoderName = rbName, verticalRightEncoderName = lfName, horizontalEncoderName = rfName;
 
     final double TICKS_PER_CM = 16.86;//number of encoder ticks per cm of driving
-
+    final double WHEEL_CM_PER_ROTATION = 4*Math.PI*2.54;
     private double chassisAligmentPower = 0.11;
 
 
@@ -168,7 +168,6 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         return globalPositionUpdate.returnXCoordinate()/odo_count_per_cm();
     }
 
-
     public double odo_y_pos_inches() {
         if (globalPositionUpdate==null) return 0;
         return globalPositionUpdate.returnYCoordinate()/odo_count_per_inch();
@@ -176,6 +175,23 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     public double odo_y_pos_cm() {
         if (globalPositionUpdate==null) return 0;
         return globalPositionUpdate.returnYCoordinate()/odo_count_per_cm();
+    }
+
+    public double odo_x_speed_cm() { // horizontal speed as cm/sec
+        if (globalPositionUpdate==null) return 0;
+        return globalPositionUpdate.getXSpeedDegree() / 360.0 * WHEEL_CM_PER_ROTATION;
+    }
+
+    public double odo_y_speed_cm() { // forward speed as cm/sec
+        if (globalPositionUpdate==null) return 0;
+        return globalPositionUpdate.getYSpeedDegree() / 360.0 * WHEEL_CM_PER_ROTATION;
+    }
+
+    public double odo_speed_cm() {
+       double speed = 0;
+       // Praveer to-do: combine odo_x_speed_cm() and odo_y_speed_cm() into chassis speed
+       // ...
+       return speed;
     }
 
     public double odo_heading() {
@@ -865,10 +881,10 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         */
 
         if (globalPositionUpdate!=null) {
-            line.addData("Odo (x,ly,ry)", new Func<String>() {
+            line.addData("Odo (speed,x,ly,ry)", new Func<String>() {
                 @Override
                 public String value() {
-                    return String.format("(%5.0f,%5.0f,%5.0f)\n", globalPositionUpdate.XEncoder(),
+                    return String.format("(%5.0f,%5.0f,%5.0f,%5.0f)\n", odo_speed_cm(), globalPositionUpdate.XEncoder(),
                             globalPositionUpdate.leftYEncoder(),
                             globalPositionUpdate.rightYEncoder());
                 }
