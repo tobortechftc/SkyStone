@@ -467,8 +467,8 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         double fast = (powWeight * power + movementAngleWeight * movementAngle) / (powWeight + movementAngleWeight);  // how fast the robot is going to go from 0 to 1
         double fastSlowDownP = .7, slowSlowDownP = .85;
         double fastDecreaseP = .75, slowDecreaseP = .4;
-        double slowDownP = fastSlowDownP + fast * (slowSlowDownP - fastSlowDownP);// slow down percent - slow down sooner when going faster
-        double decreaseP = fastDecreaseP + fast * (slowDecreaseP - fastDecreaseP); // how much we decrease power in the first step - slower has steeper decrease
+        double slowDownP = fastSlowDownP + (1-fast) * (slowSlowDownP - fastSlowDownP);// slow down percent - slow down sooner when going faster
+        double decreaseP = fastDecreaseP + (1-fast) * (slowDecreaseP - fastDecreaseP); // how much we decrease power in the first step - slower has steeper decrease
 
         return new double[] {slowDownP, decreaseP};
     }
