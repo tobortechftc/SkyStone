@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.components;
 
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -14,6 +15,8 @@ import org.firstinspires.ftc.teamcode.support.hardware.Configurable;
 import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
 import org.firstinspires.ftc.teamcode.support.tasks.TaskManager;
 
+
+import java.util.List;
 
 import static java.lang.Math.PI;
 import static java.lang.Math.abs;
@@ -47,10 +50,17 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
     // the following 4 ratio values are used to normalize 4 wheel motors to the same speed
     // whenever changing a wheel motor, it must be calibrated again
+    /* for GoBilda 435 motor set:
     private double ratioFL = 1.0;
     private double ratioFR = 0.8847;
     private double ratioBL = 0.9348;
     private double ratioBR = 0.9315;
+    */
+    /* for GoBilda 1125 motor set: */
+    private double ratioFL = 1.0;
+    private double ratioFR = 1.0;
+    private double ratioBL = 1.0;
+    private double ratioBR = 1.0;
 
     private double left_ratio = 1.0; // slow down ratio for left wheels to go straight
     private double right_ratio = 1.0; // slow down ratio for right wheels to go straight
@@ -70,7 +80,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     private double maxPower = 0.99;
     private double maxRange = 127; // max range sensor detectable
     private double defaultScale = 1.0;
-    private double mecanumForwardRatio = 0.5;
+    private double mecanumForwardRatio = 0.8;
 
     private DcMotorEx motorFL;
     private DcMotorEx motorFR;
@@ -84,6 +94,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     public double auto_target_y = 0;
     public double auto_power = 0;
     public double auto_loop_time = 0;
+    public  double auto_travel_p = 0;
 
     private DriveMode driveMode = DriveMode.STOP;      // current drive mode
     private double targetHeading;     // intended heading for DriveMode.STRAIGHT as reported by orientation sensor
@@ -94,11 +105,22 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     private boolean setImuTelemetry = false;//unless debugging, don't set telemetry for imu
     private boolean setRangeSensorTelemetry = false;//unless debugging, don't set telemetry for range sensor
 
+    private boolean normalizeMode = true;
+
+    public void toggleNormalizeMode(){
+        normalizeMode = !normalizeMode;
+    }
+
+    public boolean getNormalizeMode(){
+        return normalizeMode;
+    }
+
     private void configure_IMUs(Configuration configuration) {
         orientationSensor = new CombinedOrientationSensor().configureLogging(logTag + "-sensor", logLevel);
         orientationSensor.configure(configuration.getHardwareMap(), "imu", "imu2");
     }
 
+    List<LynxModule> allHubs;
 
     //odometry motors
     DcMotorEx verticalLeftEncoder;
@@ -116,7 +138,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
     final double TICKS_PER_CM = 16.86;//number of encoder ticks per cm of driving
 
-    private double chassisAligmentPower = 0.15;
+    private double chassisAligmentPower = 0.11;
 
 
     public void setGlobalPosUpdate(OdometryGlobalCoordinatePosition val) { globalPositionUpdate=val;}
@@ -293,6 +315,12 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         motorFL.setDirection(DcMotorSimple.Direction.REVERSE);
         motorBL.setDirection(DcMotorSimple.Direction.REVERSE);
 
+        // Enable bulk read mode to speed up the encoder reads
+        allHubs = configuration.getHardwareMap().getAll(LynxModule.class);
+        for (LynxModule module : allHubs) {
+            module.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
+        }
+
         if (auto || setImuTelemetry) {
             configure_IMUs(configuration);
         }
@@ -301,78 +329,76 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         configuration.register(this);
     }
 
-    public void driveStraight(double power, double cm, double degrees, long timeout_sec){
-        double fixed_heading = orientationSensor.getHeading();
-        double error_cm = 0.5;
-        double x_dist = cm * Math.sin(Math.toRadians(degrees)) * Math.signum(power);
-        double y_dist = cm * Math.cos(Math.toRadians(degrees)) * Math.signum(power);
-        double target_y = y_dist + odo_y_pos_cm();
-        double target_x = x_dist + odo_x_pos_cm();
-        auto_target_x = target_x;
-        auto_target_y = target_y;
 
-        power = power * Math.signum(cm);
-
-        long iniTime = System.currentTimeMillis();
-        double cur_y = odo_y_pos_cm(), prev_y = cur_y;
-        double cur_x = odo_y_pos_cm(), prev_x = cur_x;
-        boolean x_reached = false;
-        boolean y_reached = false;
-        while ((!x_reached || !y_reached) && (System.currentTimeMillis() - iniTime < timeout_sec * 1000)){
-            double desiredDegree = Math.toDegrees(Math.atan2(target_x - cur_x, target_y - cur_y));
-            angleMove(desiredDegree, power, false, fixed_heading);
-            if (Math.abs(cur_y-target_y)<=error_cm) y_reached=true;
-            else if(y_dist>0){
-                if (cur_y >= target_y - error_cm) y_reached=true;
-            } else{
-                if (cur_y <= target_y + error_cm) y_reached=true;
-            }
-            if (Math.abs(cur_x-target_x)<=error_cm) x_reached=true;
-            else if(x_dist>0){
-                if (cur_x >= target_x - error_cm) x_reached=true;
-            } else{
-                if (cur_x <= target_x + error_cm) x_reached=true;
-            }
-            prev_y = cur_y;
-            cur_y = odo_y_pos_cm();
-            prev_x = cur_x;
-            cur_x = odo_x_pos_cm();
-        }
-        stop();
+    public void driveStraight(double power, double cm, double degree, long timeout_sec) throws InterruptedException {
+        driveStraight(power, cm, degree, 0.8, timeout_sec);
     }
 
-    public void driveStraightNew(double power, double cm, double degree, double slowDownPercent, long timeout_sec) throws InterruptedException {
-        double error_cm = 0.5;
+    public void driveStraight(double power, double cm, double degree, double slowDownPercent, long timeout_sec) throws InterruptedException {
+        double fixed_heading = orientationSensor.getHeading();
+        // to-do: Shasha to compute x_dist/y_dist based on current heading
         double x_dist = cm * Math.sin(Math.toRadians(degree)) * Math.signum(power);
         double y_dist = cm * Math.cos(Math.toRadians(degree)) * Math.signum(power);
         double target_x = x_dist + odo_x_pos_cm();
         double target_y = y_dist + odo_y_pos_cm();
         auto_target_x = target_x;
         auto_target_y = target_y;
-        double fixed_heading = orientationSensor.getHeading();
 
         power = power * Math.signum(cm);
 
+        driveTo(power, target_x, target_y, fixed_heading, slowDownPercent,timeout_sec);
+    }
+
+    public void driveTo(double power, double target_x, double target_y, double target_heading, long timeout_sec) throws InterruptedException {
+        driveTo(power, target_x, target_y, target_heading, .8, timeout_sec);
+    }
+
+    public void driveTo(double power, double target_x, double target_y, double target_heading, double slowDownPercent, long timeout_sec) throws InterruptedException {
+
+        // To-do: if the difference of target_heading and current heading is too big (e.g. > 25), will need to rotate first
+        // rotateTo(); // Jared to take this task
+        // The original comment suggests a difference greater than 25% means we rotate. But 25% of what?
+        // I assumed we just mean 25 degrees off of target heading.
+        double current_heading = orientationSensor.getHeading();
+        if (Math.abs(current_heading - target_heading) > 25) {
+            double stage_one_heading = target_heading - 20;
+            if (current_heading > target_heading)
+                stage_one_heading = target_heading + 20;
+            rawRotateTo(power, stage_one_heading, true, (int) timeout_sec);
+
+
+        }
+
+        double error_cm = 0.5;  // to-do: error_cm should depend on degree
         double powerUsed = power;
         long iniTime = System.currentTimeMillis();
         double cur_x = odo_x_pos_cm(), prev_x = cur_x, init_x=cur_x;
         double cur_y = odo_y_pos_cm(), prev_y = cur_y, init_y=cur_y;
+        double x_dist = target_x - cur_x;
+        double y_dist = target_y - cur_y;
         boolean x_reached = false;
         boolean y_reached = false;
         double traveledPercent = 0;
         double desiredDegree = Math.toDegrees(Math.atan2(target_x - cur_x, target_y - cur_y));
         double init_loop_time = System.currentTimeMillis();
         int loop_count = 0;
+
+        // slow down stuff
+        double[] s = getSlowDownParameters(target_heading, getCurHeading(), power);
+        slowDownPercent = s[0];
+        double decreasePercent = s[1];
+
         while((!x_reached || !y_reached) && (System.currentTimeMillis() - iniTime < timeout_sec * 1000)) {
-            if (Math.abs(y_dist) > 0 && Math.abs(x_dist) > 0) {
+            if (Math.abs(y_dist) > 0.01 && Math.abs(x_dist) > 0.01) {
                 traveledPercent = Math.max(Math.abs(cur_y - init_y) / Math.abs(y_dist), Math.abs(cur_x - init_x) / Math.abs(x_dist));
-            } else if (Math.abs(y_dist)>0) {
+            } else if (Math.abs(y_dist)>0.01) {
                 traveledPercent = Math.abs(cur_y - init_y) / Math.abs(y_dist);
-            } else if (Math.abs(x_dist)>0) {
+            } else if (Math.abs(x_dist)>0.01) {
                 traveledPercent = Math.abs(cur_x - init_x) / Math.abs(x_dist);
             }
+            auto_travel_p = traveledPercent;
             if (traveledPercent > slowDownPercent) {
-                double apower = Math.abs(power);
+               /* double apower = Math.abs(power);
                 double pow;
                 if (traveledPercent < .25 + .75 * slowDownPercent)
                     pow = .25 * minPower + .75 * apower;
@@ -380,17 +406,19 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
                     pow = .5 * minPower + .5 * apower;
                 else if (traveledPercent < .75 + .25 * slowDownPercent) {
                     pow = .75 * minPower + .25 * apower;
-                } else
+                } else {
                     pow = minPower;
+                }
                 if (pow < minPower) pow = minPower;
 
-                powerUsed = pow * Math.signum(power);
+                powerUsed = pow * Math.signum(power);*/
+               powerUsed = getSlowDownPower(traveledPercent, slowDownPercent, decreasePercent, power);
             }
-            if (traveledPercent<0.95) {
+            if (traveledPercent<0.9) {
                 desiredDegree = Math.toDegrees(Math.atan2(target_x - cur_x, target_y - cur_y));
             }
             //move
-            angleMove(desiredDegree, powerUsed, true, fixed_heading);
+            angleMove(desiredDegree, powerUsed, true, target_heading);
             if (Math.abs(cur_y-target_y)<=error_cm)
                 y_reached=true;
             else if (y_dist>0){
@@ -413,13 +441,53 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             cur_x = odo_x_pos_cm();
             prev_y = cur_y;
             cur_y = odo_y_pos_cm();
+            loop_count ++;
         }
         double end_loop_time = System.currentTimeMillis();
-        // update auto_loop_time here: To-To Jared
-
+        if (loop_count>0)
+            auto_loop_time = (end_loop_time-init_loop_time)/(double)loop_count;
+        double currentHeading = orientationSensor.getHeading();
+        double currentAbsDiff = abs(target_heading - currentHeading) > 180 ? 360 - abs(target_heading - currentHeading) : abs(target_heading - currentHeading);
+        if ((currentAbsDiff > 1.2) && !Thread.interrupted()) {
+            rawRotateTo(chassisAligmentPower, target_heading, false, 500);
+        }
         stop();
     }
+    public double getSlowDownPower(double traveledPercent, double slowDownPercent, double decreaseP, double power){
+        double apower = Math.abs(power);
+        double pow;
+        double percentPow;
+        if (traveledPercent < .25 + .75 * slowDownPercent)
+            //pow = .25 * minPower + .75 * apower;
+            percentPow = decreaseP;
+        else if (traveledPercent < .5 + .5 * slowDownPercent)
+            //pow = .5 * minPower + .5 * apower;
+            percentPow = decreaseP * .6;
+        else if (traveledPercent < .75 + .25 * slowDownPercent) {
+            //pow = .75 * minPower + .25 * apower;
+            percentPow = decreaseP * .3;
+        } else {
+            //pow = minPower;
+            percentPow = 0;
+        }
+        pow = percentPow * apower + (1-percentPow) * minPower;
+        if (pow < minPower) pow = minPower;
+        return  pow * Math.signum(power);
+    }
 
+    public double[] getSlowDownParameters(double directionAngle, double heading, double power){
+        double movementAngle = Math.abs(directionAngle - heading);
+        movementAngle = Math.min(180-movementAngle, movementAngle);// movementaAngle but from 0 to 90
+        movementAngle = 1 - movementAngle / 90.;// movemebt angle from 0 (horizontal, slowest) to 1(vertical, fastest)
+        double powWeight = 2, movementAngleWeight = 1;// these numebrs need to be tested and maybe changed
+        double fast = (powWeight * power + movementAngleWeight * movementAngle) / (powWeight + movementAngleWeight);  // how fast the robot is going to go from 0 to 1
+        double fastSlowDownP = .7, slowSlowDownP = .85;
+        double fastDecreaseP = .75, slowDecreaseP = .4;
+        double slowDownP = fastSlowDownP + (1-fast) * (slowSlowDownP - fastSlowDownP);// slow down percent - slow down sooner when going faster
+        double decreaseP = fastDecreaseP + (1-fast) * (slowDecreaseP - fastDecreaseP); // how much we decrease power in the first step - slower has steeper decrease
+
+        return new double[] {slowDownP, decreaseP};
+    }
     /**
      * move in the vertical direction
      *
@@ -446,41 +514,75 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         motorBR.setPower(sgn * power * back_ratio * ratioBR);
     }
     public void angleMove(double directionAngle, double power, boolean headingCorrection, double fixed_heading){
+
+        auto_travel_p = directionAngle;
+
         double cur_heading = orientationSensor.getHeading();
         double degree_diff = Math.abs(cur_heading-fixed_heading);
         // to-do: need to handle gap from 179 to -179
         double cur_left_to_right_ratio = 1.0;
-        if (headingCorrection && (degree_diff>1.0)) { // curve to right
-            if (cur_heading-fixed_heading>0) {
+        boolean slow_down_left=false, slow_down_right=false;
+        if (headingCorrection && (degree_diff>1.0)) { // for Y axle correction
+            slow_down_left = ((cur_heading-fixed_heading>0) && directionAngle>-45 && directionAngle<45) ||
+                    (((cur_heading-fixed_heading<0) && directionAngle>135 && directionAngle<-135));
+            slow_down_right = ((cur_heading-fixed_heading<0) && directionAngle>-45 && directionAngle<45) ||
+                    (((cur_heading-fixed_heading>0) && directionAngle>135 && directionAngle<-135));
+            if (slow_down_left||slow_down_right) {
                 cur_left_to_right_ratio = (1.0 - degree_diff * 0.05);
                 if (cur_left_to_right_ratio<0.9) cur_left_to_right_ratio=0.9;
-            } else {
-                cur_left_to_right_ratio = (1.0 + degree_diff * 0.05);
-                if (cur_left_to_right_ratio<0.9) cur_left_to_right_ratio=1.1;
             }
         }
-        double[] motorPowers  = new double[4];
-        motorPowers[0] = (Math.sin(Math.toRadians(directionAngle))+ Math.cos(Math.toRadians(directionAngle)));
-        motorPowers[1] = (Math.cos(Math.toRadians(directionAngle))- Math.sin(Math.toRadians(directionAngle)));
-        if (cur_left_to_right_ratio<=1.0) {
-            motorPowers[0] *= cur_left_to_right_ratio;
-        } else {
-            motorPowers[1] /= cur_left_to_right_ratio;
+        double cur_front_to_back_ratio = 1.0;
+        boolean slow_down_front=false, slow_down_back=false;
+        if (headingCorrection && (degree_diff>1.0)) { // for Y axle correction
+            slow_down_front = ((cur_heading-fixed_heading>0) && directionAngle>=45 && directionAngle<=135) ||
+                    (((cur_heading-fixed_heading<0) && directionAngle>=-135 && directionAngle<=-45));
+            slow_down_back = ((cur_heading-fixed_heading<0) && directionAngle>=45 && directionAngle<=135) ||
+                    (((cur_heading-fixed_heading>0) && directionAngle>=-135 && directionAngle<=-45));
+            if (slow_down_front||slow_down_back) {
+                cur_front_to_back_ratio = (1.0 - degree_diff * 0.05);
+                if (cur_front_to_back_ratio<0.9) cur_front_to_back_ratio=0.9;
+            }
         }
+
+        double[] motorPowers  = new double[4];
+        motorPowers[0] = (Math.sin(Math.toRadians(directionAngle - fixed_heading))+ Math.cos(Math.toRadians(directionAngle- fixed_heading)));
+        motorPowers[1] = (Math.cos(Math.toRadians(directionAngle- fixed_heading))- Math.sin(Math.toRadians(directionAngle - fixed_heading)));
         motorPowers[2] = motorPowers[1];
         motorPowers[3] = motorPowers[0];
         double max = Math.max(Math.abs(motorPowers[0]), Math.abs(motorPowers[1]));
-        motorFL.setPower(motorPowers[0] * Math.abs(power) * ratioFL / max);
-        motorFR.setPower(motorPowers[1] * Math.abs(power) * ratioFR / max);
-        motorBL.setPower(motorPowers[2] * Math.abs(power) * ratioBL / max);
-        motorBR.setPower(motorPowers[3] * Math.abs(power) * ratioBR / max);
+        if (slow_down_left) { // slow-down left
+            motorPowers[0] *= cur_left_to_right_ratio;
+            motorPowers[2] *= cur_left_to_right_ratio;
+        } else if (slow_down_right) { // slow down right
+            motorPowers[1] *= cur_left_to_right_ratio;
+            motorPowers[3] *= cur_left_to_right_ratio;
+        }
+        if (slow_down_front) { // make front motors slower
+            motorFL.setPower(motorPowers[0] * Math.abs(power) * ratioFL * cur_front_to_back_ratio / max);
+            motorFR.setPower(motorPowers[1] * Math.abs(power) * ratioFR * cur_front_to_back_ratio / max);
+            motorBL.setPower(motorPowers[2] * Math.abs(power) * ratioBL / max);
+            motorBR.setPower(motorPowers[3] * Math.abs(power) * ratioBR / max);
+        } else { // slow down back (or keep same)
+            motorFL.setPower(motorPowers[0] * Math.abs(power) * ratioFL / max);
+            motorFR.setPower(motorPowers[1] * Math.abs(power) * ratioFR / max);
+            motorBL.setPower(motorPowers[2] * Math.abs(power) * ratioBL * cur_front_to_back_ratio / max);
+            motorBR.setPower(motorPowers[3] * Math.abs(power) * ratioBR * cur_front_to_back_ratio / max);
+        }
     }
 
-    public void freeStyle(double fl, double fr, double bl, double br) {
-        motorFL.setPower(fl* ratioFL);
-        motorFR.setPower(fr* ratioFR);
-        motorBL.setPower(bl* ratioBL);
-        motorBR.setPower(br* ratioBR);
+    public void freeStyle(double fl, double fr, double bl, double br, boolean normalized) {
+        if (normalized) {
+            motorFL.setPower(fl * ratioFL);
+            motorFR.setPower(fr * ratioFR);
+            motorBL.setPower(bl * ratioBL);
+            motorBR.setPower(br * ratioBR);
+        } else {
+            motorFL.setPower(fl);
+            motorFR.setPower(fr);
+            motorBL.setPower(bl);
+            motorBR.setPower(br);
+        }
     }
 
     public void forward(double power, double inches, long timeout_sec) {
@@ -714,7 +816,8 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         line.addData("Pwr/Scale", new Func<String>() {
             @Override
             public String value() {
-                return String.format("%.2f / %.1f\n", motorFL.getPower(), getDefaultScale());
+                return String.format("%.2f / %.1f / %s\n", motorFL.getPower(), getDefaultScale(),
+                        (getNormalizeMode()?"Normalized":"Speedy"));
             }
         });
         /*
@@ -750,7 +853,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
                 }
             });
         }
-        */
+
         if (horizontalEncoder != null) {
             line.addData("row X", "%d", new Func<Integer>() {
                 @Override
@@ -775,6 +878,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
                 }
             });
         }
+        */
 
         if (globalPositionUpdate!=null) {
             line.addData("Odo (x,ly,ry)", new Func<String>() {
@@ -822,7 +926,41 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             }
         });
     }
-
+    public void setupEncoders(Telemetry telemetry) {
+        Telemetry.Line line = telemetry.addLine();
+        if (motorFL != null) {
+            line.addData("FL", "%d", new Func<Integer>() {
+                @Override
+                public Integer value() {
+                    return motorFL.getCurrentPosition();
+                }
+            });
+        }
+        if (motorFR != null) {
+            line.addData("FR", "%d", new Func<Integer>() {
+                @Override
+                public Integer value() {
+                    return motorFR.getCurrentPosition();
+                }
+            });
+        }
+        if (motorBL != null) {
+            line.addData("BL", "%d", new Func<Integer>() {
+                @Override
+                public Integer value() {
+                    return motorBL.getCurrentPosition();
+                }
+            });
+        }
+        if (motorBR != null) {
+            line.addData("BR", "%d", new Func<Integer>() {
+                @Override
+                public Integer value() {
+                    return motorBR.getCurrentPosition();
+                }
+            });
+        }
+    }
     public void resetOrientation() {
         orientationSensor.reset();
     }
@@ -831,7 +969,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         return orientationSensor.hasRollStabalized(inputIndex, minDiff);
     }
 
-    public void rawRotateTo(double power, double finalHeading, boolean stopEarly, int timeout) throws InterruptedException {
+    public void rawRotateTo(double power, double finalHeading, boolean stopEarly, int timeout_sec) throws InterruptedException {
         if (Thread.interrupted()) return;
         debug("rotateT0(pwr: %.3f, finalHeading: %.1f)", power, finalHeading);
         double iniHeading = orientationSensor.getHeading();
@@ -871,12 +1009,12 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             }
             debug("currentHeading: %.1f, finalHeading: %.1f)", currentHeading, finalHeading);
             //if within acceptable range, terminate
-            if (Math.abs(finalHeading - currentHeading) < (stopEarly ? power * 10.0 : 0.5)) break;
+            if (Math.abs(finalHeading - currentHeading) < (stopEarly ? power * 10.0 : 0.6)) break;
             //if overshoot, terminate
             if (deltaD > 0 && currentHeading - finalHeading > 0) break;
             if (deltaD < 0 && currentHeading - finalHeading < 0) break;
-            //timeout, break. default timeout: 3s
-            if (System.currentTimeMillis() - iniTime > timeout) break;
+
+            if (System.currentTimeMillis() - iniTime > timeout_sec*1000) break;
             //stop pressed, break
             if (Thread.interrupted()) return;
             lastReading = currentHeading;
@@ -891,32 +1029,6 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
         useScalePower = true;
     }
-    public void rotateToOld(double power, double finalHeading, int timeout) throws InterruptedException {
-        if (Thread.interrupted()) return;
-        if (power < 0.3) {//when power is small, use a flat power output
-            rawRotateTo(power, finalHeading, true, timeout);
-            return;
-        }
-        //when power is big, use a piecewise power output
-        double iniHeading = orientationSensor.getHeading();
-        double iniHeading_P = -iniHeading;
-        double finalHeading_P = -finalHeading;
-        double absDiff = min(abs(finalHeading - iniHeading_P), 180 - abs(finalHeading - iniHeading_P));
-        double firstTarget;
-        if (cos(iniHeading_P * degreeToRad) * sin(finalHeading_P * degreeToRad) - cos(finalHeading_P * degreeToRad) * sin(iniHeading_P * degreeToRad) >= 0) {//rotating ccw
-            firstTarget = iniHeading - 0.8 * absDiff;
-        } else {
-            firstTarget = iniHeading + 0.8 * absDiff;
-        }
-        //make sure first target stay in [-180,+180] range
-        if (firstTarget > 180) firstTarget -= 360;
-        if (firstTarget < -180) firstTarget += 360;
-
-        rawRotateTo(power, firstTarget, true, timeout);
-        //sleep(100);
-        if (Thread.interrupted()) return;
-        rawRotateTo(chassisAligmentPower, finalHeading, false, 1000);
-    }
 
     static final double degreeToRad = PI / 180;
     static final double radToDegree = 180 / PI;
@@ -925,20 +1037,20 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         rotateTo(power, finalHeading, 4000);
     }
 
-    public void rotateTo(double power, double finalHeading, int timeout) throws InterruptedException {
-        rotateTo(power, finalHeading, timeout, true,true);
+    public void rotateTo(double power, double finalHeading, int timeout_sec) throws InterruptedException {
+        rotateTo(power, finalHeading, timeout_sec, true,true);
     }
 
-    public void rotateTo(double power, double finalHeading, int timeout, boolean changePower, boolean finalCorrection) throws InterruptedException {
+    public void rotateTo(double power, double finalHeading, int timeout_sec, boolean changePower, boolean finalCorrection) throws InterruptedException {
         if (Thread.interrupted()) return;
-        if (power <= chassisAligmentPower) {//was 0.3
-            rawRotateTo(power, finalHeading, false, timeout);//was power
+        double iniHeading = orientationSensor.getHeading();
+        if (power <= chassisAligmentPower || Math.abs(iniHeading-finalHeading)<1.0) {//was 0.3
+            rawRotateTo(power, finalHeading, false, timeout_sec);//was power
             if (Thread.interrupted()) return;
             if (power > chassisAligmentPower)
-                rawRotateTo(chassisAligmentPower, finalHeading, false, timeout);
+                rawRotateTo(chassisAligmentPower, finalHeading, false, timeout_sec);
             return;
         }
-        double iniHeading = orientationSensor.getHeading();
         double iniAbsDiff = abs(finalHeading - iniHeading) > 180 ? 360 - abs(finalHeading - iniHeading) : abs(finalHeading - iniHeading);
         if (iniAbsDiff < 0.5)//if within 0.5 degree of target, don't rotate
             return;
@@ -950,7 +1062,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             direction = +1;//rotating cw
         }
         if (Thread.interrupted()) return;
-        double lowPowerDegree = 8 + (power - 0.3) * 70;
+        double lowPowerDegree = 8 + (power - chassisAligmentPower) * 60;
 
         //ensure the condition before calling rotate()
         useScalePower = false;
@@ -975,10 +1087,10 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
                 if (crossProduct >= 0) break;
             }
             currentAbsDiff = abs(finalHeading - currentHeading) > 180 ? 360 - abs(finalHeading - currentHeading) : abs(finalHeading - currentHeading);
-            if (changePower && !lowerPowerApplied && currentAbsDiff <= lowPowerDegree) {//damp power to 0.22 if in last 40%, (currentAbsDiff / iniAbsDiff < 0.40)
+            if (changePower && !lowerPowerApplied && currentAbsDiff <= lowPowerDegree) {//damp power to alignment power if in last 40%, (currentAbsDiff / iniAbsDiff < 0.40)
                 if (Thread.interrupted()) return;
                 turn(1, 0.0);
-                sleep(100);
+                sleep(10);
                 if (Thread.interrupted()) return;
                 turn(1, direction * chassisAligmentPower);
                 lowerPowerApplied = true;
@@ -986,12 +1098,12 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             if (currentAbsDiff / iniAbsDiff < 0.20 && abs(crossProduct) * radToDegree < 1.0)//assume sinx=x, stop 1 degree early
                 break;//stop if really close to target
             if (Thread.interrupted()) break;
-            if (System.currentTimeMillis() - iniTime > timeout) break;
+            if (System.currentTimeMillis() - iniTime > timeout_sec*1000) break;
             TaskManager.processTasks();
             loop++;
         }
         if (Thread.interrupted()) return;
-            stop();
+        stop();
         if (!finalCorrection) {
             driveMode = DriveMode.STOP;
             useScalePower = true;
@@ -1002,7 +1114,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         //**************Check for overshoot and correction**************
         currentHeading = orientationSensor.getHeading();
         currentAbsDiff = abs(finalHeading - currentHeading) > 180 ? 360 - abs(finalHeading - currentHeading) : abs(finalHeading - currentHeading);
-        if ((currentAbsDiff > 2.0) && !Thread.interrupted()) {
+        if ((currentAbsDiff > 1.2) && !Thread.interrupted()) {
             rawRotateTo(chassisAligmentPower, finalHeading, false, 500);
         }
         if (Thread.interrupted()) return;
