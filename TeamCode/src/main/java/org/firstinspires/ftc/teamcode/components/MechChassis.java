@@ -75,12 +75,13 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     // wheel radius, inches
     private double wheelRadius = 2.0;
     // minimum power that should be applied to the wheel motors for robot to start moving
-    private double minPower = 0.05;
+    private double minPower = 0.15;
     // maximum power that should be applied to the wheel motors
     private double maxPower = 0.99;
     private double maxRange = 127; // max range sensor detectable
     private double defaultScale = 1.0;
     private double mecanumForwardRatio = 0.8;
+    private double chassisAligmentPower = 0.2;
 
     private DcMotorEx motorFL;
     private DcMotorEx motorFR;
@@ -138,7 +139,6 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
     final double TICKS_PER_CM = 16.86;//number of encoder ticks per cm of driving
     final double WHEEL_CM_PER_ROTATION = 4*Math.PI*2.54;
-    private double chassisAligmentPower = 0.11;
 
 
     public void setGlobalPosUpdate(OdometryGlobalCoordinatePosition val) { globalPositionUpdate=val;}
@@ -479,7 +479,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         double movementAngle = Math.abs(directionAngle - heading);
         movementAngle = Math.min(180-movementAngle, movementAngle);// movementaAngle but from 0 to 90
         movementAngle = 1 - movementAngle / 90.;// movemebt angle from 0 (horizontal, slowest) to 1(vertical, fastest)
-        double powWeight = 2, movementAngleWeight = 1;// these numebrs need to be tested and maybe changed
+        double powWeight = 1, movementAngleWeight = 1;// these numebrs need to be tested and maybe changed
         double fast = (powWeight * power + movementAngleWeight * movementAngle) / (powWeight + movementAngleWeight);  // how fast the robot is going to go from 0 to 1
         double fastSlowDownP = .7, slowSlowDownP = .85;
         double fastDecreaseP = .75, slowDecreaseP = .4;
@@ -1090,9 +1090,9 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             if (changePower && !lowerPowerApplied && currentAbsDiff <= lowPowerDegree) {//damp power to alignment power if in last 40%, (currentAbsDiff / iniAbsDiff < 0.40)
                 if (Thread.interrupted()) return;
                 turn(1, 0.0);
-                sleep(10);
+                sleep(50);
                 if (Thread.interrupted()) return;
-                turn(1, direction * chassisAligmentPower);
+                turn(1, direction * (chassisAligmentPower-0.05));
                 lowerPowerApplied = true;
             }
             if (currentAbsDiff / iniAbsDiff < 0.20 && abs(crossProduct) * radToDegree < 1.0)//assume sinx=x, stop 1 degree early
