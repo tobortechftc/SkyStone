@@ -4,7 +4,7 @@ import android.util.Log;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.teamcode.hardware.Sigma.ToboSigma;
 import org.firstinspires.ftc.teamcode.support.Logger;
@@ -28,7 +28,7 @@ public class OdometryTestTeleOp extends LinearOpMode implements YieldHandler {
     private EventManager eventManager1;
     private EventManager eventManager2;
 
-    DcMotor verticalLeft, verticalRight, horizontal;
+    DcMotorEx verticalLeft, verticalRight, horizontal;
     final double COUNTS_PER_CM = 307.699557 / 2.54;
 
     @Override
