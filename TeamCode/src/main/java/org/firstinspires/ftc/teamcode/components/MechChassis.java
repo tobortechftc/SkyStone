@@ -22,6 +22,7 @@ import static java.lang.Math.PI;
 import static java.lang.Math.abs;
 import static java.lang.Math.cos;
 import static java.lang.Math.min;
+import static java.lang.Math.pow;
 import static java.lang.Math.sin;
 import static java.lang.Thread.sleep;
 
@@ -76,6 +77,8 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     private double wheelRadius = 2.0;
     // minimum power that should be applied to the wheel motors for robot to start moving
     private double minPower = 0.15;
+    private double minPowerHorizontal = 0.3;
+
     // maximum power that should be applied to the wheel motors
     private double maxPower = 0.99;
     private double maxRange = 127; // max range sensor detectable
@@ -369,20 +372,15 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         driveTo(power, target_x, target_y, target_heading, .8, timeout_sec);
     }
 
-    public void driveTo(double power, double target_x, double target_y, double target_heading, double slowDownPercent, long timeout_sec) throws InterruptedException {
-
-        // To-do: if the difference of target_heading and current heading is too big (e.g. > 25), will need to rotate first
-        // rotateTo(); // Jared to take this task
-        // The original comment suggests a difference greater than 25% means we rotate. But 25% of what?
-        // I assumed we just mean 25 degrees off of target heading.
+    public void driveTo(double power, double target_x, double target_y, double target_heading, double slowDownPercent, double timeout_sec) throws InterruptedException {
+        // To-do: consider crossing 179/-179 angle
         double current_heading = orientationSensor.getHeading();
-        if (Math.abs(current_heading - target_heading) > 25) {
+        boolean rotateFirst = true; // if diff(target_heading-current_heading)>45
+        if (rotateFirst && (Math.abs(current_heading - target_heading) > 25)) {
             double stage_one_heading = target_heading - 20;
             if (current_heading > target_heading)
                 stage_one_heading = target_heading + 20;
-            rawRotateTo(power, stage_one_heading, true, (int) timeout_sec);
-
-
+            rawRotateTo(power, stage_one_heading, true, timeout_sec);
         }
 
         double error_cm = 0.5;  // to-do: error_cm should depend on degree
@@ -464,8 +462,9 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             auto_loop_time = (end_loop_time-init_loop_time)/(double)loop_count;
         double currentHeading = orientationSensor.getHeading();
         double currentAbsDiff = abs(target_heading - currentHeading) > 180 ? 360 - abs(target_heading - currentHeading) : abs(target_heading - currentHeading);
+
         if ((currentAbsDiff > 1.2) && !Thread.interrupted()) {
-            rawRotateTo(chassisAligmentPower, target_heading, false, 500);
+            rotateTo(power, target_heading, timeout_sec);
         }
         stop();
     }
@@ -985,7 +984,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         return orientationSensor.hasRollStabalized(inputIndex, minDiff);
     }
 
-    public void rawRotateTo(double power, double finalHeading, boolean stopEarly, int timeout_sec) throws InterruptedException {
+    public void rawRotateTo(double power, double finalHeading, boolean stopEarly, double timeout_sec) throws InterruptedException {
         if (Thread.interrupted()) return;
         debug("rotateT0(pwr: %.3f, finalHeading: %.1f)", power, finalHeading);
         double iniHeading = orientationSensor.getHeading();
@@ -1053,11 +1052,11 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         rotateTo(power, finalHeading, 4000);
     }
 
-    public void rotateTo(double power, double finalHeading, int timeout_sec) throws InterruptedException {
+    public void rotateTo(double power, double finalHeading, double timeout_sec) throws InterruptedException {
         rotateTo(power, finalHeading, timeout_sec, true,true);
     }
 
-    public void rotateTo(double power, double finalHeading, int timeout_sec, boolean changePower, boolean finalCorrection) throws InterruptedException {
+    public void rotateTo(double power, double finalHeading, double timeout_sec, boolean changePower, boolean finalCorrection) throws InterruptedException {
         if (Thread.interrupted()) return;
         double iniHeading = orientationSensor.getHeading();
         if (power <= chassisAligmentPower || Math.abs(iniHeading-finalHeading)<1.0) {//was 0.3
@@ -1131,7 +1130,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         currentHeading = orientationSensor.getHeading();
         currentAbsDiff = abs(finalHeading - currentHeading) > 180 ? 360 - abs(finalHeading - currentHeading) : abs(finalHeading - currentHeading);
         if ((currentAbsDiff > 1.2) && !Thread.interrupted()) {
-            rawRotateTo(chassisAligmentPower, finalHeading, false, 500);
+            rawRotateTo(chassisAligmentPower, finalHeading, false, 0.5);
         }
         if (Thread.interrupted()) return;
         //**************End correction**************

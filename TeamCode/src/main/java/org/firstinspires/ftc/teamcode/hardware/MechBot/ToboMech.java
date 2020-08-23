@@ -273,7 +273,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (source.isPressed(Button.BACK)) {
-                    auto_chassis_power += 0.1;
+                    auto_chassis_power += 0.05;
                     if (auto_chassis_power > 1) auto_chassis_power = 1;
                 } else if (source.getTrigger(Events.Side.LEFT)>0.5) {
                     chassis.auto_target_y += 10;
@@ -287,7 +287,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (source.isPressed(Button.BACK)) {
-                    auto_chassis_power -= 0.1;
+                    auto_chassis_power -= 0.05;
                     if (auto_chassis_power < 0.1) auto_chassis_power = 0.1;
                 } else if (source.getTrigger(Events.Side.LEFT)>0.5) {
                     chassis.auto_target_y -= 10;
@@ -312,7 +312,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
                 if (source.isPressed(Button.BACK)) {
                     auto_rotate_degree += 10;
                 } else if (!source.isPressed(Button.START)) {
-                    chassis.rotateTo(auto_chassis_power, auto_rotate_degree, 10);
+                    chassis.rotateTo(auto_chassis_power, auto_rotate_degree, 5);
                 } else if (source.getTrigger(Events.Side.LEFT)>0.5) {
                     chassis.auto_target_x += 5;
                 }
