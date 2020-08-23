@@ -397,6 +397,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         double init_loop_time = System.currentTimeMillis();
         int loop_count = 0;
 
+        double[] motorPowers = {0, 0, 0, 0};
         // slow down stuff
         double[] s = getSlowDownParameters(target_heading, getCurHeading(), power);
         slowDownPercent = s[0];
@@ -433,7 +434,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
                 desiredDegree = Math.toDegrees(Math.atan2(target_x - cur_x, target_y - cur_y));
             }
             //move
-            angleMove(desiredDegree, powerUsed, true, target_heading);
+            motorPowers = angleMove(desiredDegree, powerUsed, true, target_heading);
             if (Math.abs(cur_y-target_y)<=error_cm)
                 y_reached=true;
             else if (y_dist>0){
@@ -467,7 +468,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         if ((currentAbsDiff > 1.2) && !Thread.interrupted()) {
             rotateTo(power, target_heading, timeout_sec);
         }
-        stop();
+        stopNeg(motorPowers);
     }
     public double getSlowDownPower(double traveledPercent, double slowDownPercent, double decreaseP, double power, double minPowerForAngle){
         double apower = Math.abs(power);
@@ -530,7 +531,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         motorBL.setPower(-sgn * power * back_ratio * ratioBL);
         motorBR.setPower(sgn * power * back_ratio * ratioBR);
     }
-    public void angleMove(double directionAngle, double power, boolean headingCorrection, double fixed_heading){
+    public double[] angleMove(double directionAngle, double power, boolean headingCorrection, double fixed_heading){
 
         auto_travel_p = directionAngle;
 
@@ -576,16 +577,26 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             motorPowers[3] *= cur_left_to_right_ratio;
         }
         if (slow_down_front) { // make front motors slower
-            motorFL.setPower(motorPowers[0] * Math.abs(power) * ratioFL * cur_front_to_back_ratio / max);
-            motorFR.setPower(motorPowers[1] * Math.abs(power) * ratioFR * cur_front_to_back_ratio / max);
-            motorBL.setPower(motorPowers[2] * Math.abs(power) * ratioBL / max);
-            motorBR.setPower(motorPowers[3] * Math.abs(power) * ratioBR / max);
+            motorPowers[0] = motorPowers[0] * Math.abs(power) * ratioFL * cur_front_to_back_ratio / max;
+            motorPowers[1] = motorPowers[1] * Math.abs(power) * ratioFR * cur_front_to_back_ratio / max;
+            motorPowers[2] = motorPowers[2] * Math.abs(power) * ratioBL / max;
+            motorPowers[3] = motorPowers[3] * Math.abs(power) * ratioBR / max;
+            motorFL.setPower(motorPowers[0]);
+            motorFR.setPower(motorPowers[1]);
+            motorBL.setPower(motorPowers[2]);
+            motorBR.setPower(motorPowers[3]);
         } else { // slow down back (or keep same)
-            motorFL.setPower(motorPowers[0] * Math.abs(power) * ratioFL / max);
-            motorFR.setPower(motorPowers[1] * Math.abs(power) * ratioFR / max);
-            motorBL.setPower(motorPowers[2] * Math.abs(power) * ratioBL * cur_front_to_back_ratio / max);
-            motorBR.setPower(motorPowers[3] * Math.abs(power) * ratioBR * cur_front_to_back_ratio / max);
+            motorPowers[0] = motorPowers[0] * Math.abs(power) * ratioFL / max;
+            motorPowers[1] = motorPowers[1] * Math.abs(power) * ratioFR / max;
+            motorPowers[2] = motorPowers[2] * Math.abs(power) * ratioBL * cur_front_to_back_ratio / max;
+            motorPowers[3] = motorPowers[3] * Math.abs(power) * ratioBR * cur_front_to_back_ratio / max;
+
+            motorFL.setPower(motorPowers[0]);
+            motorFR.setPower(motorPowers[1]);
+            motorBL.setPower(motorPowers[2]);
+            motorBR.setPower(motorPowers[3]);
         }
+        return motorPowers;
     }
 
     public void freeStyle(double fl, double fr, double bl, double br, boolean normalized) {
@@ -790,6 +801,12 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         motorFR.setPower(0);
         motorBL.setPower(0);
         motorBR.setPower(0);
+    }
+    public void stopNeg(double[] motorPowers) {
+        motorFL.setPower(Math.signum(motorPowers[0] * .2));
+        motorFR.setPower(Math.signum(motorPowers[1] * .2));
+        motorBL.setPower(Math.signum(motorPowers[2] * .2));
+        motorBR.setPower(Math.signum(motorPowers[3] * .2));
     }
 
     public void reset() {
