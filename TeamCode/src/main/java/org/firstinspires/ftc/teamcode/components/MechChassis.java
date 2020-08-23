@@ -68,6 +68,8 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     private double front_ratio = 0.95; // slow down ratio for front wheels to go 90 degree
     private double back_ratio = 1.0; // slow down ratio for front wheels to go 90 degree
 
+    private double fixedStopDist = 15; // stop distance for 20 cm /sec
+
 
     // distance between the centers of left and right wheels, inches
     private double track = 11.5;
@@ -193,7 +195,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     public double odo_speed_cm() {
        double speed = 0;
        // Praveer to-do: combine odo_x_speed_cm() and odo_y_speed_cm() into chassis speed
-       // ...
+       speed = Math.hypot(odo_x_speed_cm(), odo_x_speed_cm());
        return speed;
     }
 
@@ -355,7 +357,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
     public void driveStraight(double power, double cm, double degree, double slowDownPercent, long timeout_sec) throws InterruptedException {
         double fixed_heading = orientationSensor.getHeading();
-        // to-do: Shasha to compute x_dist/y_dist based on current heading
+        // to-do: Sasha to compute x_dist/y_dist based on current heading
         double x_dist = cm * Math.sin(Math.toRadians(degree)) * Math.signum(power);
         double y_dist = cm * Math.cos(Math.toRadians(degree)) * Math.signum(power);
         double target_x = x_dist + odo_x_pos_cm();
@@ -404,6 +406,10 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         double decreasePercent = s[1];
         double minPowerForAngle = s[2];
 
+        double cur_s;
+        double expectedStopDist;
+        double remDistance;
+
         while((!x_reached || !y_reached) && (System.currentTimeMillis() - iniTime < timeout_sec * 1000)) {
             if (Math.abs(y_dist) > 0.01 && Math.abs(x_dist) > 0.01) {
                 traveledPercent = Math.max(Math.abs(cur_y - init_y) / Math.abs(y_dist), Math.abs(cur_x - init_x) / Math.abs(x_dist));
@@ -413,7 +419,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
                 traveledPercent = Math.abs(cur_x - init_x) / Math.abs(x_dist);
             }
             auto_travel_p = traveledPercent;
-            if (traveledPercent > slowDownPercent) {
+            //if (traveledPercent > slowDownPercent) {
                /* double apower = Math.abs(power);
                 double pow;
                 if (traveledPercent < .25 + .75 * slowDownPercent)
@@ -428,13 +434,23 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
                 if (pow < minPower) pow = minPower;
 
                 powerUsed = pow * Math.signum(power);*/
-               powerUsed = getSlowDownPower(traveledPercent, slowDownPercent, decreasePercent, power, minPowerForAngle);
-            }
+               //powerUsed = getSlowDownPower(traveledPercent, slowDownPercent, decreasePercent, power, minPowerForAngle);
+           // }
             if (traveledPercent<0.9) {
                 desiredDegree = Math.toDegrees(Math.atan2(target_x - cur_x, target_y - cur_y));
             }
             //move
             motorPowers = angleMove(desiredDegree, powerUsed, true, target_heading);
+
+            remDistance = Math.hypot(target_x- cur_x, target_y - cur_y);
+            cur_s = odo_speed_cm();
+            expectedStopDist = Math.pow(cur_s / 20., 2) * fixedStopDist;
+            if (remDistance - (expectedStopDist + .01 * cur_s)  < .001){ // we need to measure fixedStopDist ( overshoot fot any speed, then we need to change 20. to that speed
+                break;
+            }
+
+
+
             if (Math.abs(cur_y-target_y)<=error_cm)
                 y_reached=true;
             else if (y_dist>0){
@@ -469,6 +485,9 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             rotateTo(power, target_heading, timeout_sec);
         }
         stopNeg(motorPowers);
+        //tl.addData("speed: ", odo_speed_cm());
+        //tl.update();
+
     }
     public double getSlowDownPower(double traveledPercent, double slowDownPercent, double decreaseP, double power, double minPowerForAngle){
         double apower = Math.abs(power);
