@@ -76,7 +76,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     // wheel radius, inches
     private double wheelRadius = 2.0;
     // minimum power that should be applied to the wheel motors for robot to start moving
-    private double minPower = 0.15;
+    private double minPower = 0.2;
     private double minPowerHorizontal = 0.3;
 
     // maximum power that should be applied to the wheel motors
@@ -401,6 +401,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         double[] s = getSlowDownParameters(target_heading, getCurHeading(), power);
         slowDownPercent = s[0];
         double decreasePercent = s[1];
+        double minPowerForAngle = s[2];
 
         while((!x_reached || !y_reached) && (System.currentTimeMillis() - iniTime < timeout_sec * 1000)) {
             if (Math.abs(y_dist) > 0.01 && Math.abs(x_dist) > 0.01) {
@@ -426,7 +427,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
                 if (pow < minPower) pow = minPower;
 
                 powerUsed = pow * Math.signum(power);*/
-               powerUsed = getSlowDownPower(traveledPercent, slowDownPercent, decreasePercent, power);
+               powerUsed = getSlowDownPower(traveledPercent, slowDownPercent, decreasePercent, power, minPowerForAngle);
             }
             if (traveledPercent<0.9) {
                 desiredDegree = Math.toDegrees(Math.atan2(target_x - cur_x, target_y - cur_y));
@@ -468,7 +469,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         }
         stop();
     }
-    public double getSlowDownPower(double traveledPercent, double slowDownPercent, double decreaseP, double power){
+    public double getSlowDownPower(double traveledPercent, double slowDownPercent, double decreaseP, double power, double minPowerForAngle){
         double apower = Math.abs(power);
         double pow;
         double percentPow;
@@ -485,15 +486,16 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             //pow = minPower;
             percentPow = 0;
         }
-        pow = percentPow * apower + (1-percentPow) * minPower;
-        if (pow < minPower) pow = minPower;
+        pow = percentPow * apower + (1-percentPow) * minPowerForAngle;
+        if (pow < minPowerForAngle) pow = minPowerForAngle;
         return  pow * Math.signum(power);
     }
 
     public double[] getSlowDownParameters(double directionAngle, double heading, double power){
         double movementAngle = Math.abs(directionAngle - heading);
         movementAngle = Math.min(180-movementAngle, movementAngle);// movementaAngle but from 0 to 90
-        movementAngle = 1 - movementAngle / 90.;// movemebt angle from 0 (horizontal, slowest) to 1(vertical, fastest)
+        movementAngle = 1 - movementAngle / 90.;// movemebt angle from 0 (horizontal, slowest) to 1(vertical, fastest
+        double minPowerForAngle = minPowerHorizontal - movementAngle * (minPowerHorizontal - minPower);
         double powWeight = 1, movementAngleWeight = 1;// these numebrs need to be tested and maybe changed
         double fast = (powWeight * power + movementAngleWeight * movementAngle) / (powWeight + movementAngleWeight);  // how fast the robot is going to go from 0 to 1
         double fastSlowDownP = .7, slowSlowDownP = .85;
@@ -501,7 +503,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         double slowDownP = fastSlowDownP + (1-fast) * (slowSlowDownP - fastSlowDownP);// slow down percent - slow down sooner when going faster
         double decreaseP = fastDecreaseP + (1-fast) * (slowDecreaseP - fastDecreaseP); // how much we decrease power in the first step - slower has steeper decrease
 
-        return new double[] {slowDownP, decreaseP};
+        return new double[] {slowDownP, decreaseP, minPowerForAngle};
     }
     /**
      * move in the vertical direction
