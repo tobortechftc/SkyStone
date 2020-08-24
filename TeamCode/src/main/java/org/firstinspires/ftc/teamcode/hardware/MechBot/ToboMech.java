@@ -311,10 +311,10 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (source.isPressed(Button.BACK)) {
                     auto_rotate_degree += 10;
-                } else if (!source.isPressed(Button.START)) {
-                    chassis.rotateTo(auto_chassis_power, auto_rotate_degree, 5);
                 } else if (source.getTrigger(Events.Side.LEFT)>0.5) {
                     chassis.auto_target_x += 5;
+                }  else if (!source.isPressed(Button.START)) {
+                    chassis.rotateTo(auto_chassis_power, auto_rotate_degree, 5);
                 }
             }
         }, new Button[]{Button.B});
