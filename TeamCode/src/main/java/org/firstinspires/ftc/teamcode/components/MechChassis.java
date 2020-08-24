@@ -22,7 +22,6 @@ import static java.lang.Math.PI;
 import static java.lang.Math.abs;
 import static java.lang.Math.cos;
 import static java.lang.Math.min;
-import static java.lang.Math.pow;
 import static java.lang.Math.sin;
 import static java.lang.Thread.sleep;
 
@@ -68,7 +67,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     private double front_ratio = 0.95; // slow down ratio for front wheels to go 90 degree
     private double back_ratio = 1.0; // slow down ratio for front wheels to go 90 degree
 
-    private double fixedStopDist = 15; // stop distance for 20 cm /sec
+    private double fixedStopDist = 20; // stop distance for 80 cm /sec
 
 
     // distance between the centers of left and right wheels, inches
@@ -100,7 +99,10 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     public double auto_target_y = 0;
     public double auto_power = 0;
     public double auto_loop_time = 0;
-    public  double auto_travel_p = 0;
+    public double auto_travel_p = 0;
+    public double auto_max_speed = 0;
+    public double auto_exit_speed = 0;
+    public double auto_stop_early_dist = 0;
 
     private DriveMode driveMode = DriveMode.STOP;      // current drive mode
     private double targetHeading;     // intended heading for DriveMode.STRAIGHT as reported by orientation sensor
@@ -144,6 +146,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
     final double TICKS_PER_CM = 16.86;//number of encoder ticks per cm of driving
     final double WHEEL_CM_PER_ROTATION = 4*Math.PI*2.54;
+    final double ODO_ENC_RATIO = 1;
 
 
     public void setGlobalPosUpdate(OdometryGlobalCoordinatePosition val) { globalPositionUpdate=val;}
@@ -184,18 +187,18 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
     public double odo_x_speed_cm() { // horizontal speed as cm/sec
         if (globalPositionUpdate==null) return 0;
-        return globalPositionUpdate.getXSpeedDegree() / 360.0 * WHEEL_CM_PER_ROTATION;
+        return globalPositionUpdate.getXSpeedDegree() / 360.0 * WHEEL_CM_PER_ROTATION * ODO_ENC_RATIO;
     }
 
     public double odo_y_speed_cm() { // forward speed as cm/sec
         if (globalPositionUpdate==null) return 0;
-        return globalPositionUpdate.getYSpeedDegree() / 360.0 * WHEEL_CM_PER_ROTATION;
+        return globalPositionUpdate.getYSpeedDegree() / 360.0 * WHEEL_CM_PER_ROTATION * ODO_ENC_RATIO;
     }
 
     public double odo_speed_cm() {
        double speed = 0;
        // Praveer to-do: combine odo_x_speed_cm() and odo_y_speed_cm() into chassis speed
-       speed = Math.hypot(odo_x_speed_cm(), odo_x_speed_cm());
+       speed = Math.hypot(odo_x_speed_cm(), odo_y_speed_cm());
        return speed;
     }
 
@@ -381,16 +384,34 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         double cur_y = odo_y_pos_cm(), prev_y = cur_y, init_y=cur_y;
         double desiredDegree = Math.toDegrees(Math.atan2(target_x - cur_x, target_y - cur_y));
         double currentAbsDiff = abs(desiredDegree - current_heading) > 180 ? 360 - abs(desiredDegree - current_heading) : abs(desiredDegree - current_heading);
-        double movementAngle = Math.min(180-currentAbsDiff, currentAbsDiff); // movementaAngle for robot from 0 to 90
-        boolean rotateFirst = (movementAngle>45); // if diff(target_heading-current_heading)>45
-        if (rotateFirst && (Math.abs(current_heading - target_heading) > 20)) {
-            double stage_one_heading = target_heading - 10;
-            if (current_heading > target_heading)
-                stage_one_heading = target_heading + 10;
-            rawRotateTo(power, stage_one_heading, true, timeout_sec);
+        double finalAbsDiff =  abs(target_heading - current_heading) > 180 ? 360 - abs(target_heading - current_heading) : abs(target_heading - current_heading);
+        boolean rotateFirst = true;
+        double stage_one_heading=current_heading;
+
+        // if desirableDegree is between current_heading and target_heading, rotate to desirableDegress first
+        // else if target_heading is between current_heading and desirableDegree, rotate to target_heading first
+        if (current_heading>desiredDegree+10 && desiredDegree>=target_heading) {
+            stage_one_heading = desiredDegree + 10;
+        } else if (current_heading<desiredDegree-10 && desiredDegree<=target_heading) {
+            stage_one_heading = desiredDegree - 10;
+        } else if (current_heading>target_heading+10 && target_heading>=desiredDegree) {
+            // rotate to about target_heading
+            stage_one_heading = target_heading + 10;
+        } else if (current_heading<target_heading-10 && target_heading<=desiredDegree) {
+            // rotate to about target_heading
+            stage_one_heading = target_heading - 10;
+        } else {
+            rotateFirst = false;
         }
 
-        double error_cm = 0.5;  // to-do: error_cm should depend on degree
+        if (rotateFirst && (stage_one_heading!=current_heading)) {
+            rawRotateTo(power, stage_one_heading, true, timeout_sec);
+            cur_x = odo_x_pos_cm();
+            cur_y = odo_y_pos_cm();
+            desiredDegree = Math.toDegrees(Math.atan2(target_x - cur_x, target_y - cur_y));
+        }
+
+        double error_cm = 2.0;  // to-do: error_cm should depend on degree
         double powerUsed = (Math.abs(power)<minPower?minPower*Math.signum(power):power);
         double x_dist = target_x - cur_x;
         double y_dist = target_y - cur_y;
@@ -399,6 +420,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         double traveledPercent = 0;
         double save_target_heading = target_heading;
 
+        // Temporarily change target_heading to go straight
         target_heading = orientationSensor.getHeading();
         double init_loop_time = System.currentTimeMillis();
         int loop_count = 0;
@@ -413,7 +435,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         double cur_s;
         double expectedStopDist;
         double remDistance;
-
+        auto_max_speed = auto_exit_speed = auto_stop_early_dist = 0;
         while((!x_reached || !y_reached) && (System.currentTimeMillis() - iniTime < timeout_sec * 1000)) {
             if (Math.abs(y_dist) > 0.01 && Math.abs(x_dist) > 0.01) {
                 traveledPercent = Math.max(Math.abs(cur_y - init_y) / Math.abs(y_dist), Math.abs(cur_x - init_x) / Math.abs(x_dist));
@@ -423,9 +445,16 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
                 traveledPercent = Math.abs(cur_x - init_x) / Math.abs(x_dist);
             }
             auto_travel_p = traveledPercent;
-//            if (traveledPercent > slowDownPercent) {
-//               powerUsed = getSlowDownPower(traveledPercent, slowDownPercent, decreasePercent, power, minPowerForAngle);
-//            }
+            if (traveledPercent>0.99) {
+                break;
+            }
+            cur_s = odo_speed_cm();
+            auto_max_speed = Math.max(cur_s, auto_max_speed);
+            //auto_max_xspeed = Math.max(odo_x_speed_cm(), auto_max_xspeed);
+            //auto_max_yspeed = Math.max(odo_y_speed_cm(), auto_max_yspeed);
+            if (traveledPercent > slowDownPercent && cur_s>30 && powerUsed>0.3) {
+               powerUsed = 0.3;
+            }
             if (traveledPercent<0.9) {
                 desiredDegree = Math.toDegrees(Math.atan2(target_x - cur_x, target_y - cur_y));
             }
@@ -433,13 +462,13 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             motorPowers = angleMove(desiredDegree, powerUsed, true, target_heading);
 
             remDistance = Math.hypot(target_x- cur_x, target_y - cur_y);
-            cur_s = odo_speed_cm();
-            expectedStopDist = Math.pow(cur_s / 20., 2) * fixedStopDist;
+
+            expectedStopDist = Math.pow(cur_s / 120., 1.2) * fixedStopDist;
             if (remDistance - (expectedStopDist + .01 * cur_s)  < .001){ // we need to measure fixedStopDist ( overshoot fot any speed, then we need to change 20. to that speed
+                auto_exit_speed = odo_speed_cm(); // exiting speed
+                auto_stop_early_dist = expectedStopDist;
                 break;
             }
-
-
 
             if (Math.abs(cur_y-target_y)<=error_cm)
                 y_reached=true;
@@ -459,12 +488,13 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
                 if (cur_x <= target_x + error_cm)
                     x_reached=true;
             }
-            prev_x = cur_x;
+            //prev_x = cur_x;
             cur_x = odo_x_pos_cm();
-            prev_y = cur_y;
+            //prev_y = cur_y;
             cur_y = odo_y_pos_cm();
             loop_count ++;
         }
+        stopNeg(motorPowers);
         double end_loop_time = System.currentTimeMillis();
         if (loop_count>0)
             auto_loop_time = (end_loop_time-init_loop_time)/(double)loop_count;
@@ -476,11 +506,10 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         if ((currentAbsDiff > 1.2) && !Thread.interrupted()) {
             rotateTo(Math.abs(power), target_heading, timeout_sec);
         }
-        stopNeg(motorPowers);
         //tl.addData("speed: ", odo_speed_cm());
         //tl.update();
-
     }
+
     public double getSlowDownPower(double traveledPercent, double slowDownPercent, double decreaseP, double power, double minPowerForAngle){
         double apower = Math.abs(power);
         double pow;
@@ -544,7 +573,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     }
     public double[] angleMove(double directionAngle, double power, boolean headingCorrection, double fixed_heading){
 
-        auto_travel_p = directionAngle;
+        // auto_travel_p = directionAngle;
 
         double cur_heading = orientationSensor.getHeading();
         double degree_diff = Math.abs(cur_heading-fixed_heading);
@@ -814,11 +843,11 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         motorBR.setPower(0);
     }
     public void stopNeg(double[] motorPowers) throws InterruptedException {
-        motorFL.setPower(Math.signum(motorPowers[0] * .2));
-        motorFR.setPower(Math.signum(motorPowers[1] * .2));
-        motorBL.setPower(Math.signum(motorPowers[2] * .2));
-        motorBR.setPower(Math.signum(motorPowers[3] * .2));
-        sleep(30);
+        motorFL.setPower(-Math.signum(motorPowers[0] * .2));
+        motorFR.setPower(-Math.signum(motorPowers[1] * .2));
+        motorBL.setPower(-Math.signum(motorPowers[2] * .2));
+        motorBR.setPower(-Math.signum(motorPowers[3] * .2));
+        sleep(100);
         stop();
     }
 
@@ -928,12 +957,18 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         */
 
         if (globalPositionUpdate!=null) {
-            line.addData("Odo (speed,x,ly,ry)", new Func<String>() {
+            line.addData("Odo (x,ly,ry)", new Func<String>() {
                 @Override
                 public String value() {
-                    return String.format("(%5.0f,%5.0f,%5.0f,%5.0f)\n", odo_speed_cm(), globalPositionUpdate.XEncoder(),
+                    return String.format("(%5.0f,%5.0f,%5.0f)\n",globalPositionUpdate.XEncoder(),
                             globalPositionUpdate.leftYEncoder(),
                             globalPositionUpdate.rightYEncoder());
+                }
+            });
+            line.addData("driveTo (stop-sp,stop-cm,max-speed)", new Func<String>() {
+                @Override
+                public String value() {
+                    return String.format("(%5.1f,%5.1f,%5.1f)\n", auto_exit_speed, auto_stop_early_dist, auto_max_speed);
                 }
             });
             line.addData("Odo-pos (x,y,angle)", new Func<String>() {
@@ -1136,11 +1171,12 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             currentAbsDiff = abs(finalHeading - currentHeading) > 180 ? 360 - abs(finalHeading - currentHeading) : abs(finalHeading - currentHeading);
             if (changePower && !lowerPowerApplied && currentAbsDiff <= lowPowerDegree) {//damp power to alignment power if in last 40%, (currentAbsDiff / iniAbsDiff < 0.40)
                 if (Thread.interrupted()) return;
-                turn(1, 0.0);
-                sleep(50);
-                if (Thread.interrupted()) return;
-                turn(1, direction * (chassisAligmentPower-0.05));
-                lowerPowerApplied = true;
+                if (odo_speed_cm()>20) {
+                    turn(1, 0.0);
+                    sleep(40);
+                    turn(1, direction * (chassisAligmentPower - 0.02));
+                    lowerPowerApplied = true;
+                }
             }
             if (currentAbsDiff / iniAbsDiff < 0.20 && abs(crossProduct) * radToDegree < 1.0)//assume sinx=x, stop 1 degree early
                 break;//stop if really close to target
@@ -1157,7 +1193,8 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             return;
         }
         if (Thread.interrupted()) return;
-        sleep(100);
+        if (odo_speed_cm()>10)
+            sleep(90);
         //**************Check for overshoot and correction**************
         currentHeading = orientationSensor.getHeading();
         currentAbsDiff = abs(finalHeading - currentHeading) > 180 ? 360 - abs(finalHeading - currentHeading) : abs(finalHeading - currentHeading);

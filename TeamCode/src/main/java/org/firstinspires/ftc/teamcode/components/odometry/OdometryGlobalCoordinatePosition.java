@@ -87,8 +87,8 @@ public class OdometryGlobalCoordinatePosition implements Runnable{
         previousVerticalLeftEncoderWheelPosition = verticalLeftEncoderWheelPosition;
         previousVerticalRightEncoderWheelPosition = verticalRightEncoderWheelPosition;
         prevNormalEncoderWheelPosition = normalEncoderWheelPosition;
-        ySpeedDegree = (verticalEncoderLeft.getVelocity(AngleUnit.DEGREES) + verticalEncoderLeft.getVelocity(AngleUnit.DEGREES)) / 2;
-        xSpeedDegree = horizontalEncoder.getVelocity();
+        ySpeedDegree = (Math.abs(verticalEncoderLeft.getVelocity(AngleUnit.DEGREES)) + Math.abs(verticalEncoderLeft.getVelocity(AngleUnit.DEGREES))) / 2;
+        xSpeedDegree = Math.abs(horizontalEncoder.getVelocity(AngleUnit.DEGREES));
     }
 
     /**
