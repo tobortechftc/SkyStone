@@ -157,8 +157,8 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (chassis!=null && source.isPressed(Button.BACK) && source.isPressed(Button.START)) {
-//                    // calibration mode. Only uncomment when testing new motors with chassis wheels suspended
-//                    chassis.setupEncoders(telemetry);
+                    // calibration mode. Only uncomment when testing new motors with chassis wheels suspended
+                    chassis.setupEncoders(telemetry);
 //                    chassis.freeStyle(1.0, 1.0, 1.0, 1.0, true);
 //                    sleep(10000);
 //                    chassis.stop();
@@ -208,9 +208,16 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         line.addData("Test ", new Func<String>() {
             @Override
             public String value() {
-                return String.format("Power/auto=%.2f/%.2f, dist=%.0f, rotate_degree=%.1f, tar-x=%.0f,tar-y=%.0f, loop_time=%2.1f, travel_p=%.3f\n",
+                return String.format("Power/auto=%.2f/%.2f, dist=%.0f, rotate_degree=%.1f, tar-x=%.0f,tar-y=%.0f\n",
                         auto_chassis_power,chassis.auto_power, auto_chassis_dist, auto_rotate_degree,
-                        chassis.auto_target_x,chassis.auto_target_y, chassis.auto_loop_time, chassis.auto_travel_p);
+                        chassis.auto_target_x,chassis.auto_target_y);
+            }
+        });
+        line.addData("Result ", new Func<String>() {
+            @Override
+            public String value() {
+                return String.format("dist_err=%.2f, degree_err=%.2f, loop_time=%2.1f, travel_p=%.3f\n",
+                        chassis.auto_dist_err,chassis.auto_degree_err, chassis.auto_loop_time, chassis.auto_travel_p);
             }
         });
     }

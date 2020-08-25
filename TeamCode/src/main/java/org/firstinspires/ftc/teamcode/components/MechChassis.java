@@ -97,10 +97,13 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     public CombinedOrientationSensor orientationSensor;
     public double auto_target_x = 0;
     public double auto_target_y = 0;
+    public double auto_dist_err = 0;
+    public double auto_degree_err = 0;
     public double auto_power = 0;
     public double auto_loop_time = 0;
     public double auto_travel_p = 0;
     public double auto_max_speed = 0;
+    public double auto_max_calc_speed = 0;
     public double auto_exit_speed = 0;
     public double auto_stop_early_dist = 0;
 
@@ -138,16 +141,16 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     final double ODO_COUNTS_PER_INCH = 307.699557;
     final double ODO_COUNTS_PER_CM = ODO_COUNTS_PER_INCH / 2.54;
 
-
     String rfName = "motorFR" , lfName = "motorFL";
     String rbName = "motorBR";
     String lbName = "motorBL";
     String verticalLeftEncoderName = rbName, verticalRightEncoderName = lfName, horizontalEncoderName = rfName;
 
-    final double TICKS_PER_CM = 16.86;//number of encoder ticks per cm of driving
-    final double WHEEL_CM_PER_ROTATION = 4*Math.PI*2.54;
-    final double ODO_ENC_RATIO = 1;
+    final double WHEEL_CM_PER_ROTATION = Math.PI*3.8;       // ~11.938cm, odometry wheel is 38 mm
+    final double TICKS_PER_CM = 1446/WHEEL_CM_PER_ROTATION; // ~30.1557, number of encoder ticks per cm of driving
 
+    final double ODO_ENC_RATIO = 1446.0/(291.2*2);  // ratio to ticks-per-rotation with goBilda 5202 1150rpm is 145.6 x 2 gear up
+                                                // Odometry encoder E8T-360 is 360 ticks-per-rotation
 
     public void setGlobalPosUpdate(OdometryGlobalCoordinatePosition val) { globalPositionUpdate=val;}
     public OdometryGlobalCoordinatePosition globalPositionUpdate() { return globalPositionUpdate; }
@@ -318,7 +321,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         motorBL.setMode ( DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         motorBR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motorBR.setMode ( DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
+        motorFL.getMotorType();
         // map odometry encoders
         verticalLeftEncoder = configuration.getHardwareMap().tryGet(DcMotorEx.class, verticalLeftEncoderName);
         verticalRightEncoder = configuration.getHardwareMap().tryGet(DcMotorEx.class, verticalRightEncoderName);
@@ -435,6 +438,8 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         double cur_s;
         double expectedStopDist;
         double remDistance;
+        auto_max_calc_speed = 0; prev_x=cur_x; prev_y=cur_y;
+        double prev_time = init_loop_time;
         auto_max_speed = auto_exit_speed = auto_stop_early_dist = 0;
         while((!x_reached || !y_reached) && (System.currentTimeMillis() - iniTime < timeout_sec * 1000)) {
             if (Math.abs(y_dist) > 0.01 && Math.abs(x_dist) > 0.01) {
@@ -493,6 +498,12 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             //prev_y = cur_y;
             cur_y = odo_y_pos_cm();
             loop_count ++;
+            if ((loop_count%10)==0) {
+                double cur_time = System.currentTimeMillis();
+                double speed = Math.hypot(cur_x-prev_x, cur_y-prev_y)/(cur_time-prev_time)*1000.0;
+                auto_max_calc_speed = Math.max(speed, auto_max_calc_speed);
+                prev_time=cur_time; prev_x=cur_x; prev_y=cur_y;
+            }
         }
         stopNeg(motorPowers);
         double end_loop_time = System.currentTimeMillis();
@@ -506,6 +517,10 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         if ((currentAbsDiff > 1.2) && !Thread.interrupted()) {
             rotateTo(Math.abs(power), target_heading, timeout_sec);
         }
+        // The following code is for errror estimation, should be commented out in competition
+        sleep(200);
+        auto_dist_err = Math.hypot(odo_x_pos_cm()-target_x, odo_y_pos_cm()-target_y);
+        auto_degree_err = Math.abs(target_heading-orientationSensor.getHeading());
         //tl.addData("speed: ", odo_speed_cm());
         //tl.update();
     }
@@ -965,10 +980,10 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
                             globalPositionUpdate.rightYEncoder());
                 }
             });
-            line.addData("driveTo (stop-sp,stop-cm,max-speed)", new Func<String>() {
+            line.addData("driveTo (stop-sp,stop-cm,max-dod-sp,max-calc-sp)", new Func<String>() {
                 @Override
                 public String value() {
-                    return String.format("(%5.1f,%5.1f,%5.1f)\n", auto_exit_speed, auto_stop_early_dist, auto_max_speed);
+                    return String.format("(%5.1f,%5.1f,%5.1f,%5.1f)\n", auto_exit_speed, auto_stop_early_dist, auto_max_speed, auto_max_calc_speed);
                 }
             });
             line.addData("Odo-pos (x,y,angle)", new Func<String>() {
