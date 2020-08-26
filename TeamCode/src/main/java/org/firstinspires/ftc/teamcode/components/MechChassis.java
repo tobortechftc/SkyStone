@@ -22,6 +22,7 @@ import static java.lang.Math.PI;
 import static java.lang.Math.abs;
 import static java.lang.Math.cos;
 import static java.lang.Math.min;
+import static java.lang.Math.pow;
 import static java.lang.Math.sin;
 import static java.lang.Thread.sleep;
 
@@ -64,8 +65,8 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
     private double left_ratio = 1.0; // slow down ratio for left wheels to go straight
     private double right_ratio = 1.0; // slow down ratio for right wheels to go straight
-    private double front_ratio = 0.95; // slow down ratio for front wheels to go 90 degree
-    private double back_ratio = 1.0; // slow down ratio for front wheels to go 90 degree
+    private double front_ratio = 1.0; // slow down ratio for front wheels to go 90 degree
+    private double back_ratio = 0.975; // slow down ratio for front wheels to go 90 degree
 
     private double fixedStopDist = 20; // stop distance for 80 cm /sec
 
@@ -568,6 +569,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
      * @param power must be in range [0,1]
      */
     public void yMove(int sgn, double power) {
+        if (Math.abs(power)<minPower) power=minPower*Math.signum(power);
         motorFL.setPower(sgn * power * left_ratio * ratioFL);
         motorFR.setPower(sgn * power * right_ratio * ratioFR);
         motorBL.setPower(sgn * power * left_ratio * ratioBL);
@@ -581,6 +583,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
      * @param power must be in range [0,1]
      */
     public void xMove(int sgn, double power) {
+        if (Math.abs(power)<1.75*minPower) power=1.5*minPower*Math.signum(power);
         motorFL.setPower(sgn * power * front_ratio * ratioFL);
         motorFR.setPower(-sgn * power * front_ratio * ratioFR);
         motorBL.setPower(-sgn * power * back_ratio * ratioBL);
@@ -697,7 +700,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         // inches > 0, crab right 90 degree
         //        < 0, crab left 90 degree
         power = Math.abs(power);
-
+        if (Math.abs(power)<minPower) power=minPower*Math.signum(power);
         boolean count_up = (Math.signum(inches)>0);
 
         double error_inches = 0.1;
@@ -724,6 +727,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
      * @param power must be in range [0,1]
      */
     public void turn(int sgn, double power) {
+        if (Math.abs(power)<minPower) power=minPower*Math.signum(power);
         motorFL.setPower(sgn * power);
         motorFR.setPower(-sgn * power);
         motorBL.setPower(sgn * power);
@@ -737,7 +741,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
      * @param turningFactor int range [-1,+1] (+1 for turning right, -1 for turning left)
      */
     public void carDrive(double power, double turningFactor) {
-
+        if (Math.abs(power)<minPower) power=minPower*Math.signum(power);
         if (turningFactor > 0) {
             turningFactor = 1 - turningFactor;
             if (power>0) { // drive forward

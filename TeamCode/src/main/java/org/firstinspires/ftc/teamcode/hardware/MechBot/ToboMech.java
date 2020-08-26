@@ -130,12 +130,12 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
                     } else { // movingAngle is < -90 or > 90
                         normalizeRatio = chassis.getMecanumForwardRatio() + (1-chassis.getMecanumForwardRatio()) * ((180-Math.abs(movingAngle))/90.0);
                     }
-                    double lsx = currentX;
-                    double lsy = currentY;
-                    double power_lf = (lsy+lsx) ;
-                    double power_lb = (lsy-lsx) ;
-                    double power_rf = (lsy-lsx) ;
-                    double power_rb = (lsy+lsx) ;
+                    double lsx = Math.max(Math.abs(currentX), 1.75*chassis.getMinPower()*normalizeRatio)*Math.signum(currentX);
+                    double lsy = Math.max(Math.abs(currentY),     chassis.getMinPower()*normalizeRatio)*Math.signum(currentY);
+                    double power_lf = (lsy+lsx) * chassis.getFront_ratio() * chassis.getLeft_ratio();
+                    double power_lb = (lsy-lsx) * chassis.getBack_ratio() * chassis.getLeft_ratio();
+                    double power_rf = (lsy-lsx) * chassis.getFront_ratio() * chassis.getRight_ratio();
+                    double power_rb = (lsy+lsx) * chassis.getBack_ratio() * chassis.getRight_ratio();
 
                     power_lf = Range.clip(power_lf, -1, 1);
                     power_lb = Range.clip(power_lb, -1, 1);
@@ -180,7 +180,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (chassis!=null) {
-                    chassis.crab(0.3, 30, 3);
+                    chassis.crab(0.45, 30, 3);
                 }
             }
         }, new Button[]{Button.DPAD_RIGHT});
@@ -188,7 +188,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (chassis!=null) {
-                    chassis.crab(0.3, -30, 3);
+                    chassis.crab(0.45, -30, 3);
                 }
             }
         }, new Button[]{Button.DPAD_LEFT});
