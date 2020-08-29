@@ -528,8 +528,10 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         sleep(200);
         auto_dist_err = Math.hypot(odo_x_pos_cm()-target_x, odo_y_pos_cm()-target_y);
         auto_degree_err = Math.abs(target_heading-orientationSensor.getHeading());
+        globalPositionUpdate.changeOrientation(orientationSensor.getHeading());
         //tl.addData("speed: ", odo_speed_cm());
         //tl.update();
+
     }
 
     public double getSlowDownPower(double traveledPercent, double slowDownPercent, double decreaseP, double power, double minPowerForAngle){
