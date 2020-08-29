@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.util.ReadWriteFile;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
+import org.firstinspires.ftc.teamcode.components.CombinedOrientationSensor;
 
 import java.io.File;
 
@@ -14,11 +15,12 @@ import java.io.File;
 public class OdometryGlobalCoordinatePosition implements Runnable{
     //Odometry wheels
     private DcMotorEx verticalEncoderLeft, verticalEncoderRight, horizontalEncoder;
-
+    private CombinedOrientationSensor orientationSensor;
     //Thead run condition
     private boolean isRunning = true;
 
     //Position variables used for storage and calculations
+    double initRadians = 0;
     double verticalRightEncoderWheelPosition = 0, verticalLeftEncoderWheelPosition = 0, normalEncoderWheelPosition = 0,  changeInRobotOrientation = 0;
     private double robotGlobalXCoordinatePosition = 0, robotGlobalYCoordinatePosition = 0, robotOrientationRadians = 0;
     private double xSpeedDegree = 0, ySpeedDegree = 0;
@@ -38,6 +40,10 @@ public class OdometryGlobalCoordinatePosition implements Runnable{
     private int verticalLeftEncoderPositionMultiplier = 1;
     private int verticalRightEncoderPositionMultiplier = 1;
     private int normalEncoderPositionMultiplier = 1;
+
+    public void set_orientationSensor(CombinedOrientationSensor val) {
+        orientationSensor = val;
+    }
 
     /**
      * Constructor for GlobalCoordinatePosition Thread
@@ -71,8 +77,12 @@ public class OdometryGlobalCoordinatePosition implements Runnable{
 
         //Calculate Angle
         changeInRobotOrientation = (leftChange - rightChange) / (robotEncoderWheelDistance);
-        robotOrientationRadians = ((robotOrientationRadians + changeInRobotOrientation));
-
+        // Replace angle calculation by imu
+        if (orientationSensor!=null) {
+            robotOrientationRadians = Math.toRadians(orientationSensor.getHeading())+initRadians;
+        } else {
+            robotOrientationRadians = ((robotOrientationRadians + changeInRobotOrientation));
+        }
         //Get the components of the motion
         double rawHorizontalChange = normalEncoderWheelPosition - prevNormalEncoderWheelPosition;
         double horizontalChange = rawHorizontalChange - (changeInRobotOrientation*horizontalEncoderTickPerDegreeOffset);
@@ -109,7 +119,13 @@ public class OdometryGlobalCoordinatePosition implements Runnable{
      */
     public double returnOrientation(){ return Math.toDegrees(robotOrientationRadians) % 360; }
     public void changeOrientation(double newOrientationDegrees){
-        robotOrientationRadians = Math.toRadians(newOrientationDegrees)%360;
+        robotOrientationRadians = Math.toRadians(newOrientationDegrees);
+    }
+    public void set_init_pos(double x, double y, double degree) {
+        robotOrientationRadians = Math.toRadians(degree);
+        initRadians = robotOrientationRadians;
+        robotGlobalXCoordinatePosition = x;
+        robotGlobalYCoordinatePosition = y;
     }
 
     public double leftYEncoder() { return verticalLeftEncoderWheelPosition; }

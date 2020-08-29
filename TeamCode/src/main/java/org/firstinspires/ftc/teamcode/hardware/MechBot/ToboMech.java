@@ -272,6 +272,10 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
                 positionThread.start();
         }
         if (Thread.interrupted()) return;
+        chassis.auto_target_y = chassis.getInit_y_cm();
+        chassis.auto_target_x = chassis.getInit_x_cm();
+        auto_rotate_degree = auto_chassis_heading = chassis.getInit_heading();
+
         telemetry.addLine().addData("(BACK) Y/A B/X", "+/- Power(%.2f) Degree(%.0f)", auto_chassis_power,auto_rotate_degree).setRetained(true);
         telemetry.addLine().addData("(L-Tr) Y/A B/X", "+/- Y(%.2f) X(%.0f)", chassis.auto_target_y,chassis.auto_target_x).setRetained(true);
         telemetry.addLine().addData("DPAD-UP/DOWN", "+/- distance(%.2f)", auto_chassis_dist).setRetained(true);

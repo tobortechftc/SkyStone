@@ -22,7 +22,6 @@ import static java.lang.Math.PI;
 import static java.lang.Math.abs;
 import static java.lang.Math.cos;
 import static java.lang.Math.min;
-import static java.lang.Math.pow;
 import static java.lang.Math.sin;
 import static java.lang.Thread.sleep;
 
@@ -87,6 +86,10 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     private double defaultScale = 1.0;
     private double mecanumForwardRatio = 0.8;
     private double chassisAligmentPower = 0.2;
+    private double init_x_cm = 100;
+    private double init_y_cm = 150;
+    private double init_heading = 90;
+
 
     private DcMotorEx motorFL;
     private DcMotorEx motorFR;
@@ -168,9 +171,10 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     public void configureOdometry() {
         if (!useOdometry) return;
         globalPositionUpdate = new OdometryGlobalCoordinatePosition(verticalLeftEncoder(), verticalRightEncoder(), horizontalEncoder(), odo_count_per_inch(), 75);
-
+        globalPositionUpdate.set_orientationSensor(orientationSensor);
         globalPositionUpdate.reverseRightEncoder();
         globalPositionUpdate.reverseLeftEncoder();
+        globalPositionUpdate.set_init_pos(init_x_cm*odo_count_per_cm(), init_y_cm*odo_count_per_cm(), init_heading);
     }
 
     public void updateConfigureForGG() {
@@ -178,10 +182,29 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         globalPositionUpdate.reverseLeftEncoder();
     }
 
+    public void set_init_pos(double x, double y, double heading) {
+        init_x_cm = x;
+        init_y_cm = y;
+        init_heading = heading;
+    }
+
+    public double getInit_x_cm() {
+        return init_x_cm;
+    }
+
+    public double getInit_y_cm() {
+        return init_y_cm;
+    }
+
+    public double getInit_heading() {
+        return init_heading;
+    }
+
     public double odo_x_pos_inches() {
         if (globalPositionUpdate==null) return 0;
         return globalPositionUpdate.returnXCoordinate()/odo_count_per_inch();
     }
+
     public double odo_x_pos_cm() {
         if (globalPositionUpdate==null) return 0;
         return globalPositionUpdate.returnXCoordinate()/odo_count_per_cm();
@@ -191,6 +214,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         if (globalPositionUpdate==null) return 0;
         return globalPositionUpdate.returnYCoordinate()/odo_count_per_inch();
     }
+
     public double odo_y_pos_cm() {
         if (globalPositionUpdate==null) return 0;
         return globalPositionUpdate.returnYCoordinate()/odo_count_per_cm();
@@ -214,7 +238,10 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
     public double odo_heading() {
         if (globalPositionUpdate==null) return 0;
-        return globalPositionUpdate.returnOrientation();
+        double heading = (globalPositionUpdate.returnOrientation());
+        if (heading>180) heading -= 360;
+        else if (heading<-180) heading += 360;
+        return heading;
     }
 
     public double getLeft_ratio() { return left_ratio; }
@@ -369,7 +396,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     }
 
     public void driveStraight(double power, double cm, double degree, double slowDownPercent, long timeout_sec) throws InterruptedException {
-        double fixed_heading = orientationSensor.getHeading();
+        double fixed_heading = odo_heading();
         // to-do: Sasha to compute x_dist/y_dist based on current heading
         double x_dist = cm * Math.sin(Math.toRadians(degree)) * Math.signum(power);
         double y_dist = cm * Math.cos(Math.toRadians(degree)) * Math.signum(power);
@@ -389,7 +416,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
     public void driveTo(double power, double target_x, double target_y, double target_heading, double slowDownPercent, double timeout_sec) throws InterruptedException {
         long iniTime = System.currentTimeMillis();
-        double current_heading = orientationSensor.getHeading();
+        double current_heading = odo_heading();
         double cur_x = odo_x_pos_cm(), prev_x = cur_x, init_x=cur_x;
         double cur_y = odo_y_pos_cm(), prev_y = cur_y, init_y=cur_y;
         double desiredDegree = Math.toDegrees(Math.atan2(target_x - cur_x, target_y - cur_y));
@@ -431,7 +458,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         double save_target_heading = target_heading;
 
         // Temporarily change target_heading to go straight
-        target_heading = orientationSensor.getHeading();
+        target_heading = odo_heading();
         double init_loop_time = System.currentTimeMillis();
         int loop_count = 0;
 
@@ -519,7 +546,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
         target_heading = save_target_heading;
 
-        current_heading = orientationSensor.getHeading();
+        current_heading = odo_heading();
         currentAbsDiff = abs(target_heading - current_heading) > 180 ? 360 - abs(target_heading - current_heading) : abs(target_heading - current_heading);
         if ((currentAbsDiff > 1.2) && !Thread.interrupted()) {
             rotateTo(Math.abs(power), target_heading, timeout_sec);
@@ -527,8 +554,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         // The following code is for errror estimation, should be commented out in competition
         sleep(200);
         auto_dist_err = Math.hypot(odo_x_pos_cm()-target_x, odo_y_pos_cm()-target_y);
-        auto_degree_err = Math.abs(target_heading-orientationSensor.getHeading());
-        globalPositionUpdate.changeOrientation(orientationSensor.getHeading());
+        auto_degree_err = Math.abs(target_heading-odo_heading());
         //tl.addData("speed: ", odo_speed_cm());
         //tl.update();
 
@@ -601,7 +627,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
         // auto_travel_p = directionAngle;
 
-        double cur_heading = orientationSensor.getHeading();
+        double cur_heading = odo_heading();
         double degree_diff = Math.abs(cur_heading-fixed_heading);
         // to-do: need to handle gap from 179 to -179
         double cur_left_to_right_ratio = 1.0;
@@ -833,7 +859,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
         //imu initialization
         orientationSensor.enableCorrections(true);
-        targetHeading = orientationSensor.getHeading();
+        targetHeading = odo_heading();
 
         //start powering wheels
         yMove(cm > 0 ? +1 : -1, power);
@@ -843,7 +869,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         //waiting loop
         while (true) {
             // check and correct heading as needed
-            double sensorHeading = orientationSensor.getHeading();
+            double sensorHeading = odo_heading();
             headingDeviation = targetHeading - sensorHeading;
 
             //determine if target distance is reached
@@ -1099,7 +1125,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     public void rawRotateTo(double power, double finalHeading, boolean stopEarly, double timeout_sec) throws InterruptedException {
         if (Thread.interrupted()) return;
         debug("rotateT0(pwr: %.3f, finalHeading: %.1f)", power, finalHeading);
-        double iniHeading = orientationSensor.getHeading();
+        double iniHeading = odo_heading();
         double deltaD = finalHeading - iniHeading;
         debug("iniHeading: %.1f, deltaD: %.1f)", iniHeading, deltaD);
         //do not turn if the heading is close enough the target
@@ -1123,11 +1149,11 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         turn((int)Math.signum(deltaD), power);
         //***** End routine to start the wheels ******//
         //record heading for checking in while loop
-        double lastReading = orientationSensor.getHeading();
+        double lastReading = odo_heading();
         long iniTime = System.currentTimeMillis();
         while (true) {
             if (Thread.interrupted()) return;
-            double currentHeading = orientationSensor.getHeading();
+            double currentHeading = odo_heading();
             //we cross the +-180 mark if and only if the product below is a very negative number
             if ((currentHeading * lastReading < -100.0) || (Math.abs(currentHeading - lastReading) > 180.0)) {
                 //deltaD>0 => cross the mark clockwise; deltaD<0 => cross the mark anticlockwise
@@ -1170,7 +1196,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
     public void rotateTo(double power, double finalHeading, double timeout_sec, boolean changePower, boolean finalCorrection) throws InterruptedException {
         if (Thread.interrupted()) return;
-        double iniHeading = orientationSensor.getHeading();
+        double iniHeading = odo_heading();
         if (power <= chassisAligmentPower || Math.abs(iniHeading-finalHeading)<1.0) {//was 0.3
             rawRotateTo(power, finalHeading, false, timeout_sec);//was power
             if (Thread.interrupted()) return;
@@ -1204,7 +1230,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         int loop = 0;
         while (true) {
             if (Thread.interrupted()) return;
-            currentHeading = orientationSensor.getHeading();
+            currentHeading = odo_heading();
 //            info("RotateTo-%.1f, heading =%.3f, pw=%.2f(%s)", finalHeading,currentHeading,power,(lowerPowerApplied?"low":"hi"));
             crossProduct = cross(-currentHeading, -finalHeading);
             //break if target reached or exceeded
@@ -1241,7 +1267,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         if (odo_speed_cm()>10)
             sleep(90);
         //**************Check for overshoot and correction**************
-        currentHeading = orientationSensor.getHeading();
+        currentHeading = odo_heading();
         currentAbsDiff = abs(finalHeading - currentHeading) > 180 ? 360 - abs(finalHeading - currentHeading) : abs(finalHeading - currentHeading);
         if ((currentAbsDiff > 1.2) && !Thread.interrupted()) {
             rawRotateTo(chassisAligmentPower, finalHeading, false, 0.5);
@@ -1250,7 +1276,8 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         //**************End correction**************
         driveMode = DriveMode.STOP;
         useScalePower = true;
-//        tl.addData("iteration",loop);
+
+        //        tl.addData("iteration",loop);
 //        tl.update();
 //        sleep(3000);
     }
