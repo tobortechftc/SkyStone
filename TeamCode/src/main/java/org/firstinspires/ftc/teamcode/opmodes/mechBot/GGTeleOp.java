@@ -62,7 +62,7 @@ public class GGTeleOp extends LinearOpMode {
         }
 
 
-        Thread positionThread = (robot.chassis.globalPositionUpdate()==null? null: new Thread(robot.chassis.globalPositionUpdate()));
+        Thread positionThread = (robot.chassis.getGPS()==null? null: new Thread(robot.chassis.getGPS()));
         if (positionThread!=null)
            positionThread.start();
 
@@ -78,8 +78,8 @@ public class GGTeleOp extends LinearOpMode {
                 Thread.sleep(5000);
             }
         }
-        if (robot.chassis.globalPositionUpdate()!=null)
-            robot.chassis.globalPositionUpdate().stop();
+        if (robot.chassis.getGPS()!=null)
+            robot.chassis.getGPS().stop();
     }
 
     protected void handleException(Throwable T) {

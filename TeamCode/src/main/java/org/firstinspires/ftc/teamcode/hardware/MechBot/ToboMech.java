@@ -264,10 +264,10 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
     @MenuEntry(label = "driveStraight/rotateTo", group = "Test Chassis")
     public void testStraight(EventManager em) {
         Thread positionThread;
-        if (chassis!=null && chassis.globalPositionUpdate()==null) {
+        if (chassis!=null && chassis.getGPS()==null) {
             chassis.configureOdometry();
             chassis.setupTelemetry(telemetry);
-            positionThread = (chassis.globalPositionUpdate()==null? null: new Thread(chassis.globalPositionUpdate()));
+            positionThread = (chassis.getGPS()==null? null: new Thread(chassis.getGPS()));
             if (positionThread!=null)
                 positionThread.start();
         }
@@ -352,10 +352,10 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
     @MenuEntry(label = "Auto Rotation", group = "Test Chassis")
     public void testRotationSkyStone(EventManager em) {
         Thread positionThread;
-        if (chassis!=null && chassis.globalPositionUpdate()==null) {
+        if (chassis!=null && chassis.getGPS()==null) {
             chassis.configureOdometry();
             chassis.setupTelemetry(telemetry);
-            positionThread = (chassis.globalPositionUpdate()==null? null: new Thread(chassis.globalPositionUpdate()));
+            positionThread = (chassis.getGPS()==null? null: new Thread(chassis.getGPS()));
             if (positionThread!=null)
                 positionThread.start();
         }

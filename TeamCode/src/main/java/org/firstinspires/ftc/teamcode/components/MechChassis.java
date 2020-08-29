@@ -38,7 +38,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
     final private CoreSystem core;
 
-    public enum DriveMode {
+    public enum TeleOpDriveMode { // for TeleOp
         STOP,      // not moving
         STRAIGHT,  // driving in a straight line utilizing orientation sensor to correct itself,
         //  all servos are set to the same position
@@ -46,6 +46,13 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         //  through the centers of 4 wheels.
         STEER      // motor power and servos in the direction of movement are controlled by
         //  the driver; opposite servos are in central position
+    }
+
+    public enum AutoDriveMode {
+        STOP,                      // stop at the end of each moving routine with correction
+        STOP_NO_CORRECTION,        // stop at the end of each moving routine without correction
+        CONTINUE,                  // do not stop at end end of each moving routine but do correction
+        CONTINUE_NO_CORRECTION     // do not stop at end end of each moving routine without correction
     }
 
     // the following 4 ratio values are used to normalize 4 wheel motors to the same speed
@@ -111,7 +118,8 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     public double auto_exit_speed = 0;
     public double auto_stop_early_dist = 0;
 
-    private DriveMode driveMode = DriveMode.STOP;      // current drive mode
+    private TeleOpDriveMode teleOpDriveMode = TeleOpDriveMode.STOP;      // current drive mode
+    private AutoDriveMode autoDriveMode = AutoDriveMode.STOP;
     private double targetHeading;     // intended heading for DriveMode.STRAIGHT as reported by orientation sensor
     private double headingDeviation;  // current heading deviation for DriveMode.STRAIGHT as reported by orientation sensor
     private double servoCorrection;   // latest correction applied to leading wheels' servos to correct heading deviation
@@ -125,10 +133,12 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     public void toggleNormalizeMode(){
         normalizeMode = !normalizeMode;
     }
-
     public boolean getNormalizeMode(){
         return normalizeMode;
     }
+
+    public AutoDriveMode getAutoDriveMode() { return autoDriveMode;}
+    public void setAutoDriveMode(AutoDriveMode mode) { autoDriveMode = mode;}
 
     private void configure_IMUs(Configuration configuration) {
         orientationSensor = new CombinedOrientationSensor().configureLogging(logTag + "-sensor", logLevel);
@@ -141,7 +151,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     DcMotorEx verticalLeftEncoder;
     DcMotorEx verticalRightEncoder;
     DcMotorEx horizontalEncoder;
-    OdometryGlobalCoordinatePosition globalPositionUpdate;
+    OdometryGlobalCoordinatePosition GPS;
     final double ODO_COUNTS_PER_INCH = 307.699557;
     final double ODO_COUNTS_PER_CM = ODO_COUNTS_PER_INCH / 2.54;
 
@@ -156,8 +166,8 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     final double ODO_ENC_RATIO = 1446.0/(291.2*2);  // ratio to ticks-per-rotation with goBilda 5202 1150rpm is 145.6 x 2 gear up
                                                 // Odometry encoder E8T-360 is 360 ticks-per-rotation
 
-    public void setGlobalPosUpdate(OdometryGlobalCoordinatePosition val) { globalPositionUpdate=val;}
-    public OdometryGlobalCoordinatePosition globalPositionUpdate() { return globalPositionUpdate; }
+    public void setGlobalPosUpdate(OdometryGlobalCoordinatePosition val) { GPS =val;}
+    public OdometryGlobalCoordinatePosition getGPS() { return GPS; }
     public double odo_count_per_inch() {return ODO_COUNTS_PER_INCH;}
     public double odo_count_per_cm() {return ODO_COUNTS_PER_CM;}
     public DcMotorEx verticalLeftEncoder(){ return verticalLeftEncoder; }
@@ -170,16 +180,16 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
     public void configureOdometry() {
         if (!useOdometry) return;
-        globalPositionUpdate = new OdometryGlobalCoordinatePosition(verticalLeftEncoder(), verticalRightEncoder(), horizontalEncoder(), odo_count_per_inch(), 75);
-        globalPositionUpdate.set_orientationSensor(orientationSensor);
-        globalPositionUpdate.reverseRightEncoder();
-        globalPositionUpdate.reverseLeftEncoder();
-        globalPositionUpdate.set_init_pos(init_x_cm*odo_count_per_cm(), init_y_cm*odo_count_per_cm(), init_heading);
+        GPS = new OdometryGlobalCoordinatePosition(verticalLeftEncoder(), verticalRightEncoder(), horizontalEncoder(), odo_count_per_inch(), 75);
+        GPS.set_orientationSensor(orientationSensor);
+        GPS.reverseRightEncoder();
+        GPS.reverseLeftEncoder();
+        GPS.set_init_pos(init_x_cm*odo_count_per_cm(), init_y_cm*odo_count_per_cm(), init_heading);
     }
 
     public void updateConfigureForGG() {
-        globalPositionUpdate.reverseRightEncoder();
-        globalPositionUpdate.reverseLeftEncoder();
+        GPS.reverseRightEncoder();
+        GPS.reverseLeftEncoder();
     }
 
     public void set_init_pos(double x, double y, double heading) {
@@ -201,33 +211,33 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     }
 
     public double odo_x_pos_inches() {
-        if (globalPositionUpdate==null) return 0;
-        return globalPositionUpdate.returnXCoordinate()/odo_count_per_inch();
+        if (GPS ==null) return 0;
+        return GPS.returnXCoordinate()/odo_count_per_inch();
     }
 
     public double odo_x_pos_cm() {
-        if (globalPositionUpdate==null) return 0;
-        return globalPositionUpdate.returnXCoordinate()/odo_count_per_cm();
+        if (GPS ==null) return 0;
+        return GPS.returnXCoordinate()/odo_count_per_cm();
     }
 
     public double odo_y_pos_inches() {
-        if (globalPositionUpdate==null) return 0;
-        return globalPositionUpdate.returnYCoordinate()/odo_count_per_inch();
+        if (GPS ==null) return 0;
+        return GPS.returnYCoordinate()/odo_count_per_inch();
     }
 
     public double odo_y_pos_cm() {
-        if (globalPositionUpdate==null) return 0;
-        return globalPositionUpdate.returnYCoordinate()/odo_count_per_cm();
+        if (GPS ==null) return 0;
+        return GPS.returnYCoordinate()/odo_count_per_cm();
     }
 
     public double odo_x_speed_cm() { // horizontal speed as cm/sec
-        if (globalPositionUpdate==null) return 0;
-        return globalPositionUpdate.getXSpeedDegree() / 360.0 * WHEEL_CM_PER_ROTATION * ODO_ENC_RATIO;
+        if (GPS ==null) return 0;
+        return GPS.getXSpeedDegree() / 360.0 * WHEEL_CM_PER_ROTATION * ODO_ENC_RATIO;
     }
 
     public double odo_y_speed_cm() { // forward speed as cm/sec
-        if (globalPositionUpdate==null) return 0;
-        return globalPositionUpdate.getYSpeedDegree() / 360.0 * WHEEL_CM_PER_ROTATION * ODO_ENC_RATIO;
+        if (GPS ==null) return 0;
+        return GPS.getYSpeedDegree() / 360.0 * WHEEL_CM_PER_ROTATION * ODO_ENC_RATIO;
     }
 
     public double odo_speed_cm() {
@@ -237,8 +247,8 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     }
 
     public double odo_heading() {
-        if (globalPositionUpdate==null) return 0;
-        double heading = (globalPositionUpdate.returnOrientation());
+        if (GPS ==null) return 0;
+        double heading = (GPS.returnOrientation());
         if (heading>180) heading -= 360;
         else if (heading<-180) heading += 360;
         return heading;
@@ -539,7 +549,9 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
                 prev_time=cur_time; prev_x=cur_x; prev_y=cur_y;
             }
         }
-        stopNeg(motorPowers);
+        if (autoDriveMode==AutoDriveMode.STOP_NO_CORRECTION || autoDriveMode==AutoDriveMode.STOP) {
+            stopNeg(motorPowers);
+        }
         double end_loop_time = System.currentTimeMillis();
         if (loop_count>0)
             auto_loop_time = (end_loop_time-init_loop_time)/(double)loop_count;
@@ -551,13 +563,14 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         if ((currentAbsDiff > 1.2) && !Thread.interrupted()) {
             rotateTo(Math.abs(power), target_heading, timeout_sec);
         }
-        // The following code is for errror estimation, should be commented out in competition
-        sleep(200);
-        auto_dist_err = Math.hypot(odo_x_pos_cm()-target_x, odo_y_pos_cm()-target_y);
-        auto_degree_err = Math.abs(target_heading-odo_heading());
-        //tl.addData("speed: ", odo_speed_cm());
-        //tl.update();
-
+        if (autoDriveMode==AutoDriveMode.STOP) {
+            // The following code is for errror estimation, should be commented out in competition
+            sleep(200);
+            auto_dist_err = Math.hypot(odo_x_pos_cm() - target_x, odo_y_pos_cm() - target_y);
+            auto_degree_err = Math.abs(target_heading - odo_heading());
+            //tl.addData("speed: ", odo_speed_cm());
+            //tl.update();
+        }
     }
 
     public double getSlowDownPower(double traveledPercent, double slowDownPercent, double decreaseP, double power, double minPowerForAngle){
@@ -824,75 +837,6 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
     }
 
-    public void driveStraightAuto(double power, double cm, int timeout) throws InterruptedException {
-        if (Thread.currentThread().isInterrupted()) return;
-
-        if (power < 0 || power > 1) {
-            throw new IllegalArgumentException("Power must be between 0 and 1");
-        }
-
-        double distance = TICKS_PER_CM * cm;
-
-        if (power == 0) {
-            //driveMode = SwerveChassis.DriveMode.STOP;
-            targetHeading = 0;
-            headingDeviation = 0;
-            servoCorrection = 0;
-            //for (SwerveChassis.WheelAssembly wheel : wheels) wheel.motor.setPower(0);
-            orientationSensor.enableCorrections(false);
-            return;
-        }
-
-        if (distance < 0) {
-            power = -power;
-            distance = -distance;
-        }
-
-        //motor settings
-        //driveMode = SwerveChassis.DriveMode.STRAIGHT;
-        int[] startingCount = new int[4];
-        for (int i = 0; i < 4; i++) {
-            //wheels[i].motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            //wheels[i].motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            //startingCount[i] = wheels[i].motor.getCurrentPosition();
-        }
-
-        //imu initialization
-        orientationSensor.enableCorrections(true);
-        targetHeading = odo_heading();
-
-        //start powering wheels
-        yMove(cm > 0 ? +1 : -1, power);
-        //record time
-        long iniTime = System.currentTimeMillis();
-
-        //waiting loop
-        while (true) {
-            // check and correct heading as needed
-            double sensorHeading = odo_heading();
-            headingDeviation = targetHeading - sensorHeading;
-
-            //determine if target distance is reached
-            int maxTraveled = Integer.MIN_VALUE;
-            for (int i = 0; i < 4; i++) {
-                //maxTraveled = Math.abs(Math.max(maxTraveled, wheels[i].motor.getCurrentPosition() - startingCount[i]));
-            }
-            if (distance - maxTraveled < 10)
-                break;
-            //determine if time limit is reached
-            if (System.currentTimeMillis() - iniTime > timeout)
-                break;
-            if (Thread.currentThread().isInterrupted())
-                break;
-            // yield handler
-            this.core.yield();
-        }
-        stop();
-        driveMode = DriveMode.STOP;
-    }
-
-
-
     public void setRunMode(DcMotor.RunMode rm) {
         motorFL.setMode(rm);
         motorFR.setMode(rm);
@@ -927,7 +871,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         motorFR.setPower(0);
         motorBL.setPower(0);
         motorBR.setPower(0);
-        driveMode = DriveMode.STOP;
+        teleOpDriveMode = TeleOpDriveMode.STOP;
         targetHeading = 0;
     }
 
@@ -1027,13 +971,13 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         }
         */
 
-        if (globalPositionUpdate!=null) {
+        if (GPS !=null) {
             line.addData("Odo (x,ly,ry)", new Func<String>() {
                 @Override
                 public String value() {
-                    return String.format("(%5.0f,%5.0f,%5.0f)\n",globalPositionUpdate.XEncoder(),
-                            globalPositionUpdate.leftYEncoder(),
-                            globalPositionUpdate.rightYEncoder());
+                    return String.format("(%5.0f,%5.0f,%5.0f)\n", GPS.XEncoder(),
+                            GPS.leftYEncoder(),
+                            GPS.rightYEncoder());
                 }
             });
             line.addData("driveTo (stop-sp,stop-cm,max-dod-sp,max-calc-sp)", new Func<String>() {
@@ -1063,18 +1007,18 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         telemetry.addLine().addData("M", new Func<String>() {
             @Override
             public String value() {
-                return driveMode.name();
+                return teleOpDriveMode.name();
             }
         }).addData("Head", new Func<String>() {
             @Override
             public String value() {
-                if (driveMode != DriveMode.STRAIGHT) return "N/A";
+                if (teleOpDriveMode != TeleOpDriveMode.STRAIGHT) return "N/A";
                 return String.format("%+.1f (%+.2f)", targetHeading, headingDeviation);
             }
         }).addData("Adj", new Func<String>() {
             @Override
             public String value() {
-                if (driveMode != DriveMode.STRAIGHT) return "N/A";
+                if (teleOpDriveMode != TeleOpDriveMode.STRAIGHT) return "N/A";
                 return String.format("%+.1f", servoCorrection);
             }
         });
@@ -1177,8 +1121,9 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             this.core.yield();
         }
         if (Thread.interrupted()) return;
-        //stop
-        stop();
+        if (autoDriveMode==AutoDriveMode.STOP_NO_CORRECTION || autoDriveMode==AutoDriveMode.STOP) {
+            stop();
+        }
 
         useScalePower = true;
     }
@@ -1259,30 +1204,30 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         if (Thread.interrupted()) return;
         stop();
         if (!finalCorrection) {
-            driveMode = DriveMode.STOP;
+            teleOpDriveMode = TeleOpDriveMode.STOP;
             useScalePower = true;
             return;
         }
         if (Thread.interrupted()) return;
         if (odo_speed_cm()>10)
             sleep(90);
+
         //**************Check for overshoot and correction**************
-        currentHeading = odo_heading();
-        currentAbsDiff = abs(finalHeading - currentHeading) > 180 ? 360 - abs(finalHeading - currentHeading) : abs(finalHeading - currentHeading);
-        if ((currentAbsDiff > 1.2) && !Thread.interrupted()) {
-            rawRotateTo(chassisAligmentPower, finalHeading, false, 0.5);
+        if (autoDriveMode==AutoDriveMode.STOP||autoDriveMode==AutoDriveMode.CONTINUE) {
+            currentHeading = odo_heading();
+            currentAbsDiff = abs(finalHeading - currentHeading) > 180 ? 360 - abs(finalHeading - currentHeading) : abs(finalHeading - currentHeading);
+            if ((currentAbsDiff > 1.2) && !Thread.interrupted()) {
+                rawRotateTo(chassisAligmentPower, finalHeading, false, 0.5);
+            }
+        }
+        if (autoDriveMode==AutoDriveMode.STOP_NO_CORRECTION || autoDriveMode==AutoDriveMode.STOP) {
+            stop();
         }
         if (Thread.interrupted()) return;
         //**************End correction**************
-        driveMode = DriveMode.STOP;
+        teleOpDriveMode = TeleOpDriveMode.STOP;
         useScalePower = true;
-
-        //        tl.addData("iteration",loop);
-//        tl.update();
-//        sleep(3000);
     }
-
-    //final heading needs to be with in range(-180,180]
 
 
     //cross two unit vectors whose argument angle is given in degree
