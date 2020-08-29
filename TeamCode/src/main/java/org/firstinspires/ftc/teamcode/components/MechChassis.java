@@ -116,7 +116,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     private boolean useScalePower = true;//
     private boolean setImuTelemetry = false;//unless debugging, don't set telemetry for imu
     private boolean setRangeSensorTelemetry = false;//unless debugging, don't set telemetry for range sensor
-
+    private boolean useOdometry = true;
     private boolean normalizeMode = true;
 
     public void toggleNormalizeMode(){
@@ -166,7 +166,14 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     }
 
     public void configureOdometry() {
+        if (!useOdometry) return;
         globalPositionUpdate = new OdometryGlobalCoordinatePosition(verticalLeftEncoder(), verticalRightEncoder(), horizontalEncoder(), odo_count_per_inch(), 75);
+
+        globalPositionUpdate.reverseRightEncoder();
+        globalPositionUpdate.reverseLeftEncoder();
+    }
+
+    public void updateConfigureForGG() {
         globalPositionUpdate.reverseRightEncoder();
         globalPositionUpdate.reverseLeftEncoder();
     }
@@ -201,7 +208,6 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
     public double odo_speed_cm() {
        double speed = 0;
-       // Praveer to-do: combine odo_x_speed_cm() and odo_y_speed_cm() into chassis speed
        speed = Math.hypot(odo_x_speed_cm(), odo_y_speed_cm());
        return speed;
     }
@@ -732,6 +738,24 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         motorFR.setPower(-sgn * power);
         motorBL.setPower(sgn * power);
         motorBR.setPower(-sgn * power);
+    }
+
+    public void chassis_test() throws InterruptedException {
+        motorFR.setPower(0.1);
+        sleep(1000);
+        motorFR.setPower(0);
+
+        motorBR.setPower(0.1);
+        sleep(1000);
+        motorBR.setPower(0);
+
+        motorFL.setPower(0.1);
+        sleep(1000);
+        motorFL.setPower(0);
+
+        motorBL.setPower(0.1);
+        sleep(1000);
+        motorBL.setPower(0);
     }
 
     /**

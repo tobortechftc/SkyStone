@@ -5,6 +5,7 @@ import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.ReadWriteFile;
 
@@ -31,7 +32,7 @@ public class OdometryCalibration extends LinearOpMode {
     String rfName = "motorFR", rbName = "motorBR", lfName = "motorFL", lbName = "motorBL";
     String verticalLeftEncoderName = rbName, verticalRightEncoderName = lfName, horizontalEncoderName = rfName;
 
-    final double PIVOT_SPEED = 0.5;
+    final double PIVOT_SPEED = 0.4;
 
     //The amount of encoder ticks for each inch the robot moves. THIS WILL CHANGE FOR EACH ROBOT AND NEEDS TO BE UPDATED HERE
     final double COUNTS_PER_INCH = 307.699557; // should be 360/(3.8/2.54*PI) = 76.5954
@@ -39,6 +40,7 @@ public class OdometryCalibration extends LinearOpMode {
     ElapsedTime timer = new ElapsedTime();
 
     double horizontalTickOffset = 0;
+    boolean ggConfig = false;
 
     //Text files to write the values to. The files are stored in the robot controller under Internal Storage\FIRST\settings
     File wheelBaseSeparationFile = AppUtil.getInstance().getSettingsFile("wheelBaseSeparation.txt");
@@ -103,6 +105,7 @@ public class OdometryCalibration extends LinearOpMode {
         THIS MAY NEED TO BE CHANGED FOR EACH ROBOT
        */
         double encoderDifference = -Math.abs(verticalLeft.getCurrentPosition()) + (Math.abs(verticalRight.getCurrentPosition()));
+        if (ggConfig) encoderDifference *= -1.0;
 
         double verticalEncoderTickOffsetPerDegree = encoderDifference/angle;
 
@@ -169,7 +172,6 @@ public class OdometryCalibration extends LinearOpMode {
         left_front.setDirection(DcMotorEx.Direction.REVERSE);
         //right_front.setDirection(DcMotorEx.Direction.REVERSE);
         left_back.setDirection(DcMotorEx.Direction.REVERSE);
-
 
         telemetry.addData("Status", "Hardware Map Init Complete");
         telemetry.update();

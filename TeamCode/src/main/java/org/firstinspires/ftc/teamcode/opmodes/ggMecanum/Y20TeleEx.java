@@ -4,6 +4,7 @@
 
 package org.firstinspires.ftc.teamcode.opmodes.ggMecanum;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.Range;
 
@@ -15,9 +16,8 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 /**
  * Common codes 
  */
-
+@Disabled
 @TeleOp(name="Y20TeleEx", group="WT")
-//@Disabled
 public class Y20TeleEx extends Y20CommonEx {
 
 

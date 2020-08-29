@@ -37,7 +37,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
     public double auto_rotate_degree = 0;
 
 
-    public boolean tensorTest = true;
+    public boolean tensorTest = false;
 
     @Override
     public String getName() {
@@ -172,7 +172,11 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (chassis!=null) {
-                    chassis.forward(0.3, -30, 3);
+                    if (source.isPressed(Button.BACK)) {
+                        chassis.chassis_test();
+                    } else {
+                        chassis.forward(0.3, -30, 3);
+                    }
                 }
             }
         }, new Button[]{Button.DPAD_DOWN});
@@ -405,7 +409,9 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
     @MenuEntry(label = "Tensorflow Test", group = "Test Chassis")
     public void testSkystoneDetection()//loc = 1 left, 2 center, 3 right
     {
-        ToboSigma.SkystoneLocation location = cameraStoneDetector.getSkystonePositionTF(true);
+        if (cameraStoneDetector!=null) {
+            ToboSigma.SkystoneLocation location = cameraStoneDetector.getSkystonePositionTF(true);
+        }
     }
 
 
