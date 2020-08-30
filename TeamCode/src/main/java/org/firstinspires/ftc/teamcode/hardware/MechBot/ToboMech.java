@@ -226,7 +226,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         line.addData("Result ", new Func<String>() {
             @Override
             public String value() {
-                return String.format("dist_err=%.2f, degree_err=%.2f, loop_time=%2.1f, travel_p=%.3f\n",
+                return String.format("dist_err=%.2f, degree_err=%.2f, loop_time=%3.2f, travel_p=%.3f\n",
                         chassis.auto_dist_err,chassis.auto_degree_err, chassis.auto_loop_time, chassis.auto_travel_p);
             }
         });

@@ -24,6 +24,9 @@ public class OdometryGlobalCoordinatePosition implements Runnable{
     double verticalRightEncoderWheelPosition = 0, verticalLeftEncoderWheelPosition = 0, normalEncoderWheelPosition = 0,  changeInRobotOrientation = 0;
     private double robotGlobalXCoordinatePosition = 0, robotGlobalYCoordinatePosition = 0, robotOrientationRadians = 0;
     private double xSpeedDegree = 0, ySpeedDegree = 0;
+    private double xSpeedLogs[] = {0,0,0,0,0};
+    private double ySpeedLogs[] = {0,0,0,0,0};
+    private int count=0;
     private double previousVerticalRightEncoderWheelPosition = 0, previousVerticalLeftEncoderWheelPosition = 0, prevNormalEncoderWheelPosition = 0;
 
     //Algorithm constants
@@ -97,8 +100,15 @@ public class OdometryGlobalCoordinatePosition implements Runnable{
         previousVerticalLeftEncoderWheelPosition = verticalLeftEncoderWheelPosition;
         previousVerticalRightEncoderWheelPosition = verticalRightEncoderWheelPosition;
         prevNormalEncoderWheelPosition = normalEncoderWheelPosition;
-        ySpeedDegree = (Math.abs(verticalEncoderLeft.getVelocity(AngleUnit.DEGREES)) + Math.abs(verticalEncoderLeft.getVelocity(AngleUnit.DEGREES))) / 2;
-        xSpeedDegree = Math.abs(horizontalEncoder.getVelocity(AngleUnit.DEGREES));
+
+        ySpeedLogs[(count%5)]=(Math.abs(verticalEncoderLeft.getVelocity(AngleUnit.DEGREES)) + Math.abs(verticalEncoderLeft.getVelocity(AngleUnit.DEGREES))) / 2;
+        xSpeedLogs[(count%5)]=Math.abs(horizontalEncoder.getVelocity(AngleUnit.DEGREES));
+        if (count > 4) {
+            ySpeedDegree = (ySpeedLogs[0]+ySpeedLogs[1]+ySpeedLogs[2]+ySpeedLogs[3]+ySpeedLogs[4])/5.0;
+            xSpeedDegree = (xSpeedLogs[0]+xSpeedLogs[1]+xSpeedLogs[2]+xSpeedLogs[3]+xSpeedLogs[4])/5.0;
+        }
+        count = (count+1)%10000;
+
     }
 
     /**
