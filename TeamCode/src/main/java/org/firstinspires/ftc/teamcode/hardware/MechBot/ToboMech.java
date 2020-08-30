@@ -27,7 +27,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
     public CameraStoneDetector cameraStoneDetector;
 
 
-    public double auto_chassis_power = .4;
+    public double auto_chassis_power = .6;
     public double auto_chassis_dist = 100;
     public double auto_chassis_heading = -90;
     public double auto_chassis_power_slow = .2;
@@ -209,6 +209,12 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
 
     public void setupTelemetryDiagnostics(Telemetry telemetry) {
         Telemetry.Line line = telemetry.addLine();
+        line.addData("Auto ", new Func<String>() {
+            @Override
+            public String value() {
+                return String.format("Mode=%s\n", chassis.getAutoDriveMode().toString());
+            }
+        });
         line.addData("Test ", new Func<String>() {
             @Override
             public String value() {
@@ -261,7 +267,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
     }
 
 
-    @MenuEntry(label = "driveStraight/rotateTo", group = "Test Chassis")
+    @MenuEntry(label = "driveTo/rotateTo", group = "Test Chassis")
     public void testStraight(EventManager em) {
         Thread positionThread;
         if (chassis!=null && chassis.getGPS()==null) {
@@ -287,7 +293,9 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         em.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
-                if (source.isPressed(Button.BACK)) {
+                if (source.isPressed(Button.START)) {
+                    chassis.switchAutoMode();
+                } else if (source.isPressed(Button.BACK)) {
                     auto_chassis_power += 0.05;
                     if (auto_chassis_power > 1) auto_chassis_power = 1;
                 } else if (source.getTrigger(Events.Side.LEFT)>0.5) {

@@ -93,9 +93,9 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     private double defaultScale = 1.0;
     private double mecanumForwardRatio = 0.8;
     private double chassisAligmentPower = 0.2;
-    private double init_x_cm = 100;
-    private double init_y_cm = 150;
-    private double init_heading = 90;
+    private double init_x_cm = 0;
+    private double init_y_cm = 0;
+    private double init_heading = 0;
 
 
     private DcMotorEx motorFL;
@@ -135,6 +135,15 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     }
     public boolean getNormalizeMode(){
         return normalizeMode;
+    }
+
+    public void switchAutoMode() {
+        switch (autoDriveMode) {
+            case STOP: setAutoDriveMode(AutoDriveMode.STOP_NO_CORRECTION); break;
+            case STOP_NO_CORRECTION: setAutoDriveMode(AutoDriveMode.CONTINUE); break;
+            case CONTINUE: setAutoDriveMode(AutoDriveMode.CONTINUE_NO_CORRECTION); break;
+            case CONTINUE_NO_CORRECTION: setAutoDriveMode(AutoDriveMode.STOP); break;
+        }
     }
 
     public AutoDriveMode getAutoDriveMode() { return autoDriveMode;}
@@ -246,7 +255,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
        return speed;
     }
 
-    public double odo_heading() {
+    public double odo_heading() { // aways turn [-180..180]
         if (GPS ==null) return 0;
         double heading = (GPS.returnOrientation());
         if (heading>180) heading -= 360;
@@ -462,8 +471,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         double powerUsed = (Math.abs(power)<minPower?minPower*Math.signum(power):power);
         double x_dist = target_x - cur_x;
         double y_dist = target_y - cur_y;
-        boolean x_reached = false;
-        boolean y_reached = false;
+        double total_dist = Math.hypot(x_dist,y_dist);
         double traveledPercent = 0;
         double save_target_heading = target_heading;
 
@@ -485,14 +493,8 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         auto_max_calc_speed = 0; prev_x=cur_x; prev_y=cur_y;
         double prev_time = init_loop_time;
         auto_max_speed = auto_exit_speed = auto_stop_early_dist = 0;
-        while((!x_reached || !y_reached) && (System.currentTimeMillis() - iniTime < timeout_sec * 1000)) {
-            if (Math.abs(y_dist) > 0.01 && Math.abs(x_dist) > 0.01) {
-                traveledPercent = Math.max(Math.abs(cur_y - init_y) / Math.abs(y_dist), Math.abs(cur_x - init_x) / Math.abs(x_dist));
-            } else if (Math.abs(y_dist)>0.01) {
-                traveledPercent = Math.abs(cur_y - init_y) / Math.abs(y_dist);
-            } else if (Math.abs(x_dist)>0.01) {
-                traveledPercent = Math.abs(cur_x - init_x) / Math.abs(x_dist);
-            }
+        while((traveledPercent<.99) && (System.currentTimeMillis() - iniTime < timeout_sec * 1000)) {
+            traveledPercent = Math.hypot(cur_y - init_y, cur_x-init_x)/total_dist;
             auto_travel_p = traveledPercent;
             if (traveledPercent>0.99) {
                 break;
@@ -511,38 +513,20 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             motorPowers = angleMove(desiredDegree, powerUsed, true, target_heading);
 
             remDistance = Math.hypot(target_x- cur_x, target_y - cur_y);
-
-            expectedStopDist = Math.pow(cur_s / 120., 1.2) * fixedStopDist;
-            if (remDistance - (expectedStopDist + .01 * cur_s)  < .001){ // we need to measure fixedStopDist ( overshoot fot any speed, then we need to change 20. to that speed
-                auto_exit_speed = odo_speed_cm(); // exiting speed
-                auto_stop_early_dist = expectedStopDist;
-                break;
-            }
-
-            if (Math.abs(cur_y-target_y)<=error_cm)
-                y_reached=true;
-            else if (y_dist>0){
-                if (cur_y >= target_y - error_cm)
-                    y_reached=true;
-            } else{
-                if (cur_y <= target_y + error_cm)
-                    y_reached=true;
-            }
-            if (Math.abs(cur_x-target_x)<=error_cm)
-                x_reached=true;
-            else if (x_dist>0){
-                if (cur_x >= target_x - error_cm)
-                    x_reached=true;
-            } else{
-                if (cur_x <= target_x + error_cm)
-                    x_reached=true;
+            if (autoDriveMode==AutoDriveMode.STOP||autoDriveMode==AutoDriveMode.CONTINUE) {
+                expectedStopDist = Math.pow(cur_s / 120., 1.2) * fixedStopDist;
+                if (remDistance - (expectedStopDist + .01 * cur_s) < .001) { // we need to measure fixedStopDist ( overshoot fot any speed, then we need to change 20. to that speed
+                    auto_exit_speed = odo_speed_cm(); // exiting speed
+                    auto_stop_early_dist = expectedStopDist;
+                    break;
+                }
             }
             //prev_x = cur_x;
             cur_x = odo_x_pos_cm();
             //prev_y = cur_y;
             cur_y = odo_y_pos_cm();
             loop_count ++;
-            if ((loop_count%10)==0) {
+            if ((loop_count%40)==0) {
                 double cur_time = System.currentTimeMillis();
                 double speed = Math.hypot(cur_x-prev_x, cur_y-prev_y)/(cur_time-prev_time)*1000.0;
                 auto_max_calc_speed = Math.max(speed, auto_max_calc_speed);
@@ -564,7 +548,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             rotateTo(Math.abs(power), target_heading, timeout_sec);
         }
         if (autoDriveMode==AutoDriveMode.STOP) {
-            // The following code is for errror estimation, should be commented out in competition
+            // The following code is for error estimation, should be commented out in competition
             sleep(200);
             auto_dist_err = Math.hypot(odo_x_pos_cm() - target_x, odo_y_pos_cm() - target_y);
             auto_degree_err = Math.abs(target_heading - odo_heading());
@@ -862,7 +846,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         motorFR.setPower(-Math.signum(motorPowers[1] * .2));
         motorBL.setPower(-Math.signum(motorPowers[2] * .2));
         motorBR.setPower(-Math.signum(motorPowers[3] * .2));
-        sleep(100);
+        sleep(250);
         stop();
     }
 
