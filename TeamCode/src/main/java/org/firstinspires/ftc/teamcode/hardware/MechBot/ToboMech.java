@@ -277,13 +277,14 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         chassis.driveThrough(.5, points, 10);
     }
     public void driveCircle() throws InterruptedException {
-        MechChassis.Point[] points = getPointsInCircle(new MechChassis.Point(180, 90, 0), new MechChassis.Point(180, 140, 0), 1, 18);
+        MechChassis.Point[] points = getPointsInCircle(new MechChassis.Point(chassis.odo_x_pos_cm(), chassis.odo_y_pos_cm(), chassis.getCurHeading()),
+                new MechChassis.Point(chassis.odo_x_pos_cm(),  chassis.odo_y_pos_cm() + 50, 0), 1, 18);
 
         chassis.set_init_pos(20, 90, 90);
         chassis.driveThrough(.5, points, 10);
 
     }
-    public MechChassis.Point[] getPointsInCircle(MechChassis.Point center, MechChassis.Point  start, int clockwise,  double degreesPerPoint) {
+    public MechChassis.Point[] getPointsInCircle(MechChassis.Point  start, MechChassis.Point center, int clockwise,  double degreesPerPoint) {
         double radius = Math.hypot(start.x - center.x, start.y - center.y);
 
         MechChassis.Point[] p = new MechChassis.Point[(int) (360 / degreesPerPoint)];
