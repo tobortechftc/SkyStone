@@ -314,6 +314,27 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         }
 
 
+    public void driveAnotherCurve() throws InterruptedException {
+        MechChassis.Point[] points = {new MechChassis.Point(120, 35, 90),
+                new MechChassis.Point(180, 50, 90),
+                new MechChassis.Point(180, 50, 90),
+                new MechChassis.Point(200, 75, 90),
+                new MechChassis.Point(225, 90, 90),
+                new MechChassis.Point(250, 110, 90),
+                new MechChassis.Point(200, 135, 90),
+                new MechChassis.Point(180, 150, 90),
+                new MechChassis.Point(150, 130, 90),
+                new MechChassis.Point(130, 110, 90),
+                new MechChassis.Point(140, 90, 90),
+                new MechChassis.Point(180, 50, 90),
+                new MechChassis.Point(240, 35, 90),
+                new MechChassis.Point(280, 20, 90),
+        };
+
+        chassis.set_init_pos(60, 20, 90);
+        chassis.driveThrough(.5, points, 10);
+    }
+
     @MenuEntry(label = "driveTo/rotateTo", group = "Test Chassis")
     public void testStraight(EventManager em) {
         Thread positionThread;
