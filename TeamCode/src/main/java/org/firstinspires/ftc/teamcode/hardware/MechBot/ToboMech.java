@@ -297,6 +297,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
             for (int i = 0;  degree < initDegree + 360; degree= degree + degreesPerPoint) {
                 p[i] = new MechChassis.Point (radius * Math.sin(Math.toRadians(degree))+ center.x, radius * Math.cos(Math.toRadians(degree)) + center.y, 0);
                 System.out.println(degree);
+                p[i-1].h =  Math.toDegrees(Math.atan2(p[i].x - p[i-1].x, p[i].y - p[i-1].y));
                 //System.out.println(p[i].x + "  " + p[i].y);
                 i++;
                 System.out.println(i);
@@ -305,11 +306,15 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
             for (int i = 0; degree > initDegree - 360; degree = degree - degreesPerPoint) {
                 p[i] = new MechChassis.Point(radius * Math.sin(Math.toRadians(degree)) + center.x, radius * Math.cos(Math.toRadians(degree)) + center.y, 0);
                 System.out.println(degree);
+                p[i-1].h =  Math.toDegrees(Math.atan2(p[i].x - p[i-1].x, p[i].y - p[i-1].y));
+
                 //System.out.println(p[i].x + "  " + p[i].y);
                 i++;
                 System.out.println(i);
             }
         }
+        p[p.length - 1] = p[0];
+        p[p.length - 2].h = Math.toDegrees(Math.atan2(p[p.length - 1].x - p[p.length - 2].x, p[p.length - 1].y - p[p.length - 2].y));
         return p;
         }
 
