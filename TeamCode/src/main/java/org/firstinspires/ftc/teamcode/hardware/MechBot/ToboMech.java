@@ -267,6 +267,16 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
     }
 
 
+    public void driveCurve() throws InterruptedException {
+        MechChassis.Point[] points = {new MechChassis.Point(50, 40, 0),
+                new MechChassis.Point(100, 90, 0),
+                new MechChassis.Point(150, 130, 0),
+                new MechChassis.Point(200, 90, 0)};
+
+        chassis.set_init_pos(20, 90, 90);
+        chassis.driveThrough(.5, points, 10);
+    }
+
     @MenuEntry(label = "driveTo/rotateTo", group = "Test Chassis")
     public void testStraight(EventManager em) {
         Thread positionThread;
@@ -346,7 +356,11 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         em.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
-                auto_chassis_dist += 10;
+                if (source.isPressed(Button.BACK)) {
+                    driveCurve();
+                } else {
+                    auto_chassis_dist += 10;
+                }
             }
         }, new Button[]{Button.DPAD_UP});
         em.onButtonDown(new Events.Listener() {

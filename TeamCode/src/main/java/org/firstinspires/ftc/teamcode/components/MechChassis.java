@@ -55,8 +55,11 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         CONTINUE_NO_CORRECTION     // do not stop at end end of each moving routine without correction
     }
 
-    class Point { // point for the robot position (x, y, h)
+    public static class Point { // point for the robot position (x, y, h)
         double x,y,h;
+        public Point(double lx, double ly, double lh) {
+            x=lx; y=ly; h=lh;
+        }
     }
 
     // the following 4 ratio values are used to normalize 4 wheel motors to the same speed
@@ -438,7 +441,9 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     }
 
 
-    public void driveThrough(double power, int nPoints, Point[] points, double timeout_sec) throws InterruptedException {
+    public void driveThrough(double power, Point[] points, double timeout_sec) throws InterruptedException {
+        int nPoints = points.length;
+        if (nPoints<1) return;
         setAutoDriveMode(AutoDriveMode.CONTINUE_NO_CORRECTION);
         for (int i=0; i<nPoints-1; i++) {
             driveTo(power, points[i].x, points[i].y, points[i].h, timeout_sec);
