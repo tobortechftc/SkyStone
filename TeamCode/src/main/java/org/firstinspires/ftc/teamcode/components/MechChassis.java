@@ -56,7 +56,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     }
 
     public static class Point { // point for the robot position (x, y, h)
-        double x,y,h;
+        public double x,y,h;
         public Point(double lx, double ly, double lh) {
             x=lx; y=ly; h=lh;
         }

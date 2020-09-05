@@ -276,6 +276,42 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         chassis.set_init_pos(20, 90, 90);
         chassis.driveThrough(.5, points, 10);
     }
+    public void driveCircle() throws InterruptedException {
+        MechChassis.Point[] points = getPointsInCircle(new MechChassis.Point(180, 90, 0), new MechChassis.Point(180, 140, 0), 1, 18);
+
+        chassis.set_init_pos(20, 90, 90);
+        chassis.driveThrough(.5, points, 10);
+
+    }
+    public MechChassis.Point[] getPointsInCircle(MechChassis.Point center, MechChassis.Point  start, int clockwise,  double degreesPerPoint) {
+        double radius = Math.hypot(start.x - center.x, start.y - center.y);
+
+        MechChassis.Point[] p = new MechChassis.Point[(int) (360 / degreesPerPoint)];
+        for (int i = 0; i < p.length; i++) {
+            p[i] = new MechChassis.Point(0, 0, 0);
+        }
+        double initDegree = Math.atan2(start.x, start.y);
+        double degree = initDegree;
+        if (clockwise == 1) {
+            for (int i = 0;  degree < initDegree + 360; degree= degree + degreesPerPoint) {
+                p[i] = new MechChassis.Point (radius * Math.sin(Math.toRadians(degree))+ center.x, radius * Math.cos(Math.toRadians(degree)) + center.y, 0);
+                System.out.println(degree);
+                //System.out.println(p[i].x + "  " + p[i].y);
+                i++;
+                System.out.println(i);
+            }
+        } else {
+            for (int i = 0; degree > initDegree - 360; degree = degree - degreesPerPoint) {
+                p[i] = new MechChassis.Point(radius * Math.sin(Math.toRadians(degree)) + center.x, radius * Math.cos(Math.toRadians(degree)) + center.y, 0);
+                System.out.println(degree);
+                //System.out.println(p[i].x + "  " + p[i].y);
+                i++;
+                System.out.println(i);
+            }
+        }
+        return p;
+        }
+
 
     @MenuEntry(label = "driveTo/rotateTo", group = "Test Chassis")
     public void testStraight(EventManager em) {
