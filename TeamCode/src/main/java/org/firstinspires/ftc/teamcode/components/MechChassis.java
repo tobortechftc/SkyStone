@@ -55,6 +55,10 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         CONTINUE_NO_CORRECTION     // do not stop at end end of each moving routine without correction
     }
 
+    class Point { // point for the robot position (x, y, h)
+        double x,y,h;
+    }
+
     // the following 4 ratio values are used to normalize 4 wheel motors to the same speed
     // whenever changing a wheel motor, it must be calibrated again
     /* for GoBilda 435 motor set:
@@ -429,8 +433,18 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         driveTo(power, target_x, target_y, fixed_heading, slowDownPercent,timeout_sec);
     }
 
-    public void driveTo(double power, double target_x, double target_y, double target_heading, long timeout_sec) throws InterruptedException {
+    public void driveTo(double power, double target_x, double target_y, double target_heading, double timeout_sec) throws InterruptedException {
         driveTo(power, target_x, target_y, target_heading, .8, timeout_sec);
+    }
+
+
+    public void driveThrough(double power, int nPoints, Point[] points, double timeout_sec) throws InterruptedException {
+        setAutoDriveMode(AutoDriveMode.CONTINUE_NO_CORRECTION);
+        for (int i=0; i<nPoints-1; i++) {
+            driveTo(power, points[i].x, points[i].y, points[i].h, timeout_sec);
+        }
+        setAutoDriveMode(AutoDriveMode.STOP);
+        driveTo(power, points[nPoints-1].x, points[nPoints-1].y, points[nPoints-1].h, timeout_sec);
     }
 
     public void driveTo(double power, double target_x, double target_y, double target_heading, double slowDownPercent, double timeout_sec) throws InterruptedException {
