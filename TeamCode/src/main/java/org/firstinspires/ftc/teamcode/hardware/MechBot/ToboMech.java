@@ -268,20 +268,21 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
 
 
     public void driveCurve() throws InterruptedException {
-        MechChassis.Point[] points = {new MechChassis.Point(50, 40, 0),
-                new MechChassis.Point(100, 90, 0),
-                new MechChassis.Point(150, 130, 0),
-                new MechChassis.Point(200, 90, 0)};
+        MechChassis.Point[] points = {new MechChassis.Point(40, 50, 0),
+                new MechChassis.Point(0, 100, 0),
+                new MechChassis.Point(-40, 150, 0),
+                new MechChassis.Point(0, 200, 0)};
 
-        chassis.set_init_pos(20, 90, 90);
-        chassis.driveThrough(.5, points, 10);
+        chassis.set_init_pos(0, 0, 0);
+        chassis.driveThrough(.6, points, false, 5);
+        // chassis.driveTo();
     }
     public void driveCircle() throws InterruptedException {
         MechChassis.Point[] points = getPointsInCircle(new MechChassis.Point(chassis.odo_x_pos_cm(), chassis.odo_y_pos_cm(), chassis.getCurHeading()),
                 new MechChassis.Point(chassis.odo_x_pos_cm(),  chassis.odo_y_pos_cm() + 50, 0), 1, 30);
 
-        chassis.set_init_pos(20, 90, 90);
-        chassis.driveThrough(.5, points, 10);
+        // chassis.set_init_pos(20, 90, 0);
+        chassis.driveThrough(.6, points, false,2);
 
     }
     public MechChassis.Point[] getPointsInCircle(MechChassis.Point  start, MechChassis.Point center, int clockwise,  double degreesPerPoint) {
@@ -329,7 +330,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
                 new MechChassis.Point(225, 90, 90),
                 new MechChassis.Point(250, 110, 90),
                 new MechChassis.Point(200, 135, 90),
-                new MechChassis.Point(180, 150, 90),
+                new MechChassis.Point(180, 135, 90),
                 new MechChassis.Point(150, 130, 90),
                 new MechChassis.Point(130, 110, 90),
                 new MechChassis.Point(140, 90, 90),
@@ -339,7 +340,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         };
 
         chassis.set_init_pos(60, 20, 90);
-        chassis.driveThrough(.5, points, 10);
+        chassis.driveThrough(.6, points, false,10);
     }
 
     @MenuEntry(label = "driveTo/rotateTo", group = "Test Chassis")
@@ -376,7 +377,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
                 } else if (source.getTrigger(Events.Side.LEFT)>0.5) {
                     chassis.auto_target_y += 10;
                 } else if (!source.isPressed(Button.START)) {
-                    chassis.driveTo(auto_chassis_power, chassis.auto_target_x,  chassis.auto_target_y, auto_rotate_degree, 5);
+                    chassis.driveTo(auto_chassis_power, chassis.auto_target_x,  chassis.auto_target_y, auto_rotate_degree,true, 5);
                 }
             }
         }, new Button[]{Button.Y});
@@ -431,9 +432,23 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         em.onButtonDown(new Events.Listener() {
             @Override
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
-                auto_chassis_dist -= 10;
+                if (source.isPressed(Button.BACK)) {
+                    driveCircle();
+                } else {
+                    auto_chassis_dist -= 10;
+                }
             }
         }, new Button[]{Button.DPAD_DOWN});
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.BACK)) {
+                    driveAnotherCurve();
+                } else {
+
+                }
+            }
+        }, new Button[]{Button.DPAD_RIGHT});
     }
 
     @MenuEntry(label = "Auto Rotation", group = "Test Chassis")

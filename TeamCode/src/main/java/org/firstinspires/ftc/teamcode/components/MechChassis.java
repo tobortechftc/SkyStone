@@ -212,6 +212,9 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         init_x_cm = x;
         init_y_cm = y;
         init_heading = heading;
+        if (GPS!=null) {
+            GPS.set_init_pos(x,y,heading);
+        }
     }
 
     public double getInit_x_cm() {
@@ -433,26 +436,22 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
         power = power * Math.signum(cm);
 
-        driveTo(power, target_x, target_y, fixed_heading, slowDownPercent,timeout_sec);
-    }
-
-    public void driveTo(double power, double target_x, double target_y, double target_heading, double timeout_sec) throws InterruptedException {
-        driveTo(power, target_x, target_y, target_heading, .8, timeout_sec);
+        driveTo(power, target_x, target_y, fixed_heading, false, timeout_sec);
     }
 
 
-    public void driveThrough(double power, Point[] points, double timeout_sec) throws InterruptedException {
+    public void driveThrough(double power, Point[] points, boolean useRotateTo,double timeout_sec) throws InterruptedException {
         int nPoints = points.length;
         if (nPoints<1) return;
         setAutoDriveMode(AutoDriveMode.CONTINUE_NO_CORRECTION);
-        for (int i=0; i<nPoints-1; i++) {
-            driveTo(power, points[i].x, points[i].y, points[i].h, timeout_sec);
+        for (int i=0; i<nPoints; i++) {
+            driveTo(power, points[i].x, points[i].y, points[i].h, useRotateTo, timeout_sec);
         }
         setAutoDriveMode(AutoDriveMode.STOP);
-        driveTo(power, points[nPoints-1].x, points[nPoints-1].y, points[nPoints-1].h, timeout_sec);
+        driveTo(power, points[nPoints-1].x, points[nPoints-1].y, points[nPoints-1].h, useRotateTo , timeout_sec);
     }
 
-    public void driveTo(double power, double target_x, double target_y, double target_heading, double slowDownPercent, double timeout_sec) throws InterruptedException {
+    public void driveTo(double power, double target_x, double target_y, double target_heading, boolean useRotateTo, double timeout_sec) throws InterruptedException {
         long iniTime = System.currentTimeMillis();
         double current_heading = odo_heading();
         double cur_x = odo_x_pos_cm(), prev_x = cur_x, init_x=cur_x;
@@ -462,6 +461,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         double finalAbsDiff =  abs(target_heading - current_heading) > 180 ? 360 - abs(target_heading - current_heading) : abs(target_heading - current_heading);
         boolean rotateFirst = true;
         double stage_one_heading=current_heading;
+        double slowDownPercent = 0.8;
 
         // if desirableDegree is between current_heading and target_heading, rotate to desirableDegress first
         // else if target_heading is between current_heading and desirableDegree, rotate to target_heading first
@@ -479,7 +479,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             rotateFirst = false;
         }
 
-        if (rotateFirst && (stage_one_heading!=current_heading)) {
+        if (useRotateTo && rotateFirst && (stage_one_heading!=current_heading)) {
             rawRotateTo(power, stage_one_heading, true, timeout_sec);
             cur_x = odo_x_pos_cm();
             cur_y = odo_y_pos_cm();
@@ -525,8 +525,10 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             auto_max_speed = Math.max(cur_s, auto_max_speed);
             //auto_max_xspeed = Math.max(odo_x_speed_cm(), auto_max_xspeed);
             //auto_max_yspeed = Math.max(odo_y_speed_cm(), auto_max_yspeed);
-            if (traveledPercent > slowDownPercent && cur_s>30 && powerUsed>0.3) {
-               powerUsed = 0.3;
+            if (autoDriveMode!=AutoDriveMode.CONTINUE_NO_CORRECTION) {
+                if (traveledPercent > slowDownPercent && cur_s > 30 && powerUsed > 0.3) {
+                    powerUsed = 0.3;
+                }
             }
             if (traveledPercent<0.9) {
                 desiredDegree = Math.toDegrees(Math.atan2(target_x - cur_x, target_y - cur_y));
@@ -657,7 +659,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
                     (((cur_heading-fixed_heading>0) && directionAngle>135 && directionAngle<-135));
             if (slow_down_left||slow_down_right) {
                 cur_left_to_right_ratio = (1.0 - degree_diff * 0.05);
-                if (cur_left_to_right_ratio<0.9) cur_left_to_right_ratio=0.9;
+                if (cur_left_to_right_ratio<0.8) cur_left_to_right_ratio=0.8;
             }
         }
         double cur_front_to_back_ratio = 1.0;
@@ -669,7 +671,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
                     (((cur_heading-fixed_heading>0) && directionAngle>=-135 && directionAngle<=-45));
             if (slow_down_front||slow_down_back) {
                 cur_front_to_back_ratio = (1.0 - degree_diff * 0.05);
-                if (cur_front_to_back_ratio<0.9) cur_front_to_back_ratio=0.9;
+                if (cur_front_to_back_ratio<0.8) cur_front_to_back_ratio=0.8;
             }
         }
 
@@ -1150,6 +1152,11 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         if (power <= chassisAligmentPower || Math.abs(iniHeading-finalHeading)<2.0) {
             // rawRotateTo(power, finalHeading, false, timeout_sec);//was power
             if (Thread.interrupted()) return;
+            if (autoDriveMode==AutoDriveMode.CONTINUE_NO_CORRECTION) return;
+            else if (autoDriveMode==AutoDriveMode.STOP_NO_CORRECTION) {
+                stop();
+                return;
+            }
             if (power > chassisAligmentPower)
                 rawRotateTo(chassisAligmentPower, finalHeading, false, timeout_sec);
             return;
