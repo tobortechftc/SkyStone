@@ -266,15 +266,36 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         return Math.atan2(x, y) / Math.PI * 180;
     }
 
+    public void driveThisPath() throws InterruptedException {
+        MechChassis.Point[] points = {new MechChassis.Point(20, 0, 10),
+                new MechChassis.Point(40, 0, 20),
+                new MechChassis.Point(60, 0, 40),
+                new MechChassis.Point(90, 0, 60),
+                new MechChassis.Point(100, 20, 65),
+                new MechChassis.Point(120, 40, 65),
+                new MechChassis.Point(120, -40, 75),
+                new MechChassis.Point(100, -20, 75),
+                new MechChassis.Point(80, 0, 75),
+                new MechChassis.Point(60, 0, -70),
+                new MechChassis.Point(40, 0, -70)
+        };
+
+        //chassis.set_init_pos(30, 70, 250);
+        chassis.driveThrough(.5, points, false, 10);
+    }
 
     public void driveCurve() throws InterruptedException {
-        MechChassis.Point[] points = {new MechChassis.Point(40, 50, 0),
+        MechChassis.Point[] points = {new MechChassis.Point(20, 30, 0),
+                new MechChassis.Point(40, 50, 0),
+                new MechChassis.Point(20, 70, 0),
                 new MechChassis.Point(0, 100, 0),
+                new MechChassis.Point(-20, 130, 0),
                 new MechChassis.Point(-40, 150, 0),
+                new MechChassis.Point(-20, 170, 0),
                 new MechChassis.Point(0, 200, 0)};
 
         chassis.set_init_pos(0, 0, 0);
-        chassis.driveThrough(.6, points, false, 5);
+        chassis.driveThrough(.5, points, false, 5);
         // chassis.driveTo();
     }
     public void driveCircle() throws InterruptedException {
@@ -377,7 +398,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
                 } else if (source.getTrigger(Events.Side.LEFT)>0.5) {
                     chassis.auto_target_y += 10;
                 } else if (!source.isPressed(Button.START)) {
-                    chassis.driveTo(auto_chassis_power, chassis.auto_target_x,  chassis.auto_target_y, auto_rotate_degree,true, 5);
+                    chassis.driveTo(auto_chassis_power, chassis.auto_target_x,  chassis.auto_target_y, 5);
                 }
             }
         }, new Button[]{Button.Y});
@@ -449,6 +470,16 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
                 }
             }
         }, new Button[]{Button.DPAD_RIGHT});
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if (source.isPressed(Button.BACK)) {
+                    driveThisPath();
+                } else {
+
+                }
+            }
+        }, new Button[]{Button.DPAD_LEFT});
     }
 
     @MenuEntry(label = "Auto Rotation", group = "Test Chassis")

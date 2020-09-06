@@ -445,10 +445,18 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         if (nPoints<1) return;
         setAutoDriveMode(AutoDriveMode.CONTINUE_NO_CORRECTION);
         for (int i=0; i<nPoints; i++) {
-            driveTo(power, points[i].x, points[i].y, points[i].h, useRotateTo, timeout_sec);
+            driveTo(power, points[i].x, points[i].y, timeout_sec);
         }
         setAutoDriveMode(AutoDriveMode.STOP);
         driveTo(power, points[nPoints-1].x, points[nPoints-1].y, points[nPoints-1].h, useRotateTo , timeout_sec);
+    }
+
+    public void driveTo(double power, double target_x, double target_y, double timeout_sec) throws InterruptedException {
+        double cur_x = odo_x_pos_cm();
+        double cur_y = odo_y_pos_cm();
+        double desiredDegree = Math.toDegrees(Math.atan2(target_x - cur_x, target_y - cur_y));
+        driveTo(power, target_x, target_y, desiredDegree, false, timeout_sec);
+        // auto_degree_err = desiredDegree;
     }
 
     public void driveTo(double power, double target_x, double target_y, double target_heading, boolean useRotateTo, double timeout_sec) throws InterruptedException {
@@ -465,16 +473,16 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
         // if desirableDegree is between current_heading and target_heading, rotate to desirableDegress first
         // else if target_heading is between current_heading and desirableDegree, rotate to target_heading first
-        if (current_heading>desiredDegree+10 && desiredDegree>=target_heading) {
-            stage_one_heading = desiredDegree + 10;
-        } else if (current_heading<desiredDegree-10 && desiredDegree<=target_heading) {
-            stage_one_heading = desiredDegree - 10;
-        } else if (current_heading>target_heading+10 && target_heading>=desiredDegree) {
+        if (current_heading>desiredDegree+20 && desiredDegree>=target_heading) {
+            stage_one_heading = desiredDegree + 20;
+        } else if (current_heading<desiredDegree-20 && desiredDegree<=target_heading) {
+            stage_one_heading = desiredDegree - 20;
+        } else if (current_heading>target_heading+20 && target_heading>=desiredDegree) {
             // rotate to about target_heading
-            stage_one_heading = target_heading + 10;
-        } else if (current_heading<target_heading-10 && target_heading<=desiredDegree) {
+            stage_one_heading = target_heading + 20;
+        } else if (current_heading<target_heading-20 && target_heading<=desiredDegree) {
             // rotate to about target_heading
-            stage_one_heading = target_heading - 10;
+            stage_one_heading = target_heading - 20;
         } else {
             rotateFirst = false;
         }
@@ -495,8 +503,9 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         double save_target_heading = target_heading;
 
         // Temporarily change target_heading to go straight
-        target_heading = odo_heading();
-
+        if (useRotateTo) {
+            target_heading = odo_heading();
+        }
         double[] motorPowers = {0, 0, 0, 0};
         // slow down stuff
         double[] s = getSlowDownParameters(target_heading, getCurHeading(), power);
@@ -567,7 +576,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
         current_heading = odo_heading();
         currentAbsDiff = abs(target_heading - current_heading) > 180 ? 360 - abs(target_heading - current_heading) : abs(target_heading - current_heading);
-        if ((currentAbsDiff > 1.2) && !Thread.interrupted()) {
+        if (useRotateTo||(autoDriveMode==AutoDriveMode.STOP) && (currentAbsDiff > 1.2) && !Thread.interrupted()) {
             rotateTo(Math.abs(power), target_heading, timeout_sec);
         }
         if (autoDriveMode==AutoDriveMode.STOP) {
@@ -659,9 +668,10 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
                     (((cur_heading-fixed_heading>0) && directionAngle>135 && directionAngle<-135));
             if (slow_down_left||slow_down_right) {
                 cur_left_to_right_ratio = (1.0 - degree_diff * 0.05);
-                if (cur_left_to_right_ratio<0.8) cur_left_to_right_ratio=0.8;
+                if (cur_left_to_right_ratio<0.1) cur_left_to_right_ratio=0.1;
             }
         }
+        // auto_dist_err = degree_diff;
         double cur_front_to_back_ratio = 1.0;
         boolean slow_down_front=false, slow_down_back=false;
         if (headingCorrection && (degree_diff>1.0)) { // for Y axle correction
@@ -671,7 +681,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
                     (((cur_heading-fixed_heading>0) && directionAngle>=-135 && directionAngle<=-45));
             if (slow_down_front||slow_down_back) {
                 cur_front_to_back_ratio = (1.0 - degree_diff * 0.05);
-                if (cur_front_to_back_ratio<0.8) cur_front_to_back_ratio=0.8;
+                if (cur_front_to_back_ratio<0.1) cur_front_to_back_ratio=0.1;
             }
         }
 
@@ -688,6 +698,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
             motorPowers[1] *= cur_left_to_right_ratio;
             motorPowers[3] *= cur_left_to_right_ratio;
         }
+        // auto_travel_p=cur_left_to_right_ratio;
         if (slow_down_front) { // make front motors slower
             motorPowers[0] = motorPowers[0] * Math.abs(power) * ratioFL * cur_front_to_back_ratio / max;
             motorPowers[1] = motorPowers[1] * Math.abs(power) * ratioFR * cur_front_to_back_ratio / max;
