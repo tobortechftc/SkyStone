@@ -6,6 +6,8 @@ import com.qualcomm.robotcore.util.ReadWriteFile;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.components.CombinedOrientationSensor;
+import org.firstinspires.ftc.teamcode.hardware.MechBot.ToboMech;
+import org.firstinspires.ftc.teamcode.support.Logger;
 
 import java.io.File;
 
@@ -18,7 +20,7 @@ public class OdometryGlobalCoordinatePosition implements Runnable{
     private CombinedOrientationSensor orientationSensor;
     //Thead run condition
     private boolean isRunning = true;
-
+    private boolean useIMU = true; // use IMU for radian correction
     //Position variables used for storage and calculations
     double initRadians = 0;
     double verticalRightEncoderWheelPosition = 0, verticalLeftEncoderWheelPosition = 0, normalEncoderWheelPosition = 0,  changeInRobotOrientation = 0;
@@ -28,10 +30,12 @@ public class OdometryGlobalCoordinatePosition implements Runnable{
     private double ySpeedLogs[] = {0,0,0,0,0};
     private int count=0;
     private double previousVerticalRightEncoderWheelPosition = 0, previousVerticalLeftEncoderWheelPosition = 0, prevNormalEncoderWheelPosition = 0;
+    final double DEFAULT_COUNTS_PER_INCH = 307.699557;
 
     //Algorithm constants
-    private double robotEncoderWheelDistance;
-    private double horizontalEncoderTickPerDegreeOffset;
+    //private double robotEncoderWheelDistance = 15.20435 * DEFAULT_COUNTS_PER_INCH;
+    private double robotEncoderWheelDistance = 15.4317822 * DEFAULT_COUNTS_PER_INCH;
+    private double horizontalEncoderTickPerDegreeOffset = -86.84834;
 
     //Sleep time interval (milliseconds) for the position update thread
     private int sleepTime;
@@ -61,9 +65,12 @@ public class OdometryGlobalCoordinatePosition implements Runnable{
         this.horizontalEncoder = horizontalEncoder;
         sleepTime = threadSleepDelay;
 
-        robotEncoderWheelDistance = Double.parseDouble(ReadWriteFile.readFile(wheelBaseSeparationFile).trim()) * COUNTS_PER_INCH;
-        this.horizontalEncoderTickPerDegreeOffset = Double.parseDouble(ReadWriteFile.readFile(horizontalTickOffsetFile).trim());
-
+//        if (wheelBaseSeparationFile.exists()) {
+//            robotEncoderWheelDistance = Double.parseDouble(ReadWriteFile.readFile(wheelBaseSeparationFile).trim()) * COUNTS_PER_INCH;
+//        }
+        if (horizontalTickOffsetFile.exists()) {
+            this.horizontalEncoderTickPerDegreeOffset = Double.parseDouble(ReadWriteFile.readFile(horizontalTickOffsetFile).trim());
+        }
     }
 
     /**
@@ -81,7 +88,7 @@ public class OdometryGlobalCoordinatePosition implements Runnable{
         //Calculate Angle
         changeInRobotOrientation = (leftChange - rightChange) / (robotEncoderWheelDistance);
         // Replace angle calculation by imu
-        if (orientationSensor!=null) {
+        if (orientationSensor!=null && useIMU) {
             robotOrientationRadians = Math.toRadians(orientationSensor.getHeading())+initRadians;
         } else {
             robotOrientationRadians = ((robotOrientationRadians + changeInRobotOrientation));
@@ -107,6 +114,7 @@ public class OdometryGlobalCoordinatePosition implements Runnable{
             ySpeedDegree = (ySpeedLogs[0]+ySpeedLogs[1]+ySpeedLogs[2]+ySpeedLogs[3]+ySpeedLogs[4])/5.0;
             xSpeedDegree = (xSpeedLogs[0]+xSpeedLogs[1]+xSpeedLogs[2]+xSpeedLogs[3]+xSpeedLogs[4])/5.0;
         }
+
         count = (count+1)%10000;
 
     }

@@ -19,6 +19,7 @@ import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
 import static java.lang.Thread.sleep;
 
 public class ToboMech extends Logger<ToboMech> implements Robot2 {
+    Thread positionThread;
     private Telemetry telemetry;
     public MechChassis chassis;
     public CoreSystem core;
@@ -51,7 +52,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         this.telemetry = telemetry;
 
         this.core = new CoreSystem();
-        info("RoboRuck configure() after new CoreSystem()(run time = %.2f sec)", (runtime.seconds() - ini_time));
+        info("RoboMech configure() after new CoreSystem()(run time = %.2f sec)", (runtime.seconds() - ini_time));
         chassis = new MechChassis(core).configureLogging("Mecanum", logLevel); // Log.DEBUG
         if (autoColor== ToboSigma.AutoTeamColor.DIAGNOSIS) {
             // enable imu for diagnosis
@@ -63,7 +64,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
             cameraStoneDetector.configure(configuration);
         }
         chassis.configure(configuration, (autoColor!= ToboSigma.AutoTeamColor.NOT_AUTO));
-        info("RoboRuck configure() after init Chassis (run time = %.2f sec)", (runtime.seconds() - ini_time));
+        info("RoboMech configure() after init Chassis (run time = %.2f sec)", (runtime.seconds() - ini_time));
     }
 
 
@@ -80,6 +81,13 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
     public void mainTeleOp(EventManager em) {
         setupTelemetry(telemetry);
         em.updateTelemetry(telemetry, 1000);
+        if (chassis!=null && chassis.getGPS()==null) {
+            chassis.configureOdometry();
+            positionThread = (chassis.getGPS()==null? null: new Thread(chassis.getGPS()));
+            if (positionThread!=null)
+                positionThread.start();
+        }
+        chassis.setupTelemetry(telemetry);
         em.onStick(new Events.Listener() { // Left-Joystick
             @Override
             public void stickMoved(EventManager source, Events.Side side, float currentX, float changeX, float currentY, float changeY) throws InterruptedException {
@@ -285,17 +293,21 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
     }
 
     public void driveCurve() throws InterruptedException {
-        MechChassis.Point[] points = {new MechChassis.Point(20, 30, 0),
-                new MechChassis.Point(40, 50, 0),
-                new MechChassis.Point(20, 70, 0),
-                new MechChassis.Point(0, 100, 0),
+        MechChassis.Point[] points = {new MechChassis.Point(50, 50, 45),
+                //new MechChassis.Point(100, 100, 90),
+                //new MechChassis.Point(80, 140, 90),
+                new MechChassis.Point(100, 100, 90)};
+
+        MechChassis.Point[] points2 = {
                 new MechChassis.Point(-20, 130, 0),
                 new MechChassis.Point(-40, 150, 0),
                 new MechChassis.Point(-20, 170, 0),
                 new MechChassis.Point(0, 200, 0)};
 
         chassis.set_init_pos(0, 0, 0);
-        chassis.driveThrough(.5, points, false, 5);
+        //chassis.rotateTo(.5, 20);
+        chassis.driveThrough(.5, points, false, 3);
+        // chassis.driveThrough(.5, points2, false, 5);
         // chassis.driveTo();
     }
     public void driveCircle() throws InterruptedException {
@@ -366,7 +378,6 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
 
     @MenuEntry(label = "driveTo/rotateTo", group = "Test Chassis")
     public void testStraight(EventManager em) {
-        Thread positionThread;
         if (chassis!=null && chassis.getGPS()==null) {
             chassis.configureOdometry();
             chassis.setupTelemetry(telemetry);
@@ -374,6 +385,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
             if (positionThread!=null)
                 positionThread.start();
         }
+        chassis.set_init_pos(100,35 ,0);
         if (Thread.interrupted()) return;
         chassis.auto_target_y = chassis.getInit_y_cm();
         chassis.auto_target_x = chassis.getInit_x_cm();
@@ -484,7 +496,6 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
 
     @MenuEntry(label = "Auto Rotation", group = "Test Chassis")
     public void testRotationSkyStone(EventManager em) {
-        Thread positionThread;
         if (chassis!=null && chassis.getGPS()==null) {
             chassis.configureOdometry();
             chassis.setupTelemetry(telemetry);
