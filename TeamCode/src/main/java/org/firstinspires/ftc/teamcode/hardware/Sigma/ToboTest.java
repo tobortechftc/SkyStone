@@ -83,6 +83,10 @@ public class ToboTest extends Logger<ToboTest> implements Robot2 {
             intake.intakeDropInit();
     }
 
+    public void end() {
+
+    }
+
     @MenuEntry(label = "TeleOp", group = "Competition")
     public void mainTeleOp(EventManager em, EventManager em2) {
         telemetry.addLine().addData("(RS)", "4WD").setRetained(true)

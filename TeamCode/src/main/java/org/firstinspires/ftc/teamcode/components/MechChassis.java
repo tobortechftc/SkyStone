@@ -4,6 +4,7 @@ import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.util.ReadWriteFile;
 
 import org.firstinspires.ftc.robotcore.external.Func;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -15,7 +16,6 @@ import org.firstinspires.ftc.teamcode.support.hardware.Adjustable;
 import org.firstinspires.ftc.teamcode.support.hardware.Configurable;
 import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
 import org.firstinspires.ftc.teamcode.support.tasks.TaskManager;
-
 
 import java.util.List;
 
@@ -64,6 +64,10 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         }
     }
 
+    void dumpEvent(String s) {
+        simEvents += s;
+    }
+
     // the following 4 ratio values are used to normalize 4 wheel motors to the same speed
     // whenever changing a wheel motor, it must be calibrated again
     /* for GoBilda 435 motor set:
@@ -106,7 +110,6 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     private double init_y_cm = 0;
     private double init_heading = 0;
 
-
     private DcMotorEx motorFL;
     private DcMotorEx motorFR;
     private DcMotorEx motorBL;
@@ -138,6 +141,14 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     private boolean setRangeSensorTelemetry = false;//unless debugging, don't set telemetry for range sensor
     private boolean useOdometry = true;
     private boolean normalizeMode = true;
+
+    private String simEvents="";
+    private boolean simulation_mode = false;
+
+    public void set_simulation_mode(boolean val) {
+        simulation_mode = val;
+    }
+    public String getSimEvents() { return simEvents; }
 
     public void toggleNormalizeMode(){
         normalizeMode = !normalizeMode;
@@ -215,6 +226,10 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     }
 
     public void set_init_pos(double x, double y, double heading) {
+        if (simulation_mode) {
+            dumpEvent(String.format("set_init_pos: %3.1f, %3.1f, %3.1f\n", x, y, targetHeading));
+        }
+
         init_x_cm = x;
         init_y_cm = y;
         init_heading = heading;
@@ -454,7 +469,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
         if (nPoints<1) return;
         setAutoDriveMode(AutoDriveMode.CONTINUE_NO_CORRECTION);
         for (int i=0; i<nPoints-1; i++) {
-            driveTo(power, points[i].x, points[i].y, timeout_sec);
+            driveTo(power, points[i].x, points[i].y, points[i].h, false, timeout_sec);
             if (Thread.interrupted()) break;
         }
         setAutoDriveMode(AutoDriveMode.STOP);
@@ -470,6 +485,10 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     }
 
     public void driveTo(double power, double target_x, double target_y, double target_heading, boolean useRotateTo, double timeout_sec) throws InterruptedException {
+        if (simulation_mode) { // simulation mode
+            dumpEvent (String.format("driveTo: %3.1f, %3.1f, %3.1f\n", target_x, target_y, target_heading));
+            return;
+        }
         long iniTime = System.currentTimeMillis();
         double current_heading = odo_heading();
         double cur_x = odo_x_pos_cm(), prev_x = cur_x, init_x=cur_x;
@@ -938,11 +957,11 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
      */
     public void setupTelemetry(Telemetry telemetry) {
         Telemetry.Line line = telemetry.addLine();
-        line.addData("Pwr/Scale", new Func<String>() {
+        line.addData("Pwr/Scale/Mode", new Func<String>() {
             @Override
             public String value() {
                 return String.format("%.2f / %.1f / %s\n", motorFL.getPower(), getDefaultScale(),
-                        (getNormalizeMode()?"Normalized":"Speedy"));
+                        (simulation_mode?"Simulation":(getNormalizeMode()?"Normalized":"Speedy")));
             }
         });
         /*
@@ -1102,6 +1121,11 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
     public void rawRotateTo(double power, double finalHeading, boolean stopEarly, double timeout_sec) throws InterruptedException {
         if (Thread.interrupted()) return;
+        if (simulation_mode) { // simulation mode
+            dumpEvent (String.format("rawRotateTo: %3.1f\n", finalHeading));
+            return;
+        }
+
         debug("rotateT0(pwr: %.3f, finalHeading: %.1f)", power, finalHeading);
         double iniHeading = odo_heading();
         double deltaD = finalHeading - iniHeading;
@@ -1174,6 +1198,11 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
     }
 
     public void rotateTo(double power, double finalHeading, double timeout_sec, boolean changePower, boolean finalCorrection) throws InterruptedException {
+        if (simulation_mode) { // simulation mode
+            dumpEvent (String.format("RotateTo: %3.1f\n", finalHeading));
+            return;
+        }
+
         if (Thread.interrupted()) return;
         double iniHeading = odo_heading();
         if (power <= chassisAligmentPower || Math.abs(iniHeading-finalHeading)<2.0) {

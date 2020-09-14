@@ -171,6 +171,8 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         reset(auto, false);
     }
 
+    public void end() {}
+
     public void reset(boolean auto, boolean armOut) {
         if (Thread.currentThread().isInterrupted()) return;
         if (chassis != null) {

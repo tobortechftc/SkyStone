@@ -97,6 +97,7 @@ public abstract class DiagnosticsTeleOp extends LinearOpMode {
                 Thread.sleep(5000);
             }
         }
+        robot2.end();
     }
 
     /**

@@ -2,9 +2,11 @@ package org.firstinspires.ftc.teamcode.hardware.MechBot;
 
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
+import com.qualcomm.robotcore.util.ReadWriteFile;
 
 import org.firstinspires.ftc.robotcore.external.Func;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
 import org.firstinspires.ftc.teamcode.components.MechChassis;
 import org.firstinspires.ftc.teamcode.components.Robot2;
 import org.firstinspires.ftc.teamcode.hardware.Sigma.ToboSigma;
@@ -16,7 +18,7 @@ import org.firstinspires.ftc.teamcode.support.events.EventManager;
 import org.firstinspires.ftc.teamcode.support.events.Events;
 import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
 
-import static java.lang.Thread.sleep;
+import java.io.File;
 
 public class ToboMech extends Logger<ToboMech> implements Robot2 {
     Thread positionThread;
@@ -26,7 +28,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
     public ElapsedTime runtime = new ElapsedTime();
     public double rotateRatio = 0.7; // slow down ratio for rotation
     public CameraStoneDetector cameraStoneDetector;
-
+    public File simEventFile;
 
     public double auto_chassis_power = .6;
     public double auto_chassis_dist = 100;
@@ -37,8 +39,21 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
 
     public double auto_rotate_degree = 0;
 
-
+    private boolean simulation_mode = false;
     public boolean tensorTest = false;
+
+    public void set_simulation_mode(boolean value) {
+        simulation_mode = value;
+        if (simulation_mode) {
+            if (chassis!=null) {
+                chassis.set_simulation_mode(value);
+            }
+        }
+    }
+
+    public boolean isSimulationMode() {
+        return simulation_mode;
+    }
 
     @Override
     public String getName() {
@@ -50,7 +65,8 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         runtime.reset();
         double ini_time = runtime.seconds();
         this.telemetry = telemetry;
-
+        simEventFile = AppUtil.getInstance().getSettingsFile("ToboMech_events.txt"); // at First/settings directory
+        // simFile = Paths.get("ToboMech_events.txt");
         this.core = new CoreSystem();
         info("RoboMech configure() after new CoreSystem()(run time = %.2f sec)", (runtime.seconds() - ini_time));
         chassis = new MechChassis(core).configureLogging("Mecanum", logLevel); // Log.DEBUG
@@ -64,6 +80,11 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
             cameraStoneDetector.configure(configuration);
         }
         chassis.configure(configuration, (autoColor!= ToboSigma.AutoTeamColor.NOT_AUTO));
+
+        if (simulation_mode) { // need to call after chassis is initialized
+            set_simulation_mode(true);
+        }
+
         info("RoboMech configure() after init Chassis (run time = %.2f sec)", (runtime.seconds() - ini_time));
     }
 
@@ -76,6 +97,11 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         }
     }
 
+    public void end() {
+        if (simulation_mode) {
+            ReadWriteFile.writeFile(simEventFile, chassis.getSimEvents());
+        }
+    }
 
     @MenuEntry(label = "TeleOp", group = "Test Chassis")
     public void mainTeleOp(EventManager em) {
@@ -308,7 +334,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         //chassis.rotateTo(.5, 20);
         chassis.driveThrough(.5, points, false, 3);
         // chassis.driveThrough(.5, points2, false, 5);
-        // chassis.driveTo();
+        // chassis.rotateTo(.5, 90);
     }
     public void driveCircle() throws InterruptedException {
         MechChassis.Point[] points = getPointsInCircle(new MechChassis.Point(chassis.odo_x_pos_cm(), chassis.odo_y_pos_cm(), chassis.getCurHeading()),
@@ -385,7 +411,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
             if (positionThread!=null)
                 positionThread.start();
         }
-        chassis.set_init_pos(100,35 ,0);
+        // chassis.set_init_pos(100,35 ,0);
         if (Thread.interrupted()) return;
         chassis.auto_target_y = chassis.getInit_y_cm();
         chassis.auto_target_x = chassis.getInit_x_cm();

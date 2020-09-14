@@ -30,5 +30,5 @@ public interface Robot2 {
      * Reset robot. All applicable hardware devices should be reset to their initial state.
      */
     void reset(boolean auto);
-
+    void end();
 }

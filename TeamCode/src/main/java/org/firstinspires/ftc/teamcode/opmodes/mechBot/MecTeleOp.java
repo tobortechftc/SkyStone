@@ -23,7 +23,7 @@ public class MecTeleOp extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        log.info("RoboRuck TeleOp runOpMode() starts (CPU_time = %.2f sec)", getRuntime());
+        log.info("RoboMech TeleOp runOpMode() starts (CPU_time = %.2f sec)", getRuntime());
         telemetry.addData("Initializing Robot", "Please Wait ...");
         telemetry.update();
 
@@ -31,7 +31,7 @@ public class MecTeleOp extends LinearOpMode {
         robot.configureLogging(robot.getName(),LOG_LEVEL);
         configuration = new Configuration(hardwareMap, robot.getName()).configureLogging("Config", LOG_LEVEL);
 
-        log.info("RoboRuck TeleOp finished configuration (CPU_time = %.2f sec)", getRuntime());
+        log.info("RoboMech TeleOp finished configuration (CPU_time = %.2f sec)", getRuntime());
 
         try {
             // configure robot and reset all hardware
