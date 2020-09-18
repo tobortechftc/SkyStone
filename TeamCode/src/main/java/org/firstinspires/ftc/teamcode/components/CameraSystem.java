@@ -17,6 +17,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
 import org.firstinspires.ftc.teamcode.support.CoreSystem;
+
+import java.util.ArrayList;
+import java.util.List;
 //import org.firstinspires.ftc.teamcode.hardware17.SwerveUtilLOP;
 //import org.firstinspires.ftc.teamcode.hardware17.TaintedAccess;
 
@@ -36,8 +39,8 @@ public class CameraSystem {
 
     public VuforiaLocalizer vuforia;
 
-    public VuforiaTrackables relicTrackables;
-    public VuforiaTrackable relicTemplate;
+    public VuforiaTrackables targetsSkyStone;
+    // public VuforiaTrackable relicTemplate;
     VuforiaLocalizer.Parameters parameters;
     private String lastError = "";
 
@@ -69,19 +72,51 @@ public class CameraSystem {
     public void init(HardwareMap hwMap) {
 
         if (use_Vuforia) {
-//            webcamName = hwMap.get(WebcamName.class, "Webcam 1");
+            webcamName = hwMap.get(WebcamName.class, "Webcam");
             int cameraMonitorViewId = hwMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hwMap.appContext.getPackageName());
             parameters = new VuforiaLocalizer.Parameters(cameraMonitorViewId);
+            // 2019 License
+            // parameters.vuforiaLicenseKey = "AaaZDWL/////AAAAGYIaD+Gn/UUDhEiR/gcOJxdEJlKEpCOKSLPfhYJfYthUNZ0vnEGm0VGPutkNgRq8bq1ufm3eAySnLhkJQ7d4w6VDT7os5FGPEOGPfsIWMYNAFMdX+wlJo2JCyljeSxQtXUd/YileyfYKBXOl2uFA4KnStCC9WkYTUBrAof3H7RGKorzYixDeOpbmCsf25rayjtAUQrKCwG4j6P5rRdxy7SC//v4VC6NirNwgJ/xn1r02/jbx8vUDrDODGyut9iLk06IzMnrq/P01yKOp48clTw0WIKNmVT7WUQweXy+E1w6xwFplTlPkjC+gzerDOpxHPqYg8RusWD2Y/IMlmnk1yzJba1B9Xf9Ih6BJbm/fVwL4";
 
-            parameters.vuforiaLicenseKey = "AaaZDWL/////AAAAGYIaD+Gn/UUDhEiR/gcOJxdEJlKEpCOKSLPfhYJfYthUNZ0vnEGm0VGPutkNgRq8bq1ufm3eAySnLhkJQ7d4w6VDT7os5FGPEOGPfsIWMYNAFMdX+wlJo2JCyljeSxQtXUd/YileyfYKBXOl2uFA4KnStCC9WkYTUBrAof3H7RGKorzYixDeOpbmCsf25rayjtAUQrKCwG4j6P5rRdxy7SC//v4VC6NirNwgJ/xn1r02/jbx8vUDrDODGyut9iLk06IzMnrq/P01yKOp48clTw0WIKNmVT7WUQweXy+E1w6xwFplTlPkjC+gzerDOpxHPqYg8RusWD2Y/IMlmnk1yzJba1B9Xf9Ih6BJbm/fVwL4";
+            // 2020 License key applied on 9/15/2020
+            parameters.vuforiaLicenseKey = "AUX/EYz/////AAABmfDOQpIfpkCTsfa9M/yfiWwfA4XSjkPH8K3l5bIAGPQ8HLeob1f6ml1yIWrg10n1k2WjiltGR1HmfuVWxQOQR8nZB5CDkitdMVCGqCN3yIxzH4h2I8uetrsKXoCjEj1cXHEXIdGeu2EjJmvVYP9Pk7z1GCfd6C3Lrh0AQPKF8YbOoGhC3+ScO5EsvZ6Mix2mEKg4m2VHb7kHxMGdlQzmhVqtcu5QaSPFRubRBrxnQZwSV3B59LfDP0souB0Rx8Ez8Pu14Eg69eIH3UozjP7HIO+q1pl3Md3SIQtE+bktIwokuOCWzQaXFD31dyf0cNoXAS3nXr2uib2lz8IJSzq3aBdNoN+thohf6Q08M5GdwgGw";
 
-            parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
-//            parameters.cameraName = webcamName;
-            this.vuforia = ClassFactory.createVuforiaLocalizer(parameters);
+            // parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
+            parameters.cameraName = webcamName;
+            this.vuforia = ClassFactory.getInstance().createVuforia(parameters);
             vuforia.enableConvertFrameToBitmap();
-            relicTrackables = this.vuforia.loadTrackablesFromAsset("RelicVuMark");
-            relicTemplate = relicTrackables.get(0);
-            relicTemplate.setName("relicVuMarkTemplate"); // can help in debugging; otherwise not necessary
+            targetsSkyStone = this.vuforia.loadTrackablesFromAsset("Skystone");
+            // relicTemplate = targetsSkyStone.get(0);
+            // relicTemplate.setName("relicVuMarkTemplate"); // can help in debugging; otherwise not necessary
+            VuforiaTrackable stoneTarget = targetsSkyStone.get(0);
+            stoneTarget.setName("Stone Target");
+            VuforiaTrackable blueRearBridge = targetsSkyStone.get(1);
+            blueRearBridge.setName("Blue Rear Bridge");
+            VuforiaTrackable redRearBridge = targetsSkyStone.get(2);
+            redRearBridge.setName("Red Rear Bridge");
+            VuforiaTrackable redFrontBridge = targetsSkyStone.get(3);
+            redFrontBridge.setName("Red Front Bridge");
+            VuforiaTrackable blueFrontBridge = targetsSkyStone.get(4);
+            blueFrontBridge.setName("Blue Front Bridge");
+            VuforiaTrackable red1 = targetsSkyStone.get(5);
+            red1.setName("Red Perimeter 1");
+            VuforiaTrackable red2 = targetsSkyStone.get(6);
+            red2.setName("Red Perimeter 2");
+            VuforiaTrackable front1 = targetsSkyStone.get(7);
+            front1.setName("Front Perimeter 1");
+            VuforiaTrackable front2 = targetsSkyStone.get(8);
+            front2.setName("Front Perimeter 2");
+            VuforiaTrackable blue1 = targetsSkyStone.get(9);
+            blue1.setName("Blue Perimeter 1");
+            VuforiaTrackable blue2 = targetsSkyStone.get(10);
+            blue2.setName("Blue Perimeter 2");
+            VuforiaTrackable rear1 = targetsSkyStone.get(11);
+            rear1.setName("Rear Perimeter 1");
+            VuforiaTrackable rear2 = targetsSkyStone.get(12);
+            rear2.setName("Rear Perimeter 2");
+            // For convenience, gather together all the trackable objects in one easily-iterable collection */
+            List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
+            allTrackables.addAll(targetsSkyStone);
         }
 
         if (use_camera) {
@@ -309,7 +344,7 @@ public class CameraSystem {
     }
 
     public void show_telemetry(Telemetry telemetry) {
-        telemetry.addData("VuMark", "%s visible", RelicRecoveryVuMark.from(relicTemplate));
+        // telemetry.addData("VuMark", "%s visible", RelicRecoveryVuMark.from(relicTemplate));
     }
 
 }
