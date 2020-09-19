@@ -61,7 +61,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
     }
 
     @Override
-    public void configure(Configuration configuration, Telemetry telemetry, ToboSigma.AutoTeamside autoside) {
+    public void configure(Configuration configuration, Telemetry telemetry, ToboSigma.AutoTeamColor autoside) {
         runtime.reset();
         double ini_time = runtime.seconds();
         this.telemetry = telemetry;
@@ -70,7 +70,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         this.core = new CoreSystem();
         info("RoboMech configure() after new CoreSystem()(run time = %.2f sec)", (runtime.seconds() - ini_time));
         chassis = new MechChassis(core).configureLogging("Mecanum", logLevel); // Log.DEBUG
-        if (autoside== ToboSigma.AutoTeamside.DIAGNOSIS) {
+        if (autoside== ToboSigma.AutoTeamColor.DIAGNOSIS) {
             // enable imu for diagnosis
             chassis.enableImuTelemetry(configuration);
         }
@@ -79,7 +79,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
             cameraStoneDetector = new CameraStoneDetector();
             cameraStoneDetector.configure(configuration);
         }
-        chassis.configure(configuration, (autoside!= ToboSigma.AutoTeamside.NOT_AUTO));
+        chassis.configure(configuration, (autoside!= ToboSigma.AutoTeamColor.NOT_AUTO));
 
         if (simulation_mode) { // need to call after chassis is initialized
             set_simulation_mode(true);

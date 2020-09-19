@@ -14,7 +14,7 @@ import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
  * Created by 28761 on 6/29/2019.
  */
 @Disabled
-@Autonomous(name = "Red 2SS", group = "Sigma")
+@Autonomous(name = "Ultimate Goal Auto", group = "Sigma")
 public class UltimateGoalFirstAuto extends LinearOpMode {
     private ToboSigma.SkystoneLocation StoneLoc;
 
