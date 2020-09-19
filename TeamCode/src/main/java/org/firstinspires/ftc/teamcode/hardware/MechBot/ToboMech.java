@@ -61,7 +61,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
     }
 
     @Override
-    public void configure(Configuration configuration, Telemetry telemetry, ToboSigma.AutoTeamColor autoColor) {
+    public void configure(Configuration configuration, Telemetry telemetry, ToboSigma.AutoTeamside autoside) {
         runtime.reset();
         double ini_time = runtime.seconds();
         this.telemetry = telemetry;
@@ -70,7 +70,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         this.core = new CoreSystem();
         info("RoboMech configure() after new CoreSystem()(run time = %.2f sec)", (runtime.seconds() - ini_time));
         chassis = new MechChassis(core).configureLogging("Mecanum", logLevel); // Log.DEBUG
-        if (autoColor== ToboSigma.AutoTeamColor.DIAGNOSIS) {
+        if (autoside== ToboSigma.AutoTeamside.DIAGNOSIS) {
             // enable imu for diagnosis
             chassis.enableImuTelemetry(configuration);
         }
@@ -79,7 +79,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
             cameraStoneDetector = new CameraStoneDetector();
             cameraStoneDetector.configure(configuration);
         }
-        chassis.configure(configuration, (autoColor!= ToboSigma.AutoTeamColor.NOT_AUTO));
+        chassis.configure(configuration, (autoside!= ToboSigma.AutoTeamside.NOT_AUTO));
 
         if (simulation_mode) { // need to call after chassis is initialized
             set_simulation_mode(true);
@@ -589,5 +589,67 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
     }
 
 
+    public void deliverFirstWobbleGoal(String targetZone, int startPosition,  String side) throws InterruptedException {// start pos - 1 or 2 (1 inside, 2 outside)
+        if (targetZone.equals("A")){//0
+            chassis.driveTo(.5,  side(45, side), 160, 0, false,  5);
+
+        } else if (targetZone.equals("B")){//1
+            chassis.driveTo(.5, side(75, side), 220, 0, false,  5);
+
+        } else if (targetZone.equals("C")){//4
+            chassis.driveTo(.5, side(45, side), 280, 0, false,  5);
+        } else{
+            return;
+        }
+        // put wobble goal down
+
+
+    }
+    public void doPowerShots( String side) throws InterruptedException {
+        chassis.driveTo(.5, side(130, side), 180, 0, false,  5);
+        //shoot
+        chassis.driveTo(.5, side(150, side), 180, 0, false,  2);
+        //shoot
+        chassis.driveTo(.5, side(170, side), 180, 0, false,  2);
+        //shoot
+    }
+    public void shootGoal(String side) throws InterruptedException {
+        chassis.driveTo(.5, side(90, side), 180, 0, false,  2);
+        //shoot
+
+    }
+    public void getSecondWobbleGoal(int startPos,  String side) throws InterruptedException {
+        if(startPos == 1){
+            chassis.driveTo(.5, side(120, side), 90, 180, true,  7);
+        } else {
+            chassis.driveTo(.5, side(60, side), 90, 180, true,  7);
+        }
+        //grab the wobble goal
+
+
+    }
+    public void deliverSecondWobbleGoal(String targetZone, String side) throws InterruptedException { // we may need to go around the other wobble goal
+        if (targetZone.equals("A")){//0
+            chassis.driveTo(.5, side(15, side), 200, 0, true,  5);
+
+        } else if (targetZone.equals("B")){//1
+            chassis.driveTo(.5, side(105, side), 260, 0, true,  5);
+
+        } else if (targetZone.equals("C")){//4
+            chassis.driveTo(.5, side(15, side), 320, 0, true,  5);
+        } else{
+            return;
+        }
+        // put the wobble goal down
+    }
+    public void park() throws InterruptedException {
+        chassis.driveTo(.5, chassis.odo_x_pos_cm(), 210, chassis.getCurHeading(), false,  2);
+    }
+    public double side( double x, String side){
+        if ( side.equals("red")){
+            return 360 - x;
+        }
+        return x;
+    }
 
 }
