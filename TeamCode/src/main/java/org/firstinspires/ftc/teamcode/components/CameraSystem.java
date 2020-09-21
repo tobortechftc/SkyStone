@@ -12,16 +12,20 @@ import com.vuforia.Vuforia;
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
+import org.firstinspires.ftc.robotcore.external.matrices.OpenGLMatrix;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackable;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackableDefaultListener;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaTrackables;
-import org.firstinspires.ftc.teamcode.support.CoreSystem;
-
 import java.util.ArrayList;
 import java.util.List;
-//import org.firstinspires.ftc.teamcode.hardware17.SwerveUtilLOP;
-//import org.firstinspires.ftc.teamcode.hardware17.TaintedAccess;
+
+import static org.firstinspires.ftc.robotcore.external.navigation.AngleUnit.DEGREES;
+import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.XYZ;
+import static org.firstinspires.ftc.robotcore.external.navigation.AxesOrder.YZX;
+import static org.firstinspires.ftc.robotcore.external.navigation.AxesReference.EXTRINSIC;
+
 
 /**
  * Put brief class description here...
@@ -29,28 +33,35 @@ import java.util.List;
 public class CameraSystem {
     public boolean use_verbose = false;
     public boolean use_Vuforia = true;
-    public boolean use_camera = false;
+    public boolean use_camera = true;
     public boolean use_OpenCV = true;
+    private static final float qField = 900; // mm
+    private static final float hField = 1800; // mm
+    private static final float fField = 3600; // mm
+    private static final float mmPerInch        = 25.4f;
+    private static final float mmPerCm          = 10.0f;
+    private static final float mmTargetHeight   = (6) * mmPerInch;          // the height of the center of the target image above the floor
 
     public Bitmap bitmap = null;
     public boolean camReady = false;
 
     WebcamName webcamName;
 
-    public VuforiaLocalizer vuforia;
+    VuforiaLocalizer vuforia;
+    VuforiaTrackables targetsSkyStone;
+    public List<VuforiaTrackable> allTrackables;
+    public OpenGLMatrix lastLocation;
 
-    public VuforiaTrackables targetsSkyStone;
     // public VuforiaTrackable relicTemplate;
     VuforiaLocalizer.Parameters parameters;
     private String lastError = "";
+    private float phoneXRotate    = 0;
+    private float phoneYRotate    = 0;
+    private float phoneZRotate    = 0;
 
     // Central core of robot
-    CoreSystem core;
     ElapsedTime runtime;
 
-    public CameraSystem(CoreSystem core) {
-        this.core = core;
-    }
 
     public void enable(boolean isAuto) {
         if (isAuto) {
@@ -115,19 +126,36 @@ public class CameraSystem {
             VuforiaTrackable rear2 = targetsSkyStone.get(12);
             rear2.setName("Rear Perimeter 2");
             // For convenience, gather together all the trackable objects in one easily-iterable collection */
-            List<VuforiaTrackable> allTrackables = new ArrayList<VuforiaTrackable>();
+            allTrackables = new ArrayList<VuforiaTrackable>();
             allTrackables.addAll(targetsSkyStone);
-        }
+            blue1.setLocation(OpenGLMatrix
+                    //.translation(-quadField, halfField, mmTargetHeight)
+                    .translation(qField, fField, mmTargetHeight)
+                    .multiplied(Orientation.getRotationMatrix(EXTRINSIC, XYZ, DEGREES, 90, 0, 0)));
 
-        if (use_camera) {
-            if (!use_Vuforia) {
-                throw new IllegalStateException("use_camera cannot be flagged as true without use_Vuforia also being true!");
+
+            // setup Camera rotation
+            phoneYRotate = -90; // camera facing forward
+            phoneXRotate = 0; // in case of Portrait mode, phoneXRotate = 90;
+
+            final float CAMERA_FORWARD_DISPLACEMENT = 7.5f * mmPerInch;   // eg: Camera is 4 Inches in front of robot-center
+            final float CAMERA_VERTICAL_DISPLACEMENT = 7.5f * mmPerInch;   // eg: Camera is 8 Inches above ground
+            final float CAMERA_LEFT_DISPLACEMENT = 0;     // eg: Camera is ON the robot's center line
+
+            OpenGLMatrix robotFromCamera = OpenGLMatrix
+                    .translation(CAMERA_FORWARD_DISPLACEMENT, CAMERA_LEFT_DISPLACEMENT, CAMERA_VERTICAL_DISPLACEMENT)
+                    .multiplied(Orientation.getRotationMatrix(EXTRINSIC, YZX, DEGREES, phoneYRotate, phoneZRotate, phoneXRotate));
+
+            if (use_camera) {
+                if (!use_Vuforia) {
+                    throw new IllegalStateException("use_camera cannot be flagged as true without use_Vuforia also being true!");
+                }
+            }
+            for (VuforiaTrackable trackable : allTrackables) {
+                ((VuforiaTrackableDefaultListener) trackable.getListener()).setPhoneInformation(robotFromCamera, parameters.cameraDirection);
             }
         }
-    }
-
-    CameraSystem(VuforiaLocalizer vuforia) {
-        this.vuforia = vuforia;
+        targetsSkyStone.activate();
     }
 
 //    int getColumnIndex(RelicRecoveryVuMark vuMark) throws InterruptedException {
@@ -341,6 +369,11 @@ public class CameraSystem {
     public void stopCamera() {
         Vuforia.setFrameFormat(PIXEL_FORMAT.RGB565, false);
         this.vuforia.setFrameQueueCapacity(0);
+    }
+    public void end() {
+        if (targetsSkyStone!=null) {
+            targetsSkyStone.deactivate();
+        }
     }
 
     public void show_telemetry(Telemetry telemetry) {

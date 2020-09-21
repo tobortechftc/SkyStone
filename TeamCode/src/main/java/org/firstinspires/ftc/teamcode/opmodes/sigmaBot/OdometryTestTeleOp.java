@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.opmodes.sigmaBot;
 
 import android.util.Log;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -18,6 +19,7 @@ import org.firstinspires.ftc.teamcode.components.odometry.OdometryGlobalCoordina
 /**
  * Created by 28761 on 6/29/2019.
  */
+@Disabled
 @TeleOp(name="Odometry Test-TeleOp", group="Sigma")
 public class OdometryTestTeleOp extends LinearOpMode implements YieldHandler {
     protected static int LOG_LEVEL = Log.INFO;

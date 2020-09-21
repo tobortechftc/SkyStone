@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes.sigmaBot;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.components.Robot2;
 import org.firstinspires.ftc.teamcode.hardware.Sigma.ToboSigma;
@@ -9,6 +10,7 @@ import org.firstinspires.ftc.teamcode.support.diagnostics.DiagnosticsTeleOp;
  * Diagnostic TeleOp for Ruckus
  * @see DiagnosticsTeleOp
  */
+@Disabled
 @TeleOp(name="Sigma::Diagnostics", group="Sigma")
 public class SigmaDiagnostics extends DiagnosticsTeleOp {
 

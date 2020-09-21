@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.support.diagnostics.DiagnosticsTeleOp;
  * Diagnostic TeleOp for Ruckus
  * @see DiagnosticsTeleOp
  */
-@TeleOp(name="Mec::Diagnostics", group="Mec")
+@TeleOp(name="Mec::Diagnostics", group="MechBot")
 public class MechDiagnostics extends DiagnosticsTeleOp {
 
     // override log level, if desired

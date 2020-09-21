@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.teamcode.hardware.MechBot.ToboMech;
 import org.firstinspires.ftc.teamcode.hardware.Sigma.ToboSigma;
 import org.firstinspires.ftc.teamcode.support.Logger;
 import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
@@ -14,7 +15,7 @@ import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
  * Created by 28761 on 6/29/2019.
  */
 @Disabled
-@Autonomous(name = "Ultimate Goal Auto", group = "Sigma")
+@Autonomous(name = "Ultimate Goal Auto", group = "MechBot")
 public class UltimateGoalFirstAuto extends LinearOpMode {
     private ToboSigma.SkystoneLocation StoneLoc;
 
@@ -27,18 +28,18 @@ public class UltimateGoalFirstAuto extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        log.info("RoboSigma Autonomous runOpMode() starts (CPU_time = %.2f sec)", getRuntime());
+        log.info("RoboMech Autonomous runOpMode() starts (CPU_time = %.2f sec)", getRuntime());
         telemetry.addData("Initializing Robot", "Please Wait ...");
         telemetry.update();
 
-        ToboSigma robot = new ToboSigma();
-        robot.configureLogging("ToboSigma", LOG_LEVEL);
+        ToboMech robot = new ToboMech();
+        robot.configureLogging("ToboMech", LOG_LEVEL);
         configuration = new Configuration(hardwareMap, robot.getName()).configureLogging("Config", LOG_LEVEL);
         log.info("RoboSigma Autonomous finished log configuration (CPU_time = %.2f sec)", getRuntime());
 
         try {
             // configure robot and reset all hardware
-            robot.configure(configuration, telemetry, ToboSigma.AutoTeamColor.AUTO_RED);
+            robot.configure(configuration, telemetry, ToboMech.AutoTeamColor.AUTO_BLUE);
             configuration.apply();
             robot.reset(true);
             telemetry.addData("Robot is ready", "Press Play");
@@ -48,8 +49,7 @@ public class UltimateGoalFirstAuto extends LinearOpMode {
             handleException(E);
         }
         log.info("RoboSigma Autonomous finished initialization (CPU_time = %.2f sec)", getRuntime());
-        if (robot.intake != null)
-            robot.intake.intakeDropInit();
+
         waitForStart();
         robot.runtime.reset();
         robot.runtimeAuto.reset();

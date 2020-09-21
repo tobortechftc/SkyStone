@@ -59,7 +59,6 @@ public class MecTeleOp extends LinearOpMode {
             robot.chassis.setupTelemetry(telemetry);
         }
 
-
         Thread positionThread = (robot.chassis.getGPS()==null? null: new Thread(robot.chassis.getGPS()));
         if (positionThread!=null)
            positionThread.start();

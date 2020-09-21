@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.util.ReadWriteFile;
 import org.firstinspires.ftc.robotcore.external.Func;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.internal.system.AppUtil;
+import org.firstinspires.ftc.teamcode.components.CameraSystem;
 import org.firstinspires.ftc.teamcode.components.MechChassis;
 import org.firstinspires.ftc.teamcode.components.Robot2;
 import org.firstinspires.ftc.teamcode.hardware.Sigma.ToboSigma;
@@ -21,13 +22,20 @@ import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
 import java.io.File;
 
 public class ToboMech extends Logger<ToboMech> implements Robot2 {
+
+    public enum TargetZone {
+        ZONE_A, ZONE_B, ZONE_C, UNKNOWN
+    }
+
     Thread positionThread;
     private Telemetry telemetry;
     public MechChassis chassis;
     public CoreSystem core;
     public ElapsedTime runtime = new ElapsedTime();
+    public ElapsedTime runtimeAuto = new ElapsedTime();
     public double rotateRatio = 0.7; // slow down ratio for rotation
     public CameraStoneDetector cameraStoneDetector;
+    public CameraSystem cameraSystem;
     public File simEventFile;
 
     public double auto_chassis_power = .6;
@@ -40,6 +48,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
     public double auto_rotate_degree = 0;
 
     private boolean simulation_mode = false;
+    public boolean vuforiaTest = false;
     public boolean tensorTest = false;
 
     public void set_simulation_mode(boolean value) {
@@ -61,7 +70,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
     }
 
     @Override
-    public void configure(Configuration configuration, Telemetry telemetry, ToboSigma.AutoTeamColor autoside) {
+    public void configure(Configuration configuration, Telemetry telemetry, ToboMech.AutoTeamColor autoside) {
         runtime.reset();
         double ini_time = runtime.seconds();
         this.telemetry = telemetry;
@@ -70,7 +79,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         this.core = new CoreSystem();
         info("RoboMech configure() after new CoreSystem()(run time = %.2f sec)", (runtime.seconds() - ini_time));
         chassis = new MechChassis(core).configureLogging("Mecanum", logLevel); // Log.DEBUG
-        if (autoside== ToboSigma.AutoTeamColor.DIAGNOSIS) {
+        if (autoside== ToboMech.AutoTeamColor.DIAGNOSIS) {
             // enable imu for diagnosis
             chassis.enableImuTelemetry(configuration);
         }
@@ -78,8 +87,11 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         {
             cameraStoneDetector = new CameraStoneDetector();
             cameraStoneDetector.configure(configuration);
+        } else if (vuforiaTest) {
+            cameraSystem = new CameraSystem();
+            cameraSystem.init(configuration.getHardwareMap());
         }
-        chassis.configure(configuration, (autoside!= ToboSigma.AutoTeamColor.NOT_AUTO));
+        chassis.configure(configuration, (autoside!= ToboMech.AutoTeamColor.NOT_AUTO));
 
         if (simulation_mode) { // need to call after chassis is initialized
             set_simulation_mode(true);
@@ -100,6 +112,9 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
     public void end() {
         if (simulation_mode) {
             ReadWriteFile.writeFile(simEventFile, chassis.getSimEvents());
+        }
+        if (cameraSystem!=null) {
+            cameraSystem.end();
         }
     }
 

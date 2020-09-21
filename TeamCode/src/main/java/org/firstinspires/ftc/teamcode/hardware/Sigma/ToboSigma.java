@@ -99,10 +99,6 @@ public class ToboSigma extends Logger<ToboSigma> implements Robot2 {
         INTERNAL, WEBCAM_RIGHT, WEBCAM_LEFT
     }
 
-    public enum AutoTeamColor {
-        NOT_AUTO, AUTO_RED, AUTO_BLUE, DIAGNOSIS
-    }
-
     public CoreSystem core;
     public ElapsedTime runtime = new ElapsedTime();
     public ElapsedTime runtimeAuto = new ElapsedTime();

@@ -8,6 +8,9 @@ import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
  * Core robot interface to be implemented by all robot classes
  */
 public interface Robot2 {
+    public enum AutoTeamColor {
+        NOT_AUTO, AUTO_RED, AUTO_BLUE, DIAGNOSIS
+    }
 
     /**
      * Returns unique robot name, usually a result of calling <code>getClass().getSimpleName()</code>
@@ -24,7 +27,7 @@ public interface Robot2 {
      * @see Configuration
      * @see Telemetry
      */
-    void configure(Configuration configuration, Telemetry telemetry, ToboSigma.AutoTeamColor autoColor);
+    void configure(Configuration configuration, Telemetry telemetry, AutoTeamColor autoColor);
 
     /**
      * Reset robot. All applicable hardware devices should be reset to their initial state.
