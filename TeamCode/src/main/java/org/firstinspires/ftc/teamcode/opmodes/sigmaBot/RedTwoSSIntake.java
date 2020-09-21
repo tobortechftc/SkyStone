@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmodes.sigmaBot;
 import android.util.Log;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.teamcode.hardware.Sigma.ToboSigma;
@@ -12,6 +13,7 @@ import org.firstinspires.ftc.teamcode.support.hardware.Configuration;
 /**
  * Created by 28761 on 6/29/2019.
  */
+@Disabled
 @Autonomous(name = "Red 2SSIntake", group = "Sigma")
 public class RedTwoSSIntake extends LinearOpMode {
     private ToboSigma.SkystoneLocation StoneLoc;
