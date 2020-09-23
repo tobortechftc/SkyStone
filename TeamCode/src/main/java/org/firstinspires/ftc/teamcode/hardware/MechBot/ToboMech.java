@@ -604,7 +604,12 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
     }
 
 
-    public void deliverFirstWobbleGoal(String targetZone, int startPosition,  String side) throws InterruptedException {// start pos - 1 or 2 (1 inside, 2 outside)
+    public void deliverFirstWobbleGoal(String targetZone, int startPosition,  String side) throws InterruptedException {
+
+        // start pos - 1 or 2 (1 inside, 2 outside) <---- probably need to change this to enum?
+        // still need to change positions to be far left for blue side
+
+
         if (targetZone.equals("A")){//0
             chassis.driveTo(.5,  side(45, side), 160, 0, false,  5);
 
@@ -633,7 +638,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
         //shoot
 
     }
-    public void getSecondWobbleGoal(int startPos,  String side) throws InterruptedException {
+    public void getSecondWobbleGoal(int startPos,  String side) throws InterruptedException { // probably have to change the positions depending on the side
         if(startPos == 1){
             chassis.driveTo(.5, side(120, side), 90, 180, true,  7);
         } else {
@@ -644,6 +649,8 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
 
     }
     public void deliverSecondWobbleGoal(String targetZone, String side) throws InterruptedException { // we may need to go around the other wobble goal
+
+        // neede to change positions
         if (targetZone.equals("A")){//0
             chassis.driveTo(.5, side(15, side), 200, 0, true,  5);
 
