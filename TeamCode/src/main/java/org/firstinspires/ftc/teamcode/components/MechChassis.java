@@ -1199,7 +1199,7 @@ public class MechChassis extends Logger<MechChassis> implements Configurable {
 
     public void rotateTo(double power, double finalHeading, double timeout_sec, boolean changePower, boolean finalCorrection) throws InterruptedException {
         if (simulation_mode) { // simulation mode
-            dumpEvent (String.format("RotateTo: %3.1f\n", finalHeading));
+            dumpEvent (String.format("RotateTo: %3.1f %3.1f %3.1f\n", odo_x_pos_cm(), odo_y_pos_cm(), finalHeading));
             return;
         }
 
