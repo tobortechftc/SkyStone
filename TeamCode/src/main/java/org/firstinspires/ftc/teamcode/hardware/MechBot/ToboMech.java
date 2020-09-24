@@ -37,6 +37,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
     public CameraStoneDetector cameraStoneDetector;
     public CameraSystem cameraSystem;
     public File simEventFile;
+    public BottomWobbleGoalGrabber bottomWobbleGoalGrabber;
 
     public double auto_chassis_power = .6;
     public double auto_chassis_dist = 100;
@@ -50,6 +51,7 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
     private boolean simulation_mode = false;
     public boolean vuforiaTest = false;
     public boolean tensorTest = false;
+    public boolean useBottomWobbleGoalGrabber = false;
 
     public void set_simulation_mode(boolean value) {
         simulation_mode = value;
@@ -97,7 +99,12 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
             set_simulation_mode(true);
         }
 
-        info("RoboMech configure() after init Chassis (run time = %.2f sec)", (runtime.seconds() - ini_time));
+        if(useBottomWobbleGoalGrabber){
+            bottomWobbleGoalGrabber = new BottomWobbleGoalGrabber(core);
+            bottomWobbleGoalGrabber.configure(configuration, (autoside!= ToboMech.AutoTeamColor.NOT_AUTO));
+        }
+
+        info("ToboMech configure() after init Chassis (run time = %.2f sec)", (runtime.seconds() - ini_time));
     }
 
 
@@ -251,9 +258,20 @@ public class ToboMech extends Logger<ToboMech> implements Robot2 {
             public void buttonDown(EventManager source, Button button) throws InterruptedException {
                 if (source.isPressed(Button.BACK)) {
                     chassis.toggleNormalizeMode();
+                } else if(source.getTrigger(Events.Side.LEFT) > 0.3){
+                    bottomWobbleGoalGrabber.grabberAuto();
                 }
             }
         }, new Button[]{Button.A});
+
+        em.onButtonDown(new Events.Listener() {
+            @Override
+            public void buttonDown(EventManager source, Button button) throws InterruptedException {
+                if(source.getTrigger(Events.Side.LEFT) > 0.3){
+                    bottomWobbleGoalGrabber.pivotAuto();
+                }
+            }
+        }, new Button[]{Button.Y});
     }
 
     public void setupTelemetryDiagnostics(Telemetry telemetry) {
